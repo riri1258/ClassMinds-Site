@@ -4,7 +4,7 @@ deployment:
     # ─── EDIT THIS LINE ───
     # Replace USERNAME below with your actual cPanel username.
     # Find it in cPanel sidebar → "General Information" → Current User.
-    - export DEPLOYPATH=/home/USERNAME/public_html/
+    - export DEPLOYPATH=/home/clasmklp/public_html/
 
     # ─── Marketing pages ───
     - /bin/cp index.html        $DEPLOYPATH

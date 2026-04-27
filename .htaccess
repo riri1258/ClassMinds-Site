@@ -1,0 +1,88 @@
+# ClassMinds — public-site Apache config (cPanel public_html root)
+# admin/.htaccess is stricter and overrides this for /admin/* requests.
+
+# ─────────────────────────────────────────────────────────
+# 1. SECURITY HEADERS — public pages
+# Mirrors the headers Firebase Hosting was setting before the move.
+# ─────────────────────────────────────────────────────────
+<IfModule mod_headers.c>
+  Header always set Strict-Transport-Security "max-age=31536000; includeSubDomains; preload"
+  Header always set X-Content-Type-Options "nosniff"
+  Header always set X-Frame-Options "DENY"
+  Header always set Referrer-Policy "strict-origin-when-cross-origin"
+  Header always set Permissions-Policy "camera=(), microphone=(), geolocation=(), payment=()"
+  # CSP — matches what the live pages need: gstatic (Firebase SDK),
+  # challenges.cloudflare.com (Turnstile), Firebase APIs, Google Fonts,
+  # OneSignal, Giphy media for chat. Tighter than admin's because the
+  # public pages don't load the OneSignal admin SDK.
+  Header always set Content-Security-Policy "default-src 'self'; script-src 'self' https://www.gstatic.com https://challenges.cloudflare.com 'unsafe-inline'; style-src 'self' https://fonts.googleapis.com 'unsafe-inline'; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: blob: https://firebasestorage.googleapis.com https://*.googleusercontent.com; connect-src 'self' https://*.firebaseio.com wss://*.firebaseio.com https://*.googleapis.com https://identitytoolkit.googleapis.com https://securetoken.googleapis.com https://firestore.googleapis.com https://challenges.cloudflare.com; frame-src https://challenges.cloudflare.com; frame-ancestors 'none'; base-uri 'self'; form-action 'self'; upgrade-insecure-requests"
+</IfModule>
+
+# ─────────────────────────────────────────────────────────
+# 2. APPLE APP SITE ASSOCIATION (iOS Universal Links)
+# Must be served as application/json with no caching.
+# ─────────────────────────────────────────────────────────
+<Files "apple-app-site-association">
+  ForceType application/json
+  <IfModule mod_headers.c>
+    Header set Cache-Control "no-cache, must-revalidate"
+  </IfModule>
+</Files>
+
+# ─────────────────────────────────────────────────────────
+# 3. CACHE CONTROL
+# ─────────────────────────────────────────────────────────
+<IfModule mod_headers.c>
+  # JS / CSS — short cache so site updates appear quickly
+  <FilesMatch "\.(css|js)$">
+    Header set Cache-Control "no-cache, must-revalidate"
+  </FilesMatch>
+  # Images / fonts — cache 30 days
+  <FilesMatch "\.(png|jpg|jpeg|gif|webp|svg|ico|woff|woff2|ttf|otf|eot)$">
+    Header set Cache-Control "public, max-age=2592000"
+  </FilesMatch>
+  # HTML — 5-minute cache
+  <FilesMatch "\.(html|htm)$">
+    Header set Cache-Control "public, max-age=300, must-revalidate"
+  </FilesMatch>
+  # Never cache the Firebase config (so key rotations propagate fast)
+  <Files "firebase-config.js">
+    Header set Cache-Control "no-store, no-cache, must-revalidate"
+  </Files>
+</IfModule>
+
+# ─────────────────────────────────────────────────────────
+# 4. CLEAN URLS — let visitors hit /pricing instead of /pricing.html
+# ─────────────────────────────────────────────────────────
+<IfModule mod_rewrite.c>
+  RewriteEngine On
+  RewriteCond %{REQUEST_FILENAME} !-d
+  RewriteCond %{REQUEST_FILENAME} !-f
+  RewriteCond %{REQUEST_FILENAME}.html -f
+  RewriteRule ^(.+?)/?$ $1.html [L]
+</IfModule>
+
+# ─────────────────────────────────────────────────────────
+# 5. DEFAULT DOC + ERRORS
+# ─────────────────────────────────────────────────────────
+DirectoryIndex index.html
+
+# ─────────────────────────────────────────────────────────
+# 6. BLOCK ACCESS TO HIDDEN / CONFIG FILES
+# (firebase-config.js is allowed — it's loaded as a JS module by the pages)
+# ─────────────────────────────────────────────────────────
+<FilesMatch "^\.(?!well-known)">
+  Require all denied
+</FilesMatch>
+<Files ".cpanel.yml">
+  Require all denied
+</Files>
+<Files ".gitignore">
+  Require all denied
+</Files>
+<Files "*.md">
+  Require all denied
+</Files>
+<Files "*.sh">
+  Require all denied
+</Files>

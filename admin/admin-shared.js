@@ -8,15 +8,9 @@ import { getStorage, ref as storageRef, getDownloadURL, listAll } from 'https://
 import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, sendPasswordResetEmail, onAuthStateChanged, signOut, getIdTokenResult, multiFactor } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js';
 import { getFunctions, httpsCallable } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-functions.js';
 import { initializeAppCheck, ReCaptchaEnterpriseProvider } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app-check.js';
+import { FIREBASE_CONFIG } from '../firebase-config.js';
 
-const app = initializeApp({
-  apiKey: "AIzaSyD7BVxbfGskF10IcifVxyvWwAaAYPb-frw",
-  authDomain: "classmind-9a22a.firebaseapp.com",
-  projectId: "classmind-9a22a",
-  storageBucket: "classmind-9a22a.firebasestorage.app",
-  messagingSenderId: "893980768351",
-  appId: "1:893980768351:web:972e20a662054f29c483ea"
-});
+const app = initializeApp(FIREBASE_CONFIG);
 
 // C-1 (SA_2026-04-22) / H-1 (SA_2026-04-24): App Check on the admin web via
 // reCAPTCHA Enterprise. Site key is loaded from admin/config.js (a non-secret

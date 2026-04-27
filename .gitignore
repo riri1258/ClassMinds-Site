@@ -1,0 +1,48 @@
+# macOS
+.DS_Store
+._*
+.Spotlight-V100
+.Trashes
+
+# Editor / IDE
+.vscode/
+.idea/
+*.swp
+
+# Node (if a build step ever gets added)
+node_modules/
+npm-debug.log*
+
+# Firebase debug
+.firebase/
+firebase-debug.log
+*.log
+
+# ─────────────────────────────────────────────
+# CRITICAL: keep firebase-config.js out of git
+# ─────────────────────────────────────────────
+# This file holds the (publishable) Firebase Web key. It's safe to deploy
+# to production but is gitignored so GitHub's secret scanner doesn't keep
+# firing. Upload it manually to cPanel public_html ONCE via FTP — all
+# subsequent git deploys leave it untouched.
+firebase-config.js
+
+# Old / archived files that shouldn't deploy
+*.old.css
+Site.zip
+
+# Build helpers (admin tools, not deployable)
+admin/compute-sri.sh
+
+# Real secrets — must NEVER be committed
+.env
+.env.*
+*.env
+*-firebase-adminsdk-*.json
+serviceAccount*.json
+service-account*.json
+credentials.json
+*.p8
+*.p12
+*.pem
+*.key

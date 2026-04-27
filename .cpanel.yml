@@ -1,0 +1,63 @@
+---
+deployment:
+  tasks:
+    # ─── EDIT THIS LINE ───
+    # Replace USERNAME below with your actual cPanel username.
+    # Find it in cPanel sidebar → "General Information" → Current User.
+    - export DEPLOYPATH=/home/USERNAME/public_html/
+
+    # ─── Marketing pages ───
+    - /bin/cp index.html        $DEPLOYPATH
+    - /bin/cp home.html         $DEPLOYPATH
+    - /bin/cp about.html        $DEPLOYPATH
+    - /bin/cp faq.html          $DEPLOYPATH
+    - /bin/cp features.html     $DEPLOYPATH
+    - /bin/cp how.html          $DEPLOYPATH
+    - /bin/cp pricing.html      $DEPLOYPATH
+    - /bin/cp privacy.html      $DEPLOYPATH
+    - /bin/cp security.html     $DEPLOYPATH
+    - /bin/cp support.html      $DEPLOYPATH
+    - /bin/cp terms.html        $DEPLOYPATH
+
+    # ─── App pages (web UI) ───
+    - /bin/cp login.html        $DEPLOYPATH
+    - /bin/cp beta.html         $DEPLOYPATH
+    - /bin/cp chat.html         $DEPLOYPATH
+    - /bin/cp class.html        $DEPLOYPATH
+    - /bin/cp classes.html      $DEPLOYPATH
+    - /bin/cp assignments.html  $DEPLOYPATH
+    - /bin/cp study.html        $DEPLOYPATH
+    - /bin/cp tutor.html        $DEPLOYPATH
+    - /bin/cp settings.html     $DEPLOYPATH
+    - /bin/cp record.html       $DEPLOYPATH
+    - /bin/cp note.html         $DEPLOYPATH
+    - /bin/cp og-image.html     $DEPLOYPATH
+
+    # ─── Shared scripts + styles ───
+    - /bin/cp app-shared.js     $DEPLOYPATH
+    - /bin/cp app-styles.css    $DEPLOYPATH
+    - /bin/cp _base.css         $DEPLOYPATH
+
+    # ─── Images / branding ───
+    - /bin/cp WebsiteLogo.png   $DEPLOYPATH
+    - /bin/cp AppIcon.png       $DEPLOYPATH
+    - /bin/cp og-image.png      $DEPLOYPATH
+
+    # ─── SEO + AI files ───
+    - /bin/cp llms.txt          $DEPLOYPATH
+    - /bin/cp llms-full.txt     $DEPLOYPATH
+    - /bin/cp sitemap.xml       $DEPLOYPATH
+    - /bin/cp robots.txt        $DEPLOYPATH
+
+    # ─── Apache config ───
+    - /bin/cp .htaccess         $DEPLOYPATH
+
+    # ─── Subdirectories ───
+    # admin/ has its own .htaccess inside (for stricter admin-page headers)
+    - /bin/cp -R admin          $DEPLOYPATH
+    - /bin/cp -R vendor         $DEPLOYPATH
+    - /bin/cp -R nc_assets      $DEPLOYPATH
+
+    # NOTE: firebase-config.js is intentionally NOT copied here.
+    # It lives only on the server (uploaded once via FTP) and is gitignored
+    # so GitHub's secret scanner doesn't fire on the publishable key.

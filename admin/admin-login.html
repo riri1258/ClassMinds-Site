@@ -55,15 +55,9 @@
     } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js';
     import { getFirestore, doc, getDoc } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
     import { initializeAppCheck, ReCaptchaEnterpriseProvider } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app-check.js';
+    import { FIREBASE_CONFIG } from '../firebase-config.js';
 
-    const app = initializeApp({
-      apiKey: "AIzaSyD7BVxbfGskF10IcifVxyvWwAaAYPb-frw",
-      authDomain: "classmind-9a22a.firebaseapp.com",
-      projectId: "classmind-9a22a",
-      storageBucket: "classmind-9a22a.firebasestorage.app",
-      messagingSenderId: "893980768351",
-      appId: "1:893980768351:web:972e20a662054f29c483ea"
-    });
+    const app = initializeApp(FIREBASE_CONFIG);
 
     const RECAPTCHA_PLACEHOLDERS = new Set([
       '__SET_RECAPTCHA_ENTERPRISE_SITE_KEY__',

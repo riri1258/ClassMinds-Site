@@ -1,0 +1,358 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+    <!-- Favicon & Icons -->
+  <link rel="icon" type="image/png" href="/WebsiteLogo.png"/>
+  <link rel="apple-touch-icon" href="/WebsiteLogo.png"/>
+  <link rel="shortcut icon" href="/WebsiteLogo.png"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <!-- SEO Meta Tags -->
+  <meta name="description" content="Get help with ClassMinds. Find answers to common questions or contact us directly at support@classminds.app."/>
+  <meta name="keywords" content="student app, college app, AI tutor, class notes, homework tracker, study app, classmates chat, iOS student app, college productivity"/>
+  <meta name="author" content="ClassMinds"/>
+  <meta name="robots" content="index, follow"/>
+  <link rel="canonical" href="https://classminds.app/support.html"/>
+
+  <!-- Open Graph (Social Sharing) -->
+  <meta property="og:type" content="website"/>
+  <meta property="og:url" content="https://classminds.app/support.html"/>
+  <meta property="og:title" content="ClassMinds Support – We've Got Your Back"/>
+  <meta property="og:description" content="Get help with ClassMinds. Find answers to common questions or contact us directly at support@classminds.app."/>
+  <meta property="og:site_name" content="ClassMinds"/>
+  <meta property="og:image" content="https://classminds.app/WebsiteLogo.png"/>
+
+  <!-- Twitter Card -->
+  <meta name="twitter:card" content="summary_large_image"/>
+  <meta name="twitter:title" content="ClassMinds Support – We've Got Your Back"/>
+  <meta name="twitter:description" content="Get help with ClassMinds. Find answers to common questions or contact us directly at support@classminds.app."/>
+  <meta name="twitter:image" content="https://classminds.app/WebsiteLogo.png"/>
+
+  <!-- App Meta -->
+  <meta name="application-name" content="ClassMinds"/>
+  <meta name="apple-mobile-web-app-title" content="ClassMinds"/>
+  <meta name="theme-color" content="#040d1f"/>
+  <title>Support – ClassMinds</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;1,9..40,300&display=swap" rel="stylesheet"/>
+  <style>
+    :root {
+      --blue: #1a6bff; --blue-bright: #4d8fff;
+      --navy: #040d1f; --navy-card: #0a1c3a;
+      --navy-border: rgba(26,107,255,0.18);
+      --white: #f0f4ff; --muted: rgba(180,200,255,0.5);
+      --font-display: 'Syne', sans-serif; --font-body: 'DM Sans', sans-serif;
+    }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body { background: var(--navy); color: var(--white); font-family: var(--font-body); overflow-x: hidden; }
+    body::before {
+      content: ''; position: fixed; inset: 0;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='1'/%3E%3C/svg%3E");
+      opacity: 0.03; pointer-events: none; z-index: 0;
+    }
+    nav {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 20px 48px; background: rgba(4,13,31,0.7); backdrop-filter: blur(20px);
+      border-bottom: 1px solid var(--navy-border);
+    }
+    .nav-logo { font-family: var(--font-display); font-weight: 800; font-size: 22px; color: var(--white); text-decoration: none; display: inline-flex; align-items: center; gap: 8px; }
+    .nav-logo-img { height: 32px; width: 32px; display: block; }
+    .nav-logo-text span { color: var(--blue-bright); }
+    .nav-links { display: flex; gap: 36px; list-style: none; }
+    .nav-links a { color: var(--muted); text-decoration: none; font-size: 14px; font-weight: 500; transition: color 0.2s; }
+    .nav-links a:hover { color: var(--white); }
+    .nav-cta { background: var(--blue); color: white !important; padding: 9px 22px; border-radius: 8px; font-weight: 600 !important; transition: background 0.2s, transform 0.15s !important; }
+    .nav-cta:hover { background: var(--blue-bright) !important; transform: translateY(-1px); }
+    .nav-toggle { display: none; background: transparent; border: 1px solid var(--navy-border); border-radius: 8px; width: 40px; height: 40px; cursor: pointer; flex-direction: column; align-items: center; justify-content: center; gap: 4px; padding: 0; transition: background 0.2s, border-color 0.2s; }
+    .nav-toggle:hover { background: rgba(26,107,255,0.07); border-color: rgba(26,107,255,0.4); }
+    .nav-toggle span { display: block; width: 18px; height: 2px; background: var(--white); border-radius: 2px; transition: transform 0.25s ease, opacity 0.2s ease; }
+    .nav-toggle.open span:nth-child(1) { transform: translateY(6px) rotate(45deg); }
+    .nav-toggle.open span:nth-child(2) { opacity: 0; }
+    .nav-toggle.open span:nth-child(3) { transform: translateY(-6px) rotate(-45deg); }
+
+    .page-hero { padding: 160px 24px 80px; text-align: center; position: relative; overflow: hidden; }
+    .hero-glow { position: absolute; top: -80px; left: 50%; transform: translateX(-50%); width: 700px; height: 400px; background: radial-gradient(ellipse, rgba(26,107,255,0.2) 0%, transparent 70%); pointer-events: none; }
+    .page-tag { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 1.5px; color: var(--blue-bright); margin-bottom: 16px; }
+    h1 { font-family: var(--font-display); font-size: clamp(40px, 6vw, 72px); font-weight: 800; letter-spacing: -2px; line-height: 1.0; }
+    h1 span { background: linear-gradient(135deg, var(--blue-bright), #7eb3ff); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+    .page-sub { font-size: 18px; color: var(--muted); max-width: 480px; margin: 20px auto 0; line-height: 1.65; font-weight: 300; }
+
+    .content { max-width: 860px; margin: 0 auto; padding: 60px 24px 100px; }
+
+    /* Contact card */
+    .contact-card {
+      background: linear-gradient(135deg, var(--navy-card), rgba(26,107,255,0.08));
+      border: 1px solid rgba(26,107,255,0.3);
+      border-radius: 20px;
+      padding: 40px;
+      display: flex;
+      gap: 40px;
+      align-items: center;
+      margin-bottom: 60px;
+      position: relative;
+      overflow: hidden;
+    }
+    .contact-card::before {
+      content: ''; position: absolute; top: -60px; right: -60px;
+      width: 200px; height: 200px;
+      background: radial-gradient(ellipse, rgba(26,107,255,0.15) 0%, transparent 70%);
+    }
+    .contact-icon { font-size: 48px; flex-shrink: 0; }
+    .contact-title { font-family: var(--font-display); font-size: 24px; font-weight: 800; margin-bottom: 8px; }
+    .contact-desc { color: var(--muted); font-size: 15px; line-height: 1.6; font-weight: 300; margin-bottom: 20px; }
+    .btn-primary {
+      display: inline-block; background: var(--blue); color: white; padding: 13px 28px;
+      border-radius: 10px; font-size: 14px; font-weight: 600; text-decoration: none;
+      font-family: var(--font-body); transition: background 0.2s, transform 0.15s;
+    }
+    .btn-primary:hover { background: var(--blue-bright); transform: translateY(-2px); }
+
+    /* FAQ */
+    .faq-title {
+      font-family: var(--font-display); font-size: 28px; font-weight: 800;
+      letter-spacing: -0.5px; margin-bottom: 32px;
+    }
+
+    .faq-list { display: flex; flex-direction: column; gap: 12px; }
+
+    .faq-item {
+      background: var(--navy-card);
+      border: 1px solid var(--navy-border);
+      border-radius: 14px;
+      overflow: hidden;
+    }
+
+    .faq-q {
+      width: 100%; background: none; border: none; color: var(--white);
+      font-family: var(--font-body); font-size: 15px; font-weight: 500;
+      text-align: left; padding: 20px 24px;
+      cursor: pointer; display: flex; justify-content: space-between; align-items: center;
+      gap: 16px; transition: color 0.2s;
+    }
+
+    .faq-q:hover { color: var(--blue-bright); }
+
+    .faq-arrow {
+      font-size: 18px; color: var(--muted); transition: transform 0.3s;
+      flex-shrink: 0;
+    }
+
+    .faq-item.open .faq-arrow { transform: rotate(45deg); color: var(--blue-bright); }
+
+    .faq-a {
+      max-height: 0; overflow: hidden;
+      transition: max-height 0.35s ease, padding 0.35s ease;
+    }
+
+    .faq-item.open .faq-a { max-height: 300px; }
+
+    .faq-a-inner {
+      padding: 0 24px 20px;
+      font-size: 14px; color: var(--muted); line-height: 1.75; font-weight: 300;
+      border-top: 1px solid var(--navy-border);
+      padding-top: 16px;
+    }
+
+    .faq-a-inner a { color: var(--blue-bright); }
+
+    /* Tips grid */
+    .tips-title { font-family: var(--font-display); font-size: 28px; font-weight: 800; letter-spacing: -0.5px; margin: 60px 0 24px; }
+    .tips-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 16px; }
+    .tip-card { background: var(--navy-card); border: 1px solid var(--navy-border); border-radius: 14px; padding: 24px; }
+    .tip-num { font-family: var(--font-display); font-size: 11px; font-weight: 700; color: var(--blue-bright); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 8px; }
+    .tip-title { font-family: var(--font-display); font-size: 16px; font-weight: 700; margin-bottom: 8px; }
+    .tip-desc { font-size: 13px; color: var(--muted); line-height: 1.6; }
+
+    footer { border-top: 1px solid var(--navy-border); padding: 40px 48px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 20px; }
+    .footer-logo { font-family: var(--font-display); font-weight: 800; font-size: 18px; color: var(--white); text-decoration: none; }
+    .footer-logo span { color: var(--blue-bright); }
+    .footer-links { display: flex; gap: 28px; list-style: none; flex-wrap: wrap; }
+    .footer-links a { color: var(--muted); text-decoration: none; font-size: 13px; transition: color 0.2s; }
+    .footer-links a:hover { color: var(--white); }
+    .footer-copy { font-size: 12px; color: rgba(180,200,255,0.25); }
+
+    .reveal { opacity: 0; transform: translateY(30px); transition: opacity 0.6s ease, transform 0.6s ease; }
+    .reveal.visible { opacity: 1; transform: translateY(0); }
+
+    @media (max-width: 900px) {
+      nav { padding: 16px 20px; }
+      .nav-logo-text { display: none; }
+      .nav-toggle { display: flex; }
+      .nav-links { position: absolute; top: 100%; left: 0; right: 0; flex-direction: column; align-items: stretch; background: rgba(4,13,31,0.97); backdrop-filter: blur(20px); border-bottom: 1px solid var(--navy-border); padding: 0 24px; gap: 0; max-height: 0; overflow: hidden; opacity: 0; pointer-events: none; transition: max-height 0.3s ease, opacity 0.25s ease, padding 0.3s ease; }
+      .nav-links.open { max-height: 500px; opacity: 1; padding: 18px 24px 22px; pointer-events: auto; }
+      .nav-links li { list-style: none; }
+      .nav-links a { display: block; padding: 12px 0; font-size: 16px; border-bottom: 1px solid rgba(26,107,255,0.08); }
+      .nav-links li:last-child a { border-bottom: none; }
+      .nav-links .nav-cta { background: transparent !important; color: var(--muted) !important; padding: 12px 0 !important; border-radius: 0; font-weight: 500 !important; display: block; box-shadow: none; transform: none !important; }
+      .nav-links .nav-cta:hover { background: transparent !important; color: var(--white) !important; }
+    }
+    @media (max-width: 768px) {
+      .contact-card { flex-direction: column; text-align: center; }
+      footer { flex-direction: column; text-align: center; }
+    }
+  </style>
+  <!-- Google tag (gtag.js) -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-081YYS6HV7"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'G-081YYS6HV7');
+  </script>
+</head>
+<body>
+
+<nav>
+  <a href="index.html" class="nav-logo" aria-label="ClassMinds home"><img src="/WebsiteLogo.png" alt="ClassMinds logo" class="nav-logo-img"/><span class="nav-logo-text">Class<span>Minds</span></span></a>
+  <ul class="nav-links" id="nav-links">
+    <li><a href="features.html">Features</a></li>
+    <li><a href="pricing.html">Pricing</a></li>
+    <li><a href="about.html">About</a></li>
+    <li><a href="support.html">Support</a></li>
+    <li><a href="beta.html" class="nav-cta">Download Beta</a></li>
+    <li><a href="login.html" style="color:#4d8fff;font-weight:600">Sign In</a></li>
+  </ul>
+  <button class="nav-toggle" aria-label="Toggle menu" aria-expanded="false">
+    <span></span><span></span><span></span>
+  </button>
+</nav>
+
+<div class="page-hero">
+  <div class="hero-glow"></div>
+  <div class="page-tag">Support</div>
+  <h1>We've got<br/><span>your back.</span></h1>
+  <p class="page-sub">Got a question or ran into a bug? We're quick to respond — just reach out.</p>
+</div>
+
+<div class="content">
+
+  <!-- Contact -->
+  <div class="contact-card reveal">
+    <div class="contact-icon">✉️</div>
+    <div>
+      <div class="contact-title">Email Support</div>
+      <div class="contact-desc">The fastest way to get help. Describe what's happening and we'll get back to you as soon as possible — usually same day.</div>
+      <a href="/cdn-cgi/l/email-protection#c4b7b1b4b4abb6b084a7a8a5b7b7a9adaaa0b7eaa5b4b4fbb7b1a6aea1a7b0f987a8a5b7b789adaaa0b7e497b1b4b4abb6b0" class="btn-primary"><span class="__cf_email__" data-cfemail="ef9c9a9f9f809d9baf8c838e9c9c8286818b9cc18e9f9f">[email&#160;protected]</span> →</a>
+    </div>
+  </div>
+
+  <!-- FAQ -->
+  <div class="reveal">
+    <div class="faq-title">Frequently Asked Questions</div>
+    <div class="faq-list">
+
+      <div class="faq-item">
+        <button class="faq-q">How do I get access to ClassMinds? <span class="faq-arrow">+</span></button>
+        <div class="faq-a"><div class="faq-a-inner">ClassMinds is currently in beta via TestFlight. If you received an invite link, tap it on your iPhone and install TestFlight from the App Store first. If you haven't received an invite, reach out to us at <a href="/cdn-cgi/l/email-protection#02717772726d707642616e6371716f6b6c66712c637272"><span class="__cf_email__" data-cfemail="e5969095958a9791a58689849696888c8b8196cb849595">[email&#160;protected]</span></a>.</div></div>
+      </div>
+
+      <div class="faq-item">
+        <button class="faq-q">Is ClassMinds free? <span class="faq-arrow">+</span></button>
+        <div class="faq-a"><div class="faq-a-inner">Yes — ClassMinds is completely free during the beta period. In the future, we may introduce paid plans or a one-time purchase. We'll give plenty of notice before anything changes, and early users will be taken care of.</div></div>
+      </div>
+
+      <div class="faq-item">
+        <button class="faq-q">How does the AI Tutor work? <span class="faq-arrow">+</span></button>
+        <div class="faq-a"><div class="faq-a-inner">The AI Tutor reads your class notes and assignment details to give you answers that are actually relevant to your courses. Ask it to explain a concept from your notes, summarize a chapter, or tell you what's due this week — it knows your stuff.</div></div>
+      </div>
+
+      <div class="faq-item">
+        <button class="faq-q">How do I add my classes? <span class="faq-arrow">+</span></button>
+        <div class="faq-a"><div class="faq-a-inner">You can either import your class schedule directly or add classes manually using a course code. Once a class is added, you can invite classmates to join the same class group to enable chat.</div></div>
+      </div>
+
+      <div class="faq-item">
+        <button class="faq-q">Who can see my chat messages? <span class="faq-arrow">+</span></button>
+        <div class="faq-a"><div class="faq-a-inner">Class chat messages are visible to all members of that class group. Your AI Tutor conversation is private to you. All data is stored securely via Firebase.</div></div>
+      </div>
+
+      <div class="faq-item">
+        <button class="faq-q">The app crashed or something isn't working. What do I do? <span class="faq-arrow">+</span></button>
+        <div class="faq-a"><div class="faq-a-inner">First, try closing and reopening the app. If the issue persists, email us at <a href="/cdn-cgi/l/email-protection#8dfef8fdfde2fff9cdeee1ecfefee0e4e3e9fea3ecfdfd"><span class="__cf_email__" data-cfemail="98ebede8e8f7eaecd8fbf4f9ebebf5f1f6fcebb6f9e8e8">[email&#160;protected]</span></a> with a description of what happened and what screen you were on. Screenshots help a lot!</div></div>
+      </div>
+
+      <div class="faq-item">
+        <button class="faq-q">How do I delete my account? <span class="faq-arrow">+</span></button>
+        <div class="faq-a"><div class="faq-a-inner">Email us at <a href="/cdn-cgi/l/email-protection#9eedebeeeef1eceadefdf2ffededf3f7f0faedb0ffeeee"><span class="__cf_email__" data-cfemail="14676164647b6660547778756767797d7a70673a756464">[email&#160;protected]</span></a> with your account email and we'll delete your account and all associated data within 48 hours.</div></div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- Tips -->
+  <div class="reveal">
+    <div class="tips-title">Getting the most out of ClassMinds</div>
+    <div class="tips-grid">
+      <div class="tip-card">
+        <div class="tip-num">Tip 01</div>
+        <div class="tip-title">Add notes early</div>
+        <div class="tip-desc">The AI Tutor gets smarter the more notes you add. Add them right after class for best results.</div>
+      </div>
+      <div class="tip-card">
+        <div class="tip-num">Tip 02</div>
+        <div class="tip-title">Use class chat</div>
+        <div class="tip-desc">Get classmates to join your class group so the chat is actually useful when it matters.</div>
+      </div>
+      <div class="tip-card">
+        <div class="tip-num">Tip 03</div>
+        <div class="tip-title">Ask specific questions</div>
+        <div class="tip-desc">Instead of "explain ECON", try "explain Chapter 4 supply and demand from my ECON notes."</div>
+      </div>
+      <div class="tip-card">
+        <div class="tip-num">Tip 04</div>
+        <div class="tip-title">Check upcoming work</div>
+        <div class="tip-desc">The home screen shows everything due this week. Check it every morning to stay on top of things.</div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<footer>
+  <a href="index.html" class="footer-logo">Class<span>Minds</span></a>
+  <ul class="footer-links">
+    <li><a href="features.html">Features</a></li>
+    <li><a href="pricing.html">Pricing</a></li>
+    <li><a href="how.html">How It Works</a></li>
+    <li><a href="faq.html">FAQ</a></li>
+    <li><a href="security.html">Security</a></li>
+    <li><a href="about.html">About</a></li>
+    <li><a href="support.html">Support</a></li>
+    <li><a href="privacy.html">Privacy Policy</a></li>
+    <li><a href="terms.html">Terms</a></li>
+  </ul>
+  <span class="footer-copy">© 2026 ClassMinds. All rights reserved.</span>
+</footer>
+
+<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
+  // FAQ accordion
+  document.querySelectorAll('.faq-q').forEach(btn => {
+    btn.addEventListener('click', () => {
+      btn.parentElement.classList.toggle('open');
+    });
+  });
+
+  const els = document.querySelectorAll('.reveal');
+  const obs = new IntersectionObserver((entries) => {
+    entries.forEach((e, i) => {
+      if (e.isIntersecting) {
+        setTimeout(() => e.target.classList.add('visible'), i * 80);
+        obs.unobserve(e.target);
+      }
+    });
+  }, { threshold: 0.1 });
+  els.forEach(el => obs.observe(el));
+
+  const navToggle = document.querySelector('.nav-toggle');
+  const navLinks = document.querySelector('.nav-links');
+  if (navToggle && navLinks) {
+    const closeMenu = () => { navLinks.classList.remove('open'); navToggle.classList.remove('open'); navToggle.setAttribute('aria-expanded', 'false'); };
+    navToggle.addEventListener('click', (e) => { e.stopPropagation(); const open = navLinks.classList.toggle('open'); navToggle.classList.toggle('open', open); navToggle.setAttribute('aria-expanded', open); });
+    navLinks.querySelectorAll('a').forEach(a => a.addEventListener('click', closeMenu));
+    document.addEventListener('click', (e) => { if (!navLinks.contains(e.target) && !navToggle.contains(e.target)) closeMenu(); });
+  }
+</script>
+</body>
+</html>

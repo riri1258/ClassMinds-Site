@@ -1,0 +1,993 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover"/>
+<link rel="icon" type="image/png" href="/WebsiteLogo.png"/>
+<link rel="apple-touch-icon" href="/WebsiteLogo.png"/>
+<link rel="shortcut icon" href="/WebsiteLogo.png"/>
+<title>ClassMinds</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:ital,wght@0,700;0,800;1,800&family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
+<link rel="stylesheet" href="app-styles.css"/>
+<!-- Cloudflare Turnstile — gates both signup and login paths.
+     Explicit render with onload callback. This inline handshake must run
+     BEFORE api.js loads so the callback exists when api.js calls it. The
+     module script at the bottom writes __cmRenderTurnstile; whichever
+     side finishes last triggers the actual render. -->
+<script>
+  window.__cmTurnstileReady = false;
+  window.onloadTurnstileCallback = function () {
+    window.__cmTurnstileReady = true;
+    if (typeof window.__cmRenderTurnstile === 'function') {
+      window.__cmRenderTurnstile();
+    }
+  };
+</script>
+<!-- M-1 (SA_2026-04-24): SRI on Turnstile bootstrap. This hash is for the
+     resource Cloudflare's unversioned api.js 302-redirects to; CF updates
+     that target periodically, which will make this hash stop matching.
+     Recompute on deploy:
+       curl -sSL 'https://challenges.cloudflare.com/turnstile/v0/api.js' \
+         | openssl dgst -sha384 -binary | openssl base64 -A
+     TODO: vendor the script when feasible so the hash is stable. -->
+<script src="https://challenges.cloudflare.com/turnstile/v0/api.js?onload=onloadTurnstileCallback&render=explicit"
+        integrity="sha384-OuGg+g97XMsjh5sWKqEE02PJjLlqQmum+M/i0sXTCxu3xKR6J4Rmx3d/3cQ05zCJ"
+        crossorigin="anonymous" async defer></script>
+<style>
+  /* Auth page — matches iOS LoginSignupView design exactly.
+     Dark navy bg + centered column with logo/wordmark up top and
+     a "sheet" card with rounded top corners anchored to the bottom. */
+
+  body {
+    display: flex !important;   /* override app-styles.css body{display:none} gate */
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
+    min-height: 100vh;
+    padding: 0;
+    background: var(--navy);
+    position: relative;
+  }
+
+  /* -------- Public top nav (ported from index.html) -------- */
+  nav.top-nav {
+    position: fixed;
+    top: 0; left: 0; right: 0;
+    z-index: 100;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 20px 48px;
+    background: rgba(4,13,31,0.7);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border-bottom: 1px solid var(--border);
+  }
+  .nav-logo {
+    font-family: var(--font-display);
+    font-weight: 800;
+    font-size: 22px;
+    color: var(--white);
+    text-decoration: none;
+    letter-spacing: -0.5px;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .nav-logo-img { height: 32px; width: 32px; display: block; }
+  .nav-logo-text span { color: var(--blue-bright); }
+  .nav-links {
+    display: flex;
+    gap: 36px;
+    list-style: none;
+    margin: 0; padding: 0;
+  }
+  .nav-links li { list-style: none; }
+  .nav-links a {
+    color: var(--muted);
+    text-decoration: none;
+    font-size: 14px;
+    font-weight: 500;
+    letter-spacing: 0.3px;
+    transition: color 0.2s;
+  }
+  .nav-links a:hover { color: var(--white); }
+  .nav-cta {
+    background: var(--blue);
+    color: white !important;
+    padding: 9px 22px;
+    border-radius: 8px;
+    font-weight: 600 !important;
+    transition: background 0.2s, transform 0.15s !important;
+  }
+  .nav-cta:hover {
+    background: var(--blue-bright) !important;
+    transform: translateY(-1px);
+  }
+  .nav-toggle {
+    display: none;
+    background: transparent;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    width: 40px; height: 40px;
+    cursor: pointer;
+    flex-direction: column;
+    align-items: center; justify-content: center;
+    gap: 4px;
+    padding: 0;
+  }
+  .nav-toggle:hover {
+    background: rgba(26,107,255,0.07);
+    border-color: rgba(26,107,255,0.4);
+  }
+  .nav-toggle span {
+    display: block;
+    width: 18px; height: 2px;
+    background: var(--white);
+    border-radius: 2px;
+    transition: transform 0.25s ease, opacity 0.2s ease;
+  }
+  .nav-toggle.open span:nth-child(1) { transform: translateY(6px)  rotate(45deg); }
+  .nav-toggle.open span:nth-child(2) { opacity: 0; }
+  .nav-toggle.open span:nth-child(3) { transform: translateY(-6px) rotate(-45deg); }
+
+  @media (max-width: 900px) {
+    nav.top-nav { padding: 16px 20px; }
+    .nav-logo-text { display: none; }
+    .nav-toggle { display: flex; }
+    .nav-links {
+      position: absolute;
+      top: 100%;
+      left: 0; right: 0;
+      flex-direction: column;
+      align-items: stretch;
+      background: rgba(4,13,31,0.97);
+      backdrop-filter: blur(20px);
+      border-bottom: 1px solid var(--border);
+      padding: 0 24px;
+      gap: 0;
+      max-height: 0;
+      overflow: hidden;
+      opacity: 0;
+      pointer-events: none;
+      transition: max-height 0.3s ease, opacity 0.25s ease, padding 0.3s ease;
+    }
+    .nav-links.open {
+      max-height: 500px;
+      opacity: 1;
+      padding: 18px 24px 22px;
+      pointer-events: auto;
+    }
+    .nav-links a {
+      display: block;
+      padding: 12px 0;
+      font-size: 16px;
+      border-bottom: 1px solid rgba(26,107,255,0.08);
+    }
+    .nav-links li:last-child a { border-bottom: none; }
+    .nav-links .nav-cta {
+      background: transparent !important;
+      color: var(--muted) !important;
+      padding: 12px 0 !important;
+      border-radius: 0;
+      font-weight: 500 !important;
+      display: block;
+      box-shadow: none;
+      transform: none !important;
+    }
+    .nav-links .nav-cta:hover {
+      background: transparent !important;
+      color: var(--white) !important;
+    }
+  }
+
+  /* Soft top-right blue glow to mirror the app's positional light */
+  .auth-glow {
+    position: fixed;
+    top: -220px; right: -160px;
+    width: 520px; height: 520px;
+    border-radius: 50%;
+    filter: blur(90px);
+    background: radial-gradient(circle, rgba(26,107,255,0.22), transparent 62%);
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  /* -------- Header (logo + wordmark + subtitle + chips) -------- */
+  .auth-head {
+    width: 100%;
+    max-width: 440px;
+    padding: 88px 24px 14px;  /* clears 72px fixed top-nav + breathing room */
+    display: flex; flex-direction: column; align-items: center;
+    gap: 6px;
+    text-align: center;
+    position: relative; z-index: 1;
+  }
+  .auth-logo {
+    width: 60px; height: 60px;
+    object-fit: contain;
+    filter: drop-shadow(0 0 14px rgba(26,107,255,0.4));
+  }
+  .wordmark {
+    margin: 0;
+    font-family: var(--font-display);
+    font-weight: 800;
+    font-size: 28px;
+    letter-spacing: -0.3px;
+    line-height: 1;
+    color: var(--white);
+  }
+  .wordmark .mb { color: var(--blue); }
+  .auth-sub {
+    margin: 0;
+    font-family: var(--font-body);
+    font-size: 15px;
+    color: rgba(180,200,255,0.55);
+  }
+  .auth-chips {
+    display: flex; gap: 6px;
+    margin-top: 6px;
+    flex-wrap: wrap; justify-content: center;
+  }
+  .fchip {
+    font-family: var(--font-body);
+    font-size: 11px;
+    font-weight: 500;
+    padding: 5px 10px;
+    border-radius: 999px;
+    border: 0.5px solid transparent;
+  }
+  .fchip.blue   { color: var(--blue);   background: rgba(26,107,255,0.1);   border-color: rgba(26,107,255,0.22); }
+  .fchip.green  { color: #44DD78;       background: rgba(68,221,120,0.1);   border-color: rgba(68,221,120,0.22); }
+  .fchip.purple { color: #AA88FF;       background: rgba(170,136,255,0.1);  border-color: rgba(170,136,255,0.22); }
+
+  /* Hide chips on login (only shown on signup) */
+  body.mode-login .auth-chips { display: none; }
+  body.mode-login .signup-only { display: none !important; }
+  body.mode-signup .login-only { display: none !important; }
+
+  /* -------- Card -------- */
+  .auth-card {
+    width: 100%;
+    max-width: 440px;
+    background: rgba(255,255,255,0.03);
+    border: 0.5px solid rgba(255,255,255,0.06);
+    border-bottom: none;
+    border-radius: 24px 24px 0 0;
+    padding: 8px 24px 28px;
+    margin-top: auto;       /* anchors card to bottom of viewport on phones */
+    display: flex; flex-direction: column;
+    gap: 14px;
+    position: relative; z-index: 1;
+  }
+
+  /* Tighter field + input vertical rhythm so signup fits without a lot of scroll */
+  body.mode-signup .auth-fields { gap: 10px; }
+  body.mode-signup .lf input { padding: 11px 14px; }
+  body.mode-signup .lf > label { font-size: 10px; }
+
+  /* Short-viewport polish — hide feature chips on small phones so the
+     signup form clears the fold without scrolling */
+  @media (max-height: 780px) {
+    .auth-head .auth-chips { display: none; }
+    .auth-head { padding-top: 80px; gap: 4px; }
+  }
+
+  /* -------- Tab switcher (underline style) -------- */
+  .auth-tabs {
+    display: flex;
+    position: relative;
+    border-bottom: 1px solid rgba(255,255,255,0.06);
+  }
+  .auth-tab {
+    flex: 1;
+    background: transparent;
+    border: none;
+    font-family: var(--font-display);
+    font-size: 14px;
+    font-weight: 600;
+    color: rgba(180,200,255,0.5);
+    padding: 14px 0;
+    cursor: pointer;
+    transition: color 0.2s;
+    position: relative;
+  }
+  .auth-tab.active { color: var(--white); }
+  .auth-tab-underline {
+    position: absolute;
+    bottom: -1px;
+    height: 2px;
+    background: var(--blue);
+    width: 50%;
+    transition: transform 0.3s cubic-bezier(0.32, 0.72, 0, 1);
+  }
+  /* signup active → right half (translateX 100%); login active → left half */
+  body.mode-signup .auth-tab-underline { transform: translateX(100%); }
+  body.mode-login  .auth-tab-underline { transform: translateX(0); }
+
+  /* -------- Fields -------- */
+  .auth-fields { display: flex; flex-direction: column; gap: 14px; }
+  .name-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .lf { display: flex; flex-direction: column; gap: 5px; }
+  .lf > label {
+    font-family: var(--font-body);
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.3px;
+    color: rgba(180,200,255,0.4);
+    text-transform: uppercase;
+  }
+  .lf input {
+    background: rgba(255,255,255,0.04);
+    border: 0.5px solid rgba(255,255,255,0.06);
+    border-radius: 12px;
+    padding: 14px;
+    color: var(--white);
+    font-family: var(--font-body);
+    font-size: 15px;
+    outline: none;
+    transition: border-color 0.15s, background 0.15s;
+    width: 100%;
+  }
+  .lf input::placeholder { color: rgba(180,200,255,0.35); }
+  .lf input:focus-visible {
+    border-color: rgba(26,107,255,0.5);
+    background: rgba(26,107,255,0.06);
+  }
+
+  /* Password field with eye toggle */
+  .pw-wrap { position: relative; }
+  .pw-wrap input { padding-right: 44px; }
+  .pw-eye {
+    position: absolute;
+    right: 8px; top: 50%;
+    transform: translateY(-50%);
+    width: 32px; height: 32px;
+    display: flex; align-items: center; justify-content: center;
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    color: rgba(180,200,255,0.5);
+    border-radius: 8px;
+    transition: color 0.15s, background 0.15s;
+  }
+  .pw-eye:hover { color: var(--white); background: rgba(255,255,255,0.04); }
+  .pw-eye svg { width: 16px; height: 16px; }
+
+  /* Password strength meter (signup only) */
+  .pw-strength {
+    display: flex; align-items: center; gap: 10px;
+    margin-top: 8px;
+  }
+  .pw-bars { display: flex; flex: 1; gap: 4px; }
+  .pw-bars span {
+    flex: 1;
+    height: 3px;
+    border-radius: 2px;
+    background: rgba(255,255,255,0.06);
+    transition: background 0.2s;
+  }
+  .pw-bars span.f1 { background: var(--red); }
+  .pw-bars span.f2 { background: var(--yellow); }
+  .pw-bars span.f3 { background: var(--blue-bright); }
+  .pw-bars span.f4 { background: #44DD78; }
+  .pw-label {
+    font-family: var(--font-body);
+    font-size: 11px;
+    font-weight: 500;
+    min-width: 48px;
+    text-align: right;
+    color: rgba(180,200,255,0.4);
+    transition: color 0.2s;
+  }
+  .pw-label.l1 { color: var(--red); }
+  .pw-label.l2 { color: var(--yellow); }
+  .pw-label.l3 { color: var(--blue-bright); }
+  .pw-label.l4 { color: #44DD78; }
+
+  /* Remember me + forgot password row (login only) */
+  .remember-row {
+    display: flex; align-items: center; gap: 10px;
+    padding-top: 2px;
+  }
+  .switch {
+    position: relative;
+    display: inline-block;
+    width: 36px; height: 20px;
+    flex-shrink: 0;
+  }
+  .switch input { opacity: 0; width: 0; height: 0; }
+  .switch .slider {
+    position: absolute; inset: 0;
+    background: rgba(255,255,255,0.1);
+    border-radius: 999px;
+    transition: background 0.2s;
+    cursor: pointer;
+  }
+  .switch .slider::before {
+    content: "";
+    position: absolute;
+    left: 2px; top: 2px;
+    width: 16px; height: 16px;
+    background: var(--white);
+    border-radius: 50%;
+    transition: transform 0.2s;
+  }
+  .switch input:checked + .slider { background: var(--blue); }
+  .switch input:checked + .slider::before { transform: translateX(16px); }
+
+  .remember-txt {
+    font-family: var(--font-body);
+    font-size: 14px;
+    color: rgba(180,200,255,0.55);
+  }
+  .remember-spacer { flex: 1; }
+  .forgot-link {
+    font-family: var(--font-body);
+    font-size: 13px;
+    color: var(--blue-bright);
+    cursor: pointer;
+    background: none;
+    border: none;
+    padding: 0;
+  }
+  .forgot-link:hover { text-decoration: underline; }
+
+  /* -------- Error banner -------- */
+  .auth-error {
+    display: none;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 12px;
+    background: rgba(239,68,68,0.08);
+    border: 0.5px solid rgba(239,68,68,0.22);
+    border-radius: 10px;
+    font-family: var(--font-body);
+    font-size: 13px;
+    color: rgba(239,68,68,0.9);
+  }
+  .auth-error.show { display: flex; }
+  .auth-error svg { width: 14px; height: 14px; flex-shrink: 0; }
+
+  /* -------- Submit button -------- */
+  .auth-submit {
+    display: flex; align-items: center; justify-content: center;
+    gap: 10px;
+    background: var(--blue);
+    color: var(--white);
+    border: none;
+    border-radius: 14px;
+    padding: 16px;
+    font-family: var(--font-display);
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.15s, opacity 0.15s;
+  }
+  .auth-submit:hover:not(:disabled) { background: var(--blue-bright); }
+  .auth-submit:disabled {
+    background: rgba(255,255,255,0.06);
+    color: rgba(255,255,255,0.35);
+    cursor: not-allowed;
+  }
+  .auth-submit svg { width: 16px; height: 16px; opacity: 0.75; }
+  .auth-submit .spinner {
+    display: inline-block;
+    width: 16px; height: 16px;
+    border: 2px solid rgba(255,255,255,0.25);
+    border-top-color: var(--white);
+    border-radius: 50%;
+    animation: spin 0.6s linear infinite;
+  }
+
+  /* -------- Terms checkbox (signup only) -------- */
+  .terms-check {
+    display: flex; align-items: center; gap: 10px;
+    cursor: pointer;
+    user-select: none;
+    padding: 2px 2px;
+  }
+  .terms-check input {
+    position: absolute;
+    width: 1px; height: 1px;
+    opacity: 0;
+    pointer-events: none;
+  }
+  .tc-box {
+    width: 18px; height: 18px;
+    flex-shrink: 0;
+    background: rgba(255,255,255,0.04);
+    border: 0.5px solid rgba(255,255,255,0.12);
+    border-radius: 5px;
+    display: flex; align-items: center; justify-content: center;
+    transition: background 0.15s, border-color 0.15s;
+  }
+  .tc-box::after {
+    content: "";
+    width: 10px; height: 5px;
+    border-left: 2px solid var(--white);
+    border-bottom: 2px solid var(--white);
+    transform: rotate(-45deg) translate(1px, -1px);
+    opacity: 0;
+    transition: opacity 0.15s;
+  }
+  .terms-check input:checked + .tc-box {
+    background: var(--blue);
+    border-color: var(--blue);
+  }
+  .terms-check input:checked + .tc-box::after { opacity: 1; }
+  .terms-check input:focus-visible + .tc-box {
+    outline: 2px solid var(--blue-bright);
+    outline-offset: 2px;
+  }
+  .tc-text {
+    font-family: var(--font-body);
+    font-size: 12px;
+    color: rgba(180,200,255,0.55);
+    line-height: 1.4;
+  }
+  .tc-text a { color: var(--blue-bright); text-decoration: none; }
+  .tc-text a:hover { text-decoration: underline; }
+
+  /* Turnstile widget (centered, flexible size) */
+  .turnstile-wrap {
+    display: flex;
+    justify-content: center;
+    min-height: 65px;
+  }
+
+  /* Wider viewport polish — keep card feel, give breathing room.
+     NOTE: we stay top-aligned (justify-content: flex-start inherited from body)
+     instead of centering, because the signup form is tall and centering
+     clips the header behind the fixed top-nav on common laptop heights. */
+  @media (min-width: 720px) {
+    .auth-head { padding-top: 100px; padding-bottom: 20px; }
+    .auth-card {
+      border-radius: 24px;
+      border-bottom: 0.5px solid rgba(255,255,255,0.06);
+      margin-top: 0;        /* no longer anchored to viewport bottom on desktop */
+      padding-bottom: 28px;
+      margin-bottom: 32px;
+    }
+  }
+</style>
+</head>
+<body class="mode-signup">
+
+<nav class="top-nav">
+  <a href="index.html" class="nav-logo">
+    <img src="/WebsiteLogo.png" alt="ClassMinds logo" class="nav-logo-img"/>
+    <span class="nav-logo-text">Class<span>Minds</span></span>
+  </a>
+  <ul class="nav-links" id="navLinks">
+    <li><a href="features.html">Features</a></li>
+    <li><a href="pricing.html">Pricing</a></li>
+    <li><a href="about.html">About</a></li>
+    <li><a href="support.html">Support</a></li>
+    <li><a href="beta.html" class="nav-cta">Download Beta</a></li>
+  </ul>
+  <button class="nav-toggle" aria-label="Toggle menu" aria-expanded="false" aria-controls="navLinks">
+    <span></span><span></span><span></span>
+  </button>
+</nav>
+
+<div class="auth-glow"></div>
+
+<div class="auth-head">
+  <img src="/WebsiteLogo.png" alt="ClassMinds" class="auth-logo"/>
+  <h1 class="wordmark"><span>Class</span><span class="mb">Minds</span></h1>
+  <p class="auth-sub" id="authSub">Create your account</p>
+  <div class="auth-chips">
+    <span class="fchip blue">AI notes</span>
+    <span class="fchip green">Auto-transcribe</span>
+    <span class="fchip purple">Study tools</span>
+  </div>
+</div>
+
+<div class="auth-card">
+
+  <div class="auth-tabs" role="tablist">
+    <button class="auth-tab" id="tabLogin"  role="tab" aria-selected="false">Log in</button>
+    <button class="auth-tab active" id="tabSignup" role="tab" aria-selected="true">Sign up</button>
+    <div class="auth-tab-underline"></div>
+  </div>
+
+  <div class="auth-fields">
+
+    <!-- Signup-only: first + last name -->
+    <div class="name-row signup-only">
+      <div class="lf">
+        <label for="firstName">First name</label>
+        <input id="firstName" type="text" placeholder="Alex" autocomplete="given-name" autocapitalize="words"/>
+      </div>
+      <div class="lf">
+        <label for="lastName">Last name</label>
+        <input id="lastName" type="text" placeholder="Johnson" autocomplete="family-name" autocapitalize="words"/>
+      </div>
+    </div>
+
+    <!-- Signup-only: phone -->
+    <div class="lf signup-only">
+      <label for="phone">Phone</label>
+      <input id="phone" type="tel" placeholder="(555) 555-5555" autocomplete="tel" inputmode="tel"/>
+    </div>
+
+    <!-- Email -->
+    <div class="lf">
+      <label for="email">Email</label>
+      <input id="email" type="email" placeholder="you@college.edu" autocomplete="email" autocapitalize="none" spellcheck="false"/>
+    </div>
+
+    <!-- Password (with eye toggle) -->
+    <div class="lf">
+      <label for="password">Password</label>
+      <div class="pw-wrap">
+        <input id="password" type="password" placeholder="6+ characters" autocomplete="current-password"/>
+        <button class="pw-eye" id="pwEye" type="button" aria-label="Show password">
+          <svg id="eyeOpen"  viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+            <circle cx="12" cy="12" r="3"/>
+          </svg>
+          <svg id="eyeShut" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:none">
+            <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/>
+            <line x1="1" y1="1" x2="23" y2="23"/>
+          </svg>
+        </button>
+      </div>
+      <div class="pw-strength signup-only" id="pwStrength">
+        <div class="pw-bars">
+          <span></span><span></span><span></span><span></span>
+        </div>
+        <span class="pw-label" id="pwStrengthLabel"></span>
+      </div>
+    </div>
+
+    <!-- Login-only: remember + forgot -->
+    <div class="remember-row login-only">
+      <label class="switch">
+        <input type="checkbox" id="rememberMe" checked/>
+        <span class="slider"></span>
+      </label>
+      <span class="remember-txt">Remember me</span>
+      <span class="remember-spacer"></span>
+      <button class="forgot-link" id="forgotLink" type="button">Forgot password?</button>
+    </div>
+
+  </div>
+
+  <div class="auth-error" id="authError">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <circle cx="12" cy="12" r="10"/>
+      <line x1="12" y1="8" x2="12" y2="12"/>
+      <line x1="12" y1="16" x2="12.01" y2="16"/>
+    </svg>
+    <span id="authErrorTxt"></span>
+  </div>
+
+  <label class="terms-check signup-only" for="termsCheck">
+    <input type="checkbox" id="termsCheck" checked/>
+    <span class="tc-box"></span>
+    <span class="tc-text">
+      I agree to the <a href="/terms.html" target="_blank" rel="noopener">Terms</a> and <a href="/privacy.html" target="_blank" rel="noopener">Privacy Policy</a>
+    </span>
+  </label>
+
+  <div class="turnstile-wrap">
+    <div id="turnstileWrap"></div>
+  </div>
+
+  <button class="auth-submit" id="authSubmit" type="button" disabled>
+    <span id="authSubmitTxt">Create account</span>
+    <svg id="authSubmitArrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+      <line x1="5" y1="12" x2="19" y2="12"/>
+      <polyline points="12 5 19 12 12 19"/>
+    </svg>
+  </button>
+
+</div>
+
+<script type="module">
+import { initializeApp }            from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
+import {
+  getAuth, signInWithEmailAndPassword, signInWithCustomToken,
+  sendPasswordResetEmail, onAuthStateChanged
+} from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js';
+import { getFunctions, httpsCallable } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-functions.js';
+
+const app = initializeApp({
+  apiKey: "AIzaSyD7BVxbfGskF10IcifVxyvWwAaAYPb-frw",
+  authDomain: "classmind-9a22a.firebaseapp.com",
+  projectId: "classmind-9a22a",
+  storageBucket: "classmind-9a22a.firebasestorage.app",
+  messagingSenderId: "893980768351",
+  appId: "1:893980768351:web:972e20a662054f29c483ea"
+});
+const auth = getAuth(app);
+const fns  = getFunctions(app);
+const signupAccountFn     = httpsCallable(fns, 'signupAccount');
+const signInTurnstileFn   = httpsCallable(fns, 'signInWithTurnstile');
+
+/* Turnstile widget — token captured via global callback.
+   Explicit render (single widget, both modes). No re-render on tab switch. */
+let turnstileToken = null;
+let turnstileWidgetId = null;
+window.onTurnstile = function (token) { turnstileToken = token; validate(); };
+window.onTurnstileError = function () { turnstileToken = null; validate(); };
+
+function renderTurnstileOnce() {
+  if (turnstileWidgetId !== null) return;
+  turnstileWidgetId = window.turnstile.render('#turnstileWrap', {
+    sitekey: '0x4AAAAAADAuLseUjS_zjK03',
+    theme: 'dark',
+    size: 'flexible',
+    callback: window.onTurnstile,
+    'error-callback': window.onTurnstileError,
+    'expired-callback': window.onTurnstileError
+  });
+}
+
+/* Handshake with the inline onload hook in <head>.
+   - If api.js already fired onload before this module ran, __cmTurnstileReady
+     is true → render immediately.
+   - Otherwise, expose the renderer so the onload hook can call it when
+     api.js finishes loading. Works for either load order. */
+window.__cmRenderTurnstile = renderTurnstileOnce;
+if (window.__cmTurnstileReady) {
+  renderTurnstileOnce();
+}
+
+/* If already signed in, skip straight to home */
+onAuthStateChanged(auth, user => {
+  if (user) window.location.href = '/home.html';
+});
+
+/* -------- Tab switching -------- */
+const body       = document.body;
+const tabLogin   = document.getElementById('tabLogin');
+const tabSignup  = document.getElementById('tabSignup');
+const authSub    = document.getElementById('authSub');
+const submitTxt  = document.getElementById('authSubmitTxt');
+
+let mode = 'signup';   // default matches iOS @State isSigningUp = true
+
+function setMode(next) {
+  if (next === mode) return;
+  mode = next;
+  body.classList.toggle('mode-signup', mode === 'signup');
+  body.classList.toggle('mode-login',  mode === 'login');
+  tabSignup.classList.toggle('active', mode === 'signup');
+  tabLogin.classList.toggle('active',  mode === 'login');
+  tabSignup.setAttribute('aria-selected', mode === 'signup');
+  tabLogin.setAttribute('aria-selected',  mode === 'login');
+  authSub.textContent   = mode === 'signup' ? 'Create your account' : 'Welcome back';
+  submitTxt.textContent = mode === 'signup' ? 'Create account' : 'Log in';
+  clearError();
+  validate();
+}
+
+tabLogin.addEventListener('click',  () => setMode('login'));
+tabSignup.addEventListener('click', () => setMode('signup'));
+
+/* -------- Password eye toggle -------- */
+const pwInput = document.getElementById('password');
+const pwEye   = document.getElementById('pwEye');
+const eyeOpen = document.getElementById('eyeOpen');
+const eyeShut = document.getElementById('eyeShut');
+
+pwEye.addEventListener('click', () => {
+  const shown = pwInput.type === 'text';
+  pwInput.type = shown ? 'password' : 'text';
+  eyeOpen.style.display = shown ? '' : 'none';
+  eyeShut.style.display = shown ? 'none' : '';
+  pwEye.setAttribute('aria-label', shown ? 'Show password' : 'Hide password');
+});
+
+/* -------- Phone formatter (matches iOS formatPhone) -------- */
+const phoneInput = document.getElementById('phone');
+phoneInput.addEventListener('input', () => {
+  const digits = phoneInput.value.replace(/\D/g, '').slice(0, 10);
+  let formatted = '';
+  if (digits.length === 0)        formatted = '';
+  else if (digits.length <= 3)    formatted = `(${digits}`;
+  else if (digits.length <= 6)    formatted = `(${digits.slice(0,3)}) ${digits.slice(3)}`;
+  else                            formatted = `(${digits.slice(0,3)}) ${digits.slice(3,6)}-${digits.slice(6)}`;
+  phoneInput.value = formatted;
+  validate();
+});
+
+/* -------- Validation -------- */
+const firstNameInput = document.getElementById('firstName');
+const lastNameInput  = document.getElementById('lastName');
+const emailInput     = document.getElementById('email');
+const rememberInput  = document.getElementById('rememberMe');
+const termsCheck     = document.getElementById('termsCheck');
+const submitBtn      = document.getElementById('authSubmit');
+
+function formIsValid() {
+  const email = emailInput.value.trim();
+  const pw    = pwInput.value;
+  if (mode === 'signup') {
+    return firstNameInput.value.trim().length > 0
+        && lastNameInput.value.trim().length > 0
+        && phoneInput.value.trim().length > 0
+        && email.length > 0
+        && pw.length > 0
+        && termsCheck.checked
+        && !!turnstileToken;
+  }
+  return email.length > 0 && pw.length > 0 && !!turnstileToken;
+}
+
+function validate() { submitBtn.disabled = !formIsValid(); }
+
+[firstNameInput, lastNameInput, emailInput, pwInput].forEach(el => {
+  el.addEventListener('input', validate);
+});
+termsCheck.addEventListener('change', validate);
+
+/* -------- Password strength meter -------- */
+const pwBars  = document.querySelectorAll('#pwStrength .pw-bars span');
+const pwLabel = document.getElementById('pwStrengthLabel');
+
+function scorePassword(pw) {
+  if (!pw) return 0;
+  let score = 0;
+  if (pw.length >= 6)  score++;
+  if (pw.length >= 10) score++;
+  if (/\d/.test(pw))   score++;
+  if (/[A-Z]/.test(pw) && /[a-z]/.test(pw)) score++;
+  if (/[^A-Za-z0-9]/.test(pw)) score++;
+  return Math.min(4, score);
+}
+
+function updateStrength() {
+  const s = scorePassword(pwInput.value);
+  const labels = ['', 'weak', 'fair', 'good', 'strong'];
+  pwBars.forEach((bar, i) => {
+    bar.className = '';
+    if (i < s) bar.classList.add(`f${s}`);
+  });
+  pwLabel.textContent = labels[s];
+  pwLabel.className = 'pw-label' + (s ? ` l${s}` : '');
+}
+
+pwInput.addEventListener('input', updateStrength);
+
+/* -------- Error helpers -------- */
+const errBox = document.getElementById('authError');
+const errTxt = document.getElementById('authErrorTxt');
+function showError(msg) { errTxt.textContent = msg; errBox.classList.add('show'); }
+function clearError()   { errBox.classList.remove('show'); errTxt.textContent = ''; }
+
+/* Friendly, generic auth errors (mirrors iOS friendlyAuthMessage) */
+function friendlyAuthMessage(code, fallback) {
+  switch (code) {
+    case 'auth/wrong-password':
+    case 'auth/user-not-found':
+    case 'auth/invalid-email':
+    case 'auth/invalid-credential':
+      return 'Email or password is incorrect.';
+    case 'auth/email-already-in-use':
+      return 'Please try again or sign in instead.';
+    case 'auth/weak-password':
+      return 'That password is too weak. Try a longer one.';
+    case 'auth/network-request-failed':
+      return 'Network error. Check your connection and try again.';
+    case 'auth/too-many-requests':
+      return 'Too many attempts. Please wait a moment.';
+    case 'auth/user-disabled':
+      return 'This account is unavailable. Contact support.';
+    default:
+      return fallback || 'Something went wrong. Please try again.';
+  }
+}
+
+/* -------- Submit handler -------- */
+let submitting = false;
+const arrowSvg = document.getElementById('authSubmitArrow');
+
+async function doSubmit() {
+  if (submitting || !formIsValid()) return;
+  submitting = true;
+  submitBtn.disabled = true;
+  clearError();
+
+  // Swap arrow for spinner while submitting
+  arrowSvg.style.display = 'none';
+  const spin = document.createElement('span');
+  spin.className = 'spinner';
+  submitBtn.appendChild(spin);
+
+  const email = emailInput.value.trim().toLowerCase();
+  const pw    = pwInput.value;
+
+  try {
+    if (mode === 'signup') {
+      const phoneDigits = phoneInput.value.replace(/\D/g, '');
+      const res = await signupAccountFn({
+        email,
+        password: pw,
+        firstName: firstNameInput.value.trim(),
+        lastName:  lastNameInput.value.trim(),
+        phone: phoneDigits,
+        turnstileToken
+      });
+      /* Sign in with the custom token returned by the callable */
+      await signInWithCustomToken(auth, res.data.token);
+    } else {
+      try { localStorage.setItem('rememberMe', rememberInput.checked ? '1' : '0'); } catch(_) {}
+      const res = await signInTurnstileFn({ email, password: pw, turnstileToken });
+      await signInWithCustomToken(auth, res.data.token);
+    }
+    /* onAuthStateChanged handles the redirect */
+  } catch (e) {
+    /* HttpsError surfaces as e.code like "functions/permission-denied"; unwrap */
+    const raw = e?.code || '';
+    const short = raw.startsWith('functions/') ? raw.slice(10) : raw;
+    let msg = e?.message || 'Something went wrong. Please try again.';
+    if (short === 'permission-denied')  msg = 'Verification failed. Please try again.';
+    if (short === 'resource-exhausted') msg = 'Too many attempts. Please wait a moment.';
+    if (short === 'already-exists')     msg = 'Please try again or sign in instead.';
+    if (raw.startsWith('auth/'))        msg = friendlyAuthMessage(raw, msg);
+    showError(msg);
+
+    /* Reset Turnstile so the user can retry */
+    if (window.turnstile) {
+      try { window.turnstile.reset(turnstileWidgetId); } catch (_) {}
+      turnstileToken = null;
+    }
+    submitting = false;
+    submitBtn.disabled = !formIsValid();
+    arrowSvg.style.display = '';
+    spin.remove();
+  }
+}
+
+submitBtn.addEventListener('click', doSubmit);
+document.addEventListener('keydown', e => { if (e.key === 'Enter' && !submitBtn.disabled) doSubmit(); });
+
+/* -------- Forgot password -------- */
+document.getElementById('forgotLink').addEventListener('click', async () => {
+  const email = emailInput.value.trim();
+  if (!email) { showError('Enter your email first, then tap Forgot password.'); return; }
+  clearError();
+  try {
+    await sendPasswordResetEmail(auth, email);
+    showError(`Password reset email sent to ${email}`);
+    errBox.style.color = 'var(--blue-bright)';
+    errBox.style.background = 'rgba(26,107,255,0.08)';
+    errBox.style.borderColor = 'rgba(26,107,255,0.22)';
+  } catch (e) {
+    showError(friendlyAuthMessage(e?.code, 'Could not send reset email.'));
+  }
+});
+
+validate();
+</script>
+
+<script>
+  /* Mobile nav toggle — matches index.html behavior */
+  (function () {
+    const toggle = document.querySelector('.nav-toggle');
+    const links  = document.getElementById('navLinks');
+    if (!toggle || !links) return;
+    const close = () => {
+      links.classList.remove('open');
+      toggle.classList.remove('open');
+      toggle.setAttribute('aria-expanded', 'false');
+    };
+    toggle.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const open = links.classList.toggle('open');
+      toggle.classList.toggle('open', open);
+      toggle.setAttribute('aria-expanded', open);
+    });
+    links.querySelectorAll('a').forEach(a => a.addEventListener('click', close));
+    document.addEventListener('click', (e) => {
+      if (!links.contains(e.target) && !toggle.contains(e.target)) close();
+    });
+  })();
+</script>
+
+</body>
+</html>

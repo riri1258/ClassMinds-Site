@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<!-- Favicon & Icons -->
+<link rel="icon" type="image/png" href="/WebsiteLogo.png"/>
+<link rel="apple-touch-icon" href="/WebsiteLogo.png"/>
+<link rel="shortcut icon" href="/WebsiteLogo.png"/>
+<title>Notifications – ClassMinds Admin</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+<link rel="stylesheet" href="admin-styles.css"/>
+</head>
+<body>
+<div class="admin-wrap" id="adminWrap">
+  <div class="sidebar" id="sidebarSlot"></div>
+  <div class="main">
+    <div class="page-header"><div class="page-title">Notifications</div><div class="page-desc">Send push notifications via OneSignal</div></div>
+    <div class="notify-form">
+      <label class="field-label">Title</label><input type="text" class="field-input" id="notifTitle" placeholder="e.g. New feature available"/>
+      <label class="field-label">Message</label><textarea class="field-input" id="notifBody" placeholder="e.g. Check out the new notes tab"></textarea>
+      <label class="field-label" style="margin-top:12px">Type <strong>SEND TO ALL</strong> to confirm broadcast</label>
+      <input type="text" class="field-input" id="notifConfirm" placeholder="SEND TO ALL" autocomplete="off" autocapitalize="characters"/>
+      <button class="btn btn-blue" id="notifBtn" disabled style="margin-top:8px">Send to All Users &#8594;</button>
+      <div id="notifMeta" style="font-size:12px;color:var(--muted,#8b95b2);margin-top:8px">Broadcast is irreversible and reaches every user. No opt-out filter.</div>
+    </div>
+  </div>
+</div>
+<div class="toast" id="toast"></div>
+<script src="config.js"></script>
+<script type="module">
+import { requireAdmin, toast, sendNotificationFn, doLogout } from './admin-shared.js';
+import { renderSidebar } from './admin-sidebar.js';
+renderSidebar();
+requireAdmin().then(() => {
+  const titleEl   = document.getElementById('notifTitle');
+  const bodyEl    = document.getElementById('notifBody');
+  const confirmEl = document.getElementById('notifConfirm');
+  const btn       = document.getElementById('notifBtn');
+  const meta      = document.getElementById('notifMeta');
+
+  const defaultMeta = 'Broadcast is irreversible and reaches every user. No opt-out filter.';
+
+  function updateState() {
+    const ready = titleEl.value.trim() && bodyEl.value.trim() && confirmEl.value === 'SEND TO ALL';
+    btn.disabled = !ready;
+  }
+  titleEl.addEventListener('input', updateState);
+  bodyEl.addEventListener('input', updateState);
+  confirmEl.addEventListener('input', updateState);
+
+  btn.addEventListener('click', function () {
+    const title = titleEl.value.trim();
+    const body  = bodyEl.value.trim();
+    if (!title || !body) { toast('Fill in both fields', 'error'); return; }
+    if (confirmEl.value !== 'SEND TO ALL') { toast('Type SEND TO ALL to confirm', 'error'); return; }
+
+    // 10-second cancellable countdown before the broadcast fires.
+    btn.disabled = true;
+    let remaining = 10;
+    meta.textContent = 'Broadcasting in ' + remaining + 's — click Cancel to abort';
+
+    const cancelBtn = document.createElement('button');
+    cancelBtn.textContent = 'Cancel';
+    cancelBtn.className = 'btn';
+    cancelBtn.style.marginLeft = '8px';
+    btn.after(cancelBtn);
+
+    let cancelled = false;
+    cancelBtn.addEventListener('click', () => {
+      cancelled = true;
+      cancelBtn.remove();
+      btn.disabled = false;
+      meta.textContent = defaultMeta;
+    });
+
+    const timer = setInterval(() => {
+      if (cancelled) { clearInterval(timer); return; }
+      remaining--;
+      if (remaining <= 0) {
+        clearInterval(timer);
+        cancelBtn.remove();
+        sendBroadcast(title, body);
+      } else {
+        meta.textContent = 'Broadcasting in ' + remaining + 's — click Cancel to abort';
+      }
+    }, 1000);
+  });
+
+  async function sendBroadcast(title, body) {
+    btn.innerHTML = '<span class="spinner"></span> Sending...';
+    try {
+      // H-2: server also re-confirms via confirmText === "BROADCAST".
+      await sendNotificationFn({ title, body, confirmAll: true, confirmText: 'BROADCAST' });
+      toast('Sent to all users ✓');
+      titleEl.value = '';
+      bodyEl.value = '';
+      confirmEl.value = '';
+      meta.textContent = defaultMeta;
+    } catch (e) {
+      toast(e.message || 'Failed to send', 'error');
+    }
+    btn.disabled = true;
+    btn.textContent = 'Send to All Users →';
+    updateState();
+  }
+});
+document.getElementById('logoutBtn')?.addEventListener('click', () => {
+  import('./admin-shared.js').then(m => m.doLogout());
+});
+</script>
+</body>
+</html>

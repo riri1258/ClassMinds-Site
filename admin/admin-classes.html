@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<!-- Favicon & Icons -->
+<link rel="icon" type="image/png" href="/WebsiteLogo.png"/>
+<link rel="apple-touch-icon" href="/WebsiteLogo.png"/>
+<link rel="shortcut icon" href="/WebsiteLogo.png"/>
+<title>Classes – ClassMinds Admin</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+<link rel="stylesheet" href="admin-styles.css"/>
+</head>
+<body>
+<div class="admin-wrap" id="adminWrap">
+  <div class="sidebar" id="sidebarSlot"></div>
+  <div class="main">
+    <div class="page-header"><div class="page-title">Classes</div><div class="page-desc">Organize by school, manage enrollments, and delete classes</div></div>
+    <div style="display:flex;gap:12px;margin-bottom:20px;flex-wrap:wrap">
+      <input class="search-input" id="classesSearch" placeholder="Search course code, name, or school..." style="width:280px"/>
+      <button class="btn btn-blue" id="groupToggleBtn">📚 Group by School</button>
+    </div>
+    <div id="classesContainer"><div class="table-card"><div style="overflow-x:auto"><table><thead><tr><th>Course</th><th>School</th><th>Members</th><th>Notes</th><th>Assignments</th><th></th></tr></thead><tbody><tr><td colspan="6"><div class="empty-state"><div class="spinner"></div></div></td></tr></tbody></table></div></div></div>
+  </div>
+</div>
+<div class="toast" id="toast"></div>
+<script src="config.js"></script>
+<script type="module">
+import { requireAdmin, db, doc, setDoc, deleteDoc, collection, getDocs, toast, escapeHtml, adminJoinClassFn } from './admin-shared.js';
+import { renderSidebar } from './admin-sidebar.js';
+renderSidebar();
+requireAdmin().then(async () => {
+  // Load classes with subcollection counts + dedup
+  const classesSnap = await getDocs(collection(db,'classes'));
+  let allClasses = [];
+  for(const d of classesSnap.docs){
+    const[m,n,a]=await Promise.all([getDocs(collection(db,'classes',d.id,'members')),getDocs(collection(db,'classes',d.id,'notes')),getDocs(collection(db,'classes',d.id,'assignments'))]);
+    allClasses.push({id:d.id,...d.data(),memberCount:m.size,noteCount:n.size,assignmentCount:a.size});
+  }
+  // Dedup
+  const seen={};const deduped=[];
+  for(const c of allClasses){
+    const key=[(c.courseCode||'').trim().toLowerCase(),(c.section||'').trim().toLowerCase(),(c.schoolName||'').trim().toLowerCase(),(c.term||'').trim().toLowerCase()].join('|');
+    if(!seen[key]){seen[key]=c;deduped.push(c);}else{const ex=seen[key];if((c.noteCount||0)+(c.memberCount||0)+(c.assignmentCount||0)>(ex.noteCount||0)+(ex.memberCount||0)+(ex.assignmentCount||0)){const idx=deduped.indexOf(ex);if(idx>=0)deduped[idx]=c;seen[key]=c;}}
+  }
+  allClasses=deduped;
+
+  let groupBySchool=false, filteredClasses=allClasses;
+
+  function render(data){
+    filteredClasses=data;
+    const container=document.getElementById('classesContainer');
+    if(!data.length){container.innerHTML='<div class="table-card"><div style="padding:48px;text-align:center;color:var(--muted)"><div style="font-size:32px;margin-bottom:10px">🏫</div>No classes found</div></div>';return;}
+    if(groupBySchool){
+      const grouped={};data.forEach(c=>{const s=c.schoolName||'Unknown School';if(!grouped[s])grouped[s]=[];grouped[s].push(c);});
+      container.innerHTML=Object.entries(grouped).sort(([a],[b])=>a.localeCompare(b)).map(([school,classes])=>`<div class="school-group"><div class="school-header" onclick="this.parentElement.classList.toggle('expanded')"><div class="school-info"><div class="school-icon">🏫</div><div><div class="school-name">${escapeHtml(school)}</div><div class="school-count">${classes.length} class${classes.length===1?'':'es'}</div></div></div><div class="school-arrow">▼</div></div><div class="classes-list">${classes.map(c=>renderCard(c)).join('')}</div></div>`).join('');
+    } else {
+      container.innerHTML=`<div class="table-card"><div style="overflow-x:auto"><table><thead><tr><th>Course</th><th>School</th><th>Members</th><th>Notes</th><th>Assignments</th><th></th></tr></thead><tbody>${data.map(c=>`<tr><td><div style="font-weight:500">${escapeHtml(c.courseCode||'—')}</div><div style="font-size:11px;color:var(--muted)">${escapeHtml(c.courseName||'')}</div></td><td style="font-size:12px;color:var(--muted)">${escapeHtml(c.schoolName||'—')}</td><td>${c.memberCount||0}</td><td>${c.noteCount||0}</td><td>${c.assignmentCount||0}</td><td><div style="display:flex;gap:6px;flex-wrap:wrap"><button class="btn btn-blue members-btn" data-id="${c.id}" data-code="${escapeHtml(c.courseCode||'')}" style="font-size:11px;padding:5px 10px">👥 Members</button><button class="btn btn-blue join-btn" data-id="${c.id}" data-code="${escapeHtml(c.courseCode||'')}" style="font-size:11px;padding:5px 10px">➕ Join as me</button><button class="btn btn-blue adduser-btn" data-id="${c.id}" data-code="${escapeHtml(c.courseCode||'')}" style="font-size:11px;padding:5px 10px">👤 Add user</button><button class="btn btn-red del-btn" data-id="${c.id}" data-code="${escapeHtml(c.courseCode||'')}" style="font-size:11px;padding:5px 10px">🗑️ Delete</button></div></td></tr>`).join('')}</tbody></table></div></div>`;
+    }
+    bindActions();
+  }
+
+  function renderCard(c){
+    return `<div class="class-card-compact"><div class="class-info-compact"><div class="class-code-compact">${escapeHtml(c.courseCode||'—')}</div><div class="class-name-compact">${escapeHtml(c.courseName||'')}</div><div class="class-meta-compact"><span>👥 ${c.memberCount||0} members</span><span>📝 ${c.noteCount||0} notes</span><span>📋 ${c.assignmentCount||0} assignments</span></div></div><div class="class-actions" style="flex-wrap:wrap"><button class="btn btn-blue members-btn" data-id="${c.id}" data-code="${escapeHtml(c.courseCode||'')}" style="font-size:11px;padding:6px 12px">👥 Members</button><button class="btn btn-blue join-btn" data-id="${c.id}" data-code="${escapeHtml(c.courseCode||'')}" style="font-size:11px;padding:6px 12px">➕ Join as me</button><button class="btn btn-blue adduser-btn" data-id="${c.id}" data-code="${escapeHtml(c.courseCode||'')}" style="font-size:11px;padding:6px 12px">👤 Add user</button><button class="btn btn-red del-btn" data-id="${c.id}" data-code="${escapeHtml(c.courseCode||'')}" style="font-size:11px;padding:6px 12px">🗑️ Delete</button></div></div>`;
+  }
+
+  function bindActions(){
+    document.querySelectorAll('.join-btn').forEach(b=>b.addEventListener('click',async function(){
+      const classId=this.dataset.id, code=this.dataset.code;
+      const reason = prompt(`Join "${code}" as yourself — required reason (≤500 chars):`, '');
+      if (!reason || !reason.trim()) return;
+      this.disabled = true; this.textContent = 'Joining…';
+      try {
+        await adminJoinClassFn({ classId, reason: reason.trim().slice(0, 500) });
+        toast(`Joined ${code} ✓`);
+      } catch (e) {
+        alert('Failed: ' + (e.message || e));
+      } finally {
+        this.disabled = false; this.textContent = '➕ Join as me';
+      }
+    }));
+    document.querySelectorAll('.adduser-btn').forEach(b=>b.addEventListener('click',async function(){
+      const classId=this.dataset.id, code=this.dataset.code;
+      const targetUid = prompt(`Add a user to "${code}" — paste their uid:`, '');
+      if (!targetUid || !targetUid.trim()) return;
+      const reason = prompt(`Reason (≤500 chars, required):`, '');
+      if (!reason || !reason.trim()) return;
+      this.disabled = true; this.textContent = 'Adding…';
+      try {
+        await adminJoinClassFn({ classId, targetUid: targetUid.trim(), reason: reason.trim().slice(0, 500) });
+        toast(`Added user to ${code} ✓`);
+      } catch (e) {
+        alert('Failed: ' + (e.message || e));
+      } finally {
+        this.disabled = false; this.textContent = '👤 Add user';
+      }
+    }));
+    document.querySelectorAll('.members-btn').forEach(b=>b.addEventListener('click',async function(){
+      const classId=this.dataset.id,code=this.dataset.code;
+      const ms=await getDocs(collection(db,'classes',classId,'members'));
+      if(ms.empty){alert('No members');return;}
+      let list=`Members of ${code}:\n\n`;ms.forEach(d=>{const dd=d.data();list+=`• ${dd.firstName||''} (ID: ${d.id})\n`;});
+      const uid=prompt(list+'\n\nEnter user ID to remove (or Cancel):');
+      if(uid&&uid.trim()){if(confirm(`Remove ${uid} from ${code}?`)){await deleteDoc(doc(db,'classes',classId,'members',uid));await deleteDoc(doc(db,'users',uid,'joinedClasses',classId));toast('User removed ✓');}}
+    }));
+    document.querySelectorAll('.del-btn').forEach(b=>b.addEventListener('click',async function(){
+      const id=this.dataset.id,code=this.dataset.code;
+      const cls=allClasses.find(c=>c.id===id);
+      try{
+        // LOW-3: do the dedup-match scan FIRST so we can show the user the
+        // real blast radius (count of classes + every subcollection doc that
+        // will be wiped) before they confirm. Past data-loss incident here.
+        const allSnap=await getDocs(collection(db,'classes'));
+        const cCode=(cls?.courseCode||'').trim().toLowerCase();
+        const cSection=(cls?.section||'').trim().toLowerCase();
+        const cSchool=(cls?.schoolName||'').trim().toLowerCase();
+        const matchIds=[];
+        for(const d of allSnap.docs){
+          const dd=d.data();
+          if((dd.courseCode||'').trim().toLowerCase()===cCode &&
+             (dd.section||'').trim().toLowerCase()===cSection &&
+             (dd.schoolName||'').trim().toLowerCase()===cSchool) matchIds.push(d.id);
+        }
+        if(!matchIds.includes(id)) matchIds.push(id);
+
+        // Tally what's about to die.
+        let totalNotes=0,totalAssignments=0,totalMessages=0,totalMembers=0;
+        for(const cid of matchIds){
+          const [n,a,m,mb] = await Promise.all([
+            getDocs(collection(db,'classes',cid,'notes')).then(s=>s.size).catch(()=>0),
+            getDocs(collection(db,'classes',cid,'assignments')).then(s=>s.size).catch(()=>0),
+            getDocs(collection(db,'classes',cid,'messages')).then(s=>s.size).catch(()=>0),
+            getDocs(collection(db,'classes',cid,'members')).then(s=>s.size).catch(()=>0),
+          ]);
+          totalNotes+=n; totalAssignments+=a; totalMessages+=m; totalMembers+=mb;
+        }
+        const summary =
+          `Delete ${code}?\n\n` +
+          `Class docs to delete: ${matchIds.length}\n` +
+          `Members affected: ${totalMembers}\n` +
+          `Notes: ${totalNotes}\n` +
+          `Assignments: ${totalAssignments}\n` +
+          `Chat messages: ${totalMessages}\n\n` +
+          `This is irreversible.`;
+        if(!confirm(summary)) return;
+        if(totalNotes+totalAssignments+totalMessages > 25) {
+          if(!confirm(`FINAL: Wipe ${totalNotes+totalAssignments+totalMessages} subcollection docs? Type-confirm in console if unsure.`)) return;
+        }
+
+        const usersSnap=await getDocs(collection(db,'users'));
+        for(const cid of matchIds){
+          for(const u of usersSnap.docs){try{await deleteDoc(doc(db,'users',u.id,'joinedClasses',cid));}catch(e){}}
+          const subs=['members','assignments','notes','calendarItems','messages','syllabus'];
+          for(const s of subs){
+            try{const ss=await getDocs(collection(db,'classes',cid,s));for(const d of ss.docs)await deleteDoc(doc(db,'classes',cid,s,d.id));}catch(e){}
+          }
+          await deleteDoc(doc(db,'classes',cid));
+        }
+        allClasses=allClasses.filter(c=>!matchIds.includes(c.id));
+        render(allClasses);
+        toast(matchIds.length>1?code+' and '+(matchIds.length-1)+' duplicate(s) deleted':'Class deleted');
+      }catch(e){toast('Failed: '+e.message,'error');}
+    }));
+  }
+
+  document.getElementById('classesSearch').addEventListener('input',function(){
+    const q=this.value.toLowerCase();
+    render(allClasses.filter(c=>(c.courseCode||'').toLowerCase().includes(q)||(c.courseName||'').toLowerCase().includes(q)||(c.schoolName||'').toLowerCase().includes(q)));
+  });
+  document.getElementById('groupToggleBtn').addEventListener('click',function(){
+    groupBySchool=!groupBySchool;this.textContent=groupBySchool?'📋 Show All':'📚 Group by School';render(filteredClasses);
+  });
+
+  render(allClasses);
+});
+document.getElementById('logoutBtn')?.addEventListener('click',()=>{import('./admin-shared.js').then(m=>m.doLogout());});
+</script>
+</body>
+</html>

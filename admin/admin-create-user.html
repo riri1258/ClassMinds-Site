@@ -1,0 +1,363 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<link rel="icon" type="image/png" href="/WebsiteLogo.png"/>
+<link rel="apple-touch-icon" href="/WebsiteLogo.png"/>
+<title>Create User – ClassMinds Admin</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+<link rel="stylesheet" href="admin-styles.css"/>
+<style>
+  .form-card { background: var(--navy-card); border: 1px solid var(--navy-border); border-radius: 14px; padding: 28px; max-width: 720px; }
+  .form-card h2 { font-family: var(--font-display); font-size: 18px; font-weight: 700; color: var(--white); margin-bottom: 6px; }
+  .form-card .desc { font-size: 13px; color: var(--muted); margin-bottom: 24px; line-height: 1.5; }
+  .field-label { display: block; font-size: 11px; font-weight: 600; color: rgba(180,200,255,0.6); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 6px; margin-top: 4px; }
+  .field-row { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+  .pwd-wrap { position: relative; }
+  .pwd-wrap .reveal { position: absolute; right: 12px; top: 14px; background: none; border: none; color: var(--muted); cursor: pointer; font-size: 13px; padding: 0; font-family: var(--font-body); }
+  .pwd-wrap .reveal:hover { color: var(--blue-bright); }
+  .gen-row { display: flex; gap: 8px; align-items: center; margin-top: -10px; margin-bottom: 16px; }
+  .gen-row button { background: rgba(26,107,255,0.1); color: var(--blue-bright); border: 1px solid rgba(26,107,255,0.25); border-radius: 8px; padding: 6px 12px; font-family: var(--font-body); font-size: 12px; font-weight: 500; cursor: pointer; }
+  .gen-row .strength { font-size: 11px; color: var(--muted); margin-left: auto; }
+  .gen-row .strength.ok { color: var(--green); }
+  .gen-row .strength.warn { color: var(--yellow); }
+  .gen-row .strength.bad { color: var(--red); }
+  .role-row { display: flex; gap: 10px; padding: 14px; background: rgba(168,85,247,0.05); border: 1px solid rgba(168,85,247,0.2); border-radius: 10px; margin-bottom: 16px; }
+  .role-row input { width: 18px; height: 18px; flex-shrink: 0; margin-top: 2px; cursor: pointer; accent-color: var(--purple); }
+  .role-row label { font-size: 13px; color: var(--white); cursor: pointer; flex: 1; line-height: 1.5; }
+  .role-row label .sub { display: block; font-size: 11px; color: var(--muted); margin-top: 4px; }
+  .school-search { position: relative; }
+  .school-results { position: absolute; top: calc(100% - 8px); left: 0; right: 0; background: var(--navy-mid); border: 1px solid var(--navy-border); border-radius: 10px; max-height: 220px; overflow-y: auto; z-index: 5; box-shadow: 0 12px 28px rgba(0,0,0,0.5); }
+  .school-results .row { padding: 10px 14px; font-size: 13px; color: var(--white); cursor: pointer; border-bottom: 1px solid rgba(255,255,255,0.04); }
+  .school-results .row:last-child { border-bottom: none; }
+  .school-results .row:hover { background: rgba(26,107,255,0.1); }
+  .school-results .row .domain { display: block; font-size: 11px; color: var(--muted); margin-top: 2px; }
+  .school-pill { display: inline-flex; align-items: center; gap: 8px; background: rgba(26,107,255,0.12); border: 1px solid rgba(26,107,255,0.3); border-radius: 100px; padding: 6px 12px; font-size: 12px; color: var(--blue-bright); margin-bottom: 16px; }
+  .school-pill .x { background: none; border: none; color: var(--blue-bright); cursor: pointer; padding: 0 0 0 4px; font-size: 14px; }
+  .preview-banner { background: rgba(26,107,255,0.06); border: 1px solid rgba(26,107,255,0.2); border-radius: 10px; padding: 12px 14px; font-size: 12px; color: var(--white); margin-bottom: 18px; }
+  .preview-banner .label { font-size: 10px; font-weight: 600; color: var(--blue-bright); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px; }
+  .actions-row { display: flex; gap: 10px; margin-top: 24px; }
+  .btn { flex: 1; padding: 12px 18px; border-radius: 10px; font-family: var(--font-display); font-weight: 600; font-size: 14px; border: none; cursor: pointer; }
+  .summary-card { background: var(--navy-card); border: 1px solid rgba(34,197,94,0.4); border-radius: 14px; padding: 24px; max-width: 720px; margin-top: 16px; display: none; }
+  .summary-card.show { display: block; }
+  .summary-card h3 { font-family: var(--font-display); color: var(--green); font-size: 16px; margin-bottom: 12px; }
+  .summary-card .row { display: flex; gap: 12px; padding: 8px 0; font-size: 13px; }
+  .summary-card .row .k { color: var(--muted); width: 110px; flex-shrink: 0; }
+  .summary-card .row .v { color: var(--white); font-family: monospace; word-break: break-all; }
+  .summary-card .copy-creds { margin-top: 14px; padding: 12px; background: var(--navy-mid); border: 1px dashed var(--navy-border); border-radius: 10px; font-family: monospace; font-size: 12px; color: var(--white); position: relative; }
+  .summary-card .copy-btn { position: absolute; top: 8px; right: 8px; background: rgba(26,107,255,0.15); color: var(--blue-bright); border: 1px solid rgba(26,107,255,0.3); border-radius: 6px; padding: 4px 8px; font-size: 11px; cursor: pointer; }
+</style>
+</head>
+<body>
+<div class="admin-wrap" id="adminWrap" style="display:none">
+  <div class="sidebar" id="sidebarSlot"></div>
+  <div class="main">
+    <div class="page-header">
+      <div class="page-title">Create User</div>
+      <div class="page-desc">Manually create an account — bypasses the .edu signup flow. Use for new admins, QA accounts, or pre-created students.</div>
+    </div>
+
+    <div class="form-card">
+      <h2>Account details</h2>
+      <div class="desc">The user's email is verified automatically (no .edu code). Password must be 12+ chars and shared with them out-of-band.</div>
+
+      <label class="field-label">Email</label>
+      <input type="email" class="field-input" id="email" placeholder="user@example.com" autocomplete="off"/>
+
+      <label class="field-label">Password</label>
+      <div class="pwd-wrap">
+        <input type="password" class="field-input" id="password" placeholder="12+ characters" autocomplete="new-password"/>
+        <button type="button" class="reveal" id="revealBtn">Show</button>
+      </div>
+      <div class="gen-row">
+        <button type="button" id="genPwdBtn">Generate strong password</button>
+        <span class="strength" id="strength">12+ characters required</span>
+      </div>
+
+      <div class="field-row">
+        <div>
+          <label class="field-label">First name</label>
+          <input type="text" class="field-input" id="firstName" placeholder="Alex"/>
+        </div>
+        <div>
+          <label class="field-label">Last name</label>
+          <input type="text" class="field-input" id="lastName" placeholder="Johnson"/>
+        </div>
+      </div>
+
+      <label class="field-label">Phone (optional)</label>
+      <input type="tel" class="field-input" id="phone" placeholder="(555) 555-5555"/>
+
+      <div class="role-row">
+        <input type="checkbox" id="isAdmin"/>
+        <label for="isAdmin">
+          Make this account an admin
+          <span class="sub">Sets the <code>admin</code> custom claim. They'll be required to enroll MFA on first sign-in. School fields are skipped — they bypass straight to home.</span>
+        </label>
+      </div>
+
+      <label class="field-label">School (optional — only if isAdmin = false)</label>
+      <div id="schoolPicker" class="school-search">
+        <input type="text" class="field-input" id="schoolQuery" placeholder="Search /schools…" autocomplete="off"/>
+        <div class="school-results" id="schoolResults" style="display:none"></div>
+      </div>
+      <div id="selectedSchool"></div>
+
+      <div class="preview-banner" id="previewBanner">
+        <div class="label">What will happen</div>
+        <div id="previewText">Fill the form to see the routing summary.</div>
+      </div>
+
+      <label class="field-label">Reason (audited)</label>
+      <textarea class="field-input" id="reason" placeholder="e.g. New admin onboarding for John Doe, approved by Riley." style="min-height:80px"></textarea>
+
+      <div class="actions-row">
+        <button class="btn btn-ghost" type="button" id="resetBtn">Reset</button>
+        <button class="btn btn-blue" type="button" id="createBtn">Create account &#8594;</button>
+      </div>
+    </div>
+
+    <div class="summary-card" id="summaryCard">
+      <h3>&#10003; Account created</h3>
+      <div class="row"><span class="k">UID</span><span class="v" id="sumUid">—</span></div>
+      <div class="row"><span class="k">Email</span><span class="v" id="sumEmail">—</span></div>
+      <div class="row"><span class="k">Role</span><span class="v" id="sumRole">—</span></div>
+      <div class="row"><span class="k">School</span><span class="v" id="sumSchool">—</span></div>
+      <div class="copy-creds" id="credsBlock">
+        <button class="copy-btn" id="copyCredsBtn">Copy</button>
+        <div id="credsText">—</div>
+      </div>
+      <div style="font-size:12px;color:var(--muted);margin-top:12px;line-height:1.5">
+        Share these credentials with the user out-of-band (Slack DM, encrypted email).
+        They'll be prompted to enroll MFA on first sign-in if this is an admin account.
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script type="module">
+import {
+  requireAdmin, fns, db,
+  collection, getDocs, query, where, limit,
+  toast, logSuccess, logError, doLogout
+} from './admin-shared.js';
+import { httpsCallable } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-functions.js';
+import { renderSidebar } from './admin-sidebar.js';
+
+const adminCreateUserFn = httpsCallable(fns, 'adminCreateUser');
+
+let selectedSchoolId = '';
+let selectedSchoolName = '';
+let allSchools = [];
+
+const el = (id) => document.getElementById(id);
+
+requireAdmin().then(async () => {
+  renderSidebar();
+  document.getElementById('logoutBtn')?.addEventListener('click', doLogout);
+  await loadSchools();
+  bindEvents();
+  refreshPreview();
+});
+
+async function loadSchools() {
+  try {
+    const snap = await getDocs(collection(db, 'schools'));
+    allSchools = snap.docs.map(d => ({
+      id: d.id,
+      name: d.data().name || d.id,
+      domains: d.data().domains || []
+    })).sort((a, b) => a.name.localeCompare(b.name));
+  } catch (e) {
+    logError('Failed to load schools: ' + e.message, 'admin-create-user');
+  }
+}
+
+function bindEvents() {
+  el('revealBtn').addEventListener('click', togglePassword);
+  el('genPwdBtn').addEventListener('click', generatePassword);
+  el('password').addEventListener('input', updateStrength);
+  el('phone').addEventListener('input', formatPhone);
+  el('isAdmin').addEventListener('change', () => { refreshPreview(); el('schoolQuery').focus(); });
+  el('schoolQuery').addEventListener('input', updateSchoolResults);
+  el('schoolQuery').addEventListener('focus', updateSchoolResults);
+  el('schoolQuery').addEventListener('blur', () => setTimeout(() => el('schoolResults').style.display = 'none', 150));
+  el('email').addEventListener('input', refreshPreview);
+  el('createBtn').addEventListener('click', createAccount);
+  el('resetBtn').addEventListener('click', resetForm);
+  el('copyCredsBtn').addEventListener('click', copyCreds);
+  document.addEventListener('input', refreshPreview);
+}
+
+function togglePassword() {
+  const p = el('password');
+  const reveal = el('revealBtn');
+  if (p.type === 'password') { p.type = 'text'; reveal.textContent = 'Hide'; }
+  else { p.type = 'password'; reveal.textContent = 'Show'; }
+}
+
+function generatePassword() {
+  const charset = 'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghjkmnpqrstuvwxyz23456789!@#$%^&*';
+  const len = 20;
+  const arr = new Uint32Array(len);
+  crypto.getRandomValues(arr);
+  let pwd = '';
+  for (let i = 0; i < len; i++) pwd += charset[arr[i] % charset.length];
+  el('password').value = pwd;
+  el('password').type = 'text';
+  el('revealBtn').textContent = 'Hide';
+  updateStrength();
+  toast('Strong password generated', 'success');
+}
+
+function updateStrength() {
+  const v = el('password').value;
+  const s = el('strength');
+  s.classList.remove('ok','warn','bad');
+  if (v.length === 0) { s.textContent = '12+ characters required'; }
+  else if (v.length < 12) { s.textContent = `${v.length}/12 — too short`; s.classList.add('bad'); }
+  else if (v.length < 16) { s.textContent = `${v.length} chars — okay`; s.classList.add('warn'); }
+  else { s.textContent = `${v.length} chars — strong`; s.classList.add('ok'); }
+}
+
+function formatPhone(e) {
+  const digits = e.target.value.replace(/\D/g, '').slice(0, 10);
+  if (digits.length === 0) e.target.value = '';
+  else if (digits.length <= 3) e.target.value = `(${digits}`;
+  else if (digits.length <= 6) e.target.value = `(${digits.slice(0,3)}) ${digits.slice(3)}`;
+  else e.target.value = `(${digits.slice(0,3)}) ${digits.slice(3,6)}-${digits.slice(6)}`;
+}
+
+function updateSchoolResults() {
+  const q = el('schoolQuery').value.trim().toLowerCase();
+  const r = el('schoolResults');
+  if (q.length < 2) { r.style.display = 'none'; return; }
+  const matches = allSchools
+    .filter(s => s.name.toLowerCase().includes(q) || s.domains.some(d => d.toLowerCase().includes(q)))
+    .slice(0, 12);
+  if (matches.length === 0) {
+    r.innerHTML = '<div class="row" style="cursor:default;color:var(--muted)">No matches</div>';
+  } else {
+    r.innerHTML = matches.map(m =>
+      `<div class="row" data-id="${m.id}" data-name="${escapeAttr(m.name)}">${escapeText(m.name)}<span class="domain">${m.domains.slice(0,2).join(', ')}</span></div>`
+    ).join('');
+    r.querySelectorAll('.row').forEach(row => row.addEventListener('mousedown', (e) => {
+      e.preventDefault();
+      pickSchool(row.dataset.id, row.dataset.name);
+    }));
+  }
+  r.style.display = 'block';
+}
+
+function pickSchool(id, name) {
+  selectedSchoolId = id;
+  selectedSchoolName = name;
+  el('selectedSchool').innerHTML = `<div class="school-pill">${escapeText(name)}<button class="x" id="clearSchoolBtn" type="button">&times;</button></div>`;
+  el('clearSchoolBtn').addEventListener('click', clearSchool);
+  el('schoolQuery').value = '';
+  el('schoolResults').style.display = 'none';
+  refreshPreview();
+}
+
+function clearSchool() {
+  selectedSchoolId = '';
+  selectedSchoolName = '';
+  el('selectedSchool').innerHTML = '';
+  refreshPreview();
+}
+
+function refreshPreview() {
+  const isAdmin = el('isAdmin').checked;
+  const email = el('email').value.trim();
+  const text = el('previewText');
+  if (isAdmin) {
+    text.innerHTML = `<strong>Admin account.</strong> ${email || 'They'} will sign in, be required to enroll MFA, and land directly on Home (admin bypass — no school/schedule gates).`;
+    el('schoolQuery').disabled = true;
+    el('schoolQuery').placeholder = 'N/A — admins skip school gates';
+    if (selectedSchoolId) clearSchool();
+  } else if (selectedSchoolId) {
+    text.innerHTML = `<strong>Pre-verified student of ${escapeText(selectedSchoolName)}.</strong> ${email || 'They'} will skip the .edu code flow but still go through schedule import on first sign-in.`;
+    el('schoolQuery').disabled = false;
+    el('schoolQuery').placeholder = 'Search /schools…';
+  } else {
+    text.innerHTML = `<strong>Test / non-school account.</strong> ${email || 'They'} will sign in and land on Home immediately. All school + schedule gates are bypassed (no classes auto-joined).`;
+    el('schoolQuery').disabled = false;
+    el('schoolQuery').placeholder = 'Search /schools…';
+  }
+}
+
+async function createAccount() {
+  const payload = {
+    email: el('email').value.trim().toLowerCase(),
+    password: el('password').value,
+    firstName: el('firstName').value.trim(),
+    lastName: el('lastName').value.trim(),
+    phone: el('phone').value.replace(/\D/g, ''),
+    isAdmin: el('isAdmin').checked,
+    schoolId: el('isAdmin').checked ? '' : selectedSchoolId,
+    reason: el('reason').value.trim()
+  };
+
+  const errs = [];
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(payload.email)) errs.push('Valid email required');
+  if (payload.password.length < 12) errs.push('Password must be 12+ chars');
+  if (!payload.firstName || !payload.lastName) errs.push('First + last name required');
+  if (!payload.reason) errs.push('Reason required (audited)');
+  if (errs.length) { toast(errs.join(' · '), 'error'); return; }
+
+  const btn = el('createBtn');
+  const orig = btn.textContent;
+  btn.disabled = true;
+  btn.textContent = 'Creating…';
+  try {
+    const res = await adminCreateUserFn(payload);
+    const data = res.data || {};
+    el('sumUid').textContent = data.uid || '—';
+    el('sumEmail').textContent = data.email || payload.email;
+    el('sumRole').textContent = data.isAdmin ? 'admin (claim + doc)' : 'user';
+    el('sumSchool').textContent = data.schoolId ? `${selectedSchoolName} (${data.schoolId})` : '— (gates bypassed)';
+    el('credsText').textContent = `${payload.email}\n${payload.password}`;
+    el('summaryCard').classList.add('show');
+    el('summaryCard').scrollIntoView({ behavior: 'smooth', block: 'start' });
+    toast('Account created ✓', 'success');
+    logSuccess(`Created account ${payload.email} (admin=${payload.isAdmin}, school=${payload.schoolId || 'none'})`, 'admin-create-user');
+  } catch (e) {
+    const msg = e?.message || String(e);
+    toast('Create failed: ' + msg, 'error');
+    logError('adminCreateUser: ' + msg, 'admin-create-user');
+  } finally {
+    btn.disabled = false;
+    btn.textContent = orig;
+  }
+}
+
+function copyCreds() {
+  const text = el('credsText').textContent;
+  navigator.clipboard.writeText(text).then(() => toast('Copied', 'success'));
+}
+
+function resetForm() {
+  ['email','password','firstName','lastName','phone','reason','schoolQuery'].forEach(id => el(id).value = '');
+  el('isAdmin').checked = false;
+  clearSchool();
+  el('summaryCard').classList.remove('show');
+  el('password').type = 'password';
+  el('revealBtn').textContent = 'Show';
+  updateStrength();
+  refreshPreview();
+}
+
+function escapeText(s) {
+  const d = document.createElement('div');
+  d.textContent = s || '';
+  return d.innerHTML;
+}
+function escapeAttr(s) {
+  return String(s || '').replace(/"/g, '&quot;');
+}
+</script>
+</body>
+</html>

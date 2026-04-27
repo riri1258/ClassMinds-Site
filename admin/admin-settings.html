@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<!-- Favicon & Icons -->
+<link rel="icon" type="image/png" href="/WebsiteLogo.png"/>
+<link rel="apple-touch-icon" href="/WebsiteLogo.png"/>
+<link rel="shortcut icon" href="/WebsiteLogo.png"/>
+<title>Settings – ClassMinds Admin</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+<link rel="stylesheet" href="admin-styles.css"/>
+</head>
+<body>
+<div class="admin-wrap" id="adminWrap">
+  <div class="sidebar" id="sidebarSlot"></div>
+  <div class="main">
+    <div class="page-header"><div class="page-title">Settings</div><div class="page-desc">Admin panel preferences & team management</div></div>
+
+    <!-- Team -->
+    <div style="margin-bottom:28px">
+      <div style="font-family:var(--font-display);font-size:18px;font-weight:700;margin-bottom:14px">Team</div>
+      <div id="teamList"></div>
+      <div class="notify-form" style="margin-top:16px">
+        <div style="font-family:var(--font-display);font-size:16px;font-weight:700;margin-bottom:4px">Invite Admin</div>
+        <div style="font-size:13px;color:var(--muted);margin-bottom:16px">They need a Firebase account first</div>
+        <label class="field-label">Email</label>
+        <input type="email" class="field-input" id="inviteEmail" placeholder="teammate@example.com"/>
+        <button class="btn btn-blue" id="inviteBtn">Grant Admin Access &#8594;</button>
+      </div>
+    </div>
+
+    <!-- API Keys (Secret Manager) -->
+    <div class="notify-form" style="margin-bottom:16px">
+      <div style="font-family:var(--font-display);font-size:16px;font-weight:700;margin-bottom:4px">API Keys</div>
+      <div style="font-size:13px;color:var(--muted);margin-bottom:8px">
+        OpenAI, Deepgram, and OneSignal keys are stored in Google Cloud Secret Manager and bound to Cloud Functions at deploy time. They are never written to Firestore.
+      </div>
+      <div style="font-size:12px;color:var(--muted);margin-bottom:8px">To rotate a key, run from the project root:</div>
+      <pre style="background:rgba(255,255,255,0.04);border:1px solid var(--navy-border);border-radius:10px;padding:12px 16px;font-size:12px;font-family:monospace;color:var(--blue-bright);white-space:pre-wrap;margin:0">firebase functions:secrets:set OPENAI_KEY
+firebase functions:secrets:set DEEPGRAM_KEY
+firebase functions:secrets:set ONESIGNAL_API_KEY
+firebase deploy --only functions</pre>
+    </div>
+
+    <!-- Links -->
+    <div class="notify-form" style="margin-bottom:16px">
+      <div style="font-family:var(--font-display);font-size:16px;font-weight:700;margin-bottom:4px">Beta Form URL</div>
+      <div style="background:rgba(255,255,255,0.04);border:1px solid var(--navy-border);border-radius:10px;padding:12px 16px;font-size:13px;font-family:monospace;color:var(--blue-bright);margin-top:12px">classminds.app/beta.html</div>
+    </div>
+    <div class="notify-form">
+      <div style="font-family:var(--font-display);font-size:16px;font-weight:700;margin-bottom:4px">TestFlight Link</div>
+      <div style="background:rgba(255,255,255,0.04);border:1px solid var(--navy-border);border-radius:10px;padding:12px 16px;font-size:13px;font-family:monospace;color:var(--blue-bright);margin-top:12px">https://testflight.apple.com/join/5ujsJBav</div>
+    </div>
+  </div>
+</div>
+<div class="toast" id="toast"></div>
+<script src="config.js"></script>
+<script type="module">
+import { requireAdmin, db, doc, updateDoc, collection, getDocs, toast, escapeHtml } from './admin-shared.js';
+import { renderSidebar } from './admin-sidebar.js';
+renderSidebar();
+
+requireAdmin().then(async () => {
+  // Load users for team
+  const usersSnap = await getDocs(collection(db,'users'));
+  const allUsers = usersSnap.docs.map(d=>({id:d.id,...d.data()}));
+
+  function renderTeam(){
+    const admins = allUsers.filter(u=>u.isAdmin);
+    document.getElementById('teamList').innerHTML = admins.map(u=>{
+      // LOW-4: was hardcoded to rileyedds@gmail.com — now uses isOwner flag.
+      const ownerLabel = u.isOwner ? 'Owner' : 'Admin';
+      const ownerClass = u.isOwner ? 'role-owner' : 'role-admin';
+      const initial1 = (u.firstName||'?').charAt(0);
+      const initial2 = (u.lastName||'').charAt(0);
+      const fullName = ((u.firstName||'')+' '+(u.lastName||'')).trim() || '(no name)';
+      return `<div class="team-card"><div style="display:flex;align-items:center;gap:12px"><div class="team-avatar">${escapeHtml(initial1)}${escapeHtml(initial2)}</div><div><div style="font-size:14px;font-weight:500">${escapeHtml(fullName)}</div><div style="font-size:12px;color:var(--muted)">${escapeHtml(u.email||'')}</div></div></div><span class="role-badge ${ownerClass}">${ownerLabel}</span></div>`;
+    }).join('') || '<div style="color:var(--muted);font-size:13px;margin-bottom:16px">No admins found</div>';
+  }
+
+  document.getElementById('inviteBtn').addEventListener('click',async function(){
+    const email=document.getElementById('inviteEmail').value.trim();if(!email)return;
+    const user=allUsers.find(u=>u.email===email);
+    if(!user){toast('User not found — they need to sign up first','error');return;}
+    await updateDoc(doc(db,'users',user.id),{isAdmin:true});user.isAdmin=true;
+    renderTeam();document.getElementById('inviteEmail').value='';toast('Admin granted to '+email);
+  });
+
+  renderTeam();
+});
+document.getElementById('logoutBtn')?.addEventListener('click',()=>{import('./admin-shared.js').then(m=>m.doLogout());});
+</script>
+</body>
+</html>

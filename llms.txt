@@ -1,0 +1,47 @@
+# ClassMinds
+
+> ClassMinds is an iOS app for college students that combines class management, real-time classmate chat, and an AI tutor grounded in your own class notes. One plan at $8.99/month, free during public beta.
+
+## Quick facts
+- **Product:** ClassMinds — AI-powered study app
+- **Platform:** iOS 17+ (iPhone)
+- **Category:** EducationApplication
+- **Pricing:** Free during beta; $8.99/month after launch (one plan, every feature)
+- **Founder:** Riley Edds (solo developer, college student)
+- **Launched:** Public beta, April 2026
+- **Tech stack:** SwiftUI, Firebase, OpenAI (GPT-4), Deepgram, OneSignal
+
+## Core features
+- **AI Tutor** — answers grounded in your own uploaded class notes, slides, and PDFs (not the open internet)
+- **Class Chat** — per-course real-time group chat, scoped to enrolled classmates
+- **Class Hub** — assignments, deadlines, notes organized per class
+- **Schedule Import** — snap a photo of your schedule; AI parses into courses
+- **Audio Transcription** — record lectures, get Deepgram-transcribed notes
+- **Smart Notifications** — deadline reminders, mentions, per-type preferences
+
+## Data handling
+- Zero-training policy: user notes are never used to train AI models
+- OpenAI API in zero-retention mode; Deepgram under same commitment
+- Encryption at rest (AES-256) and in transit (TLS 1.3)
+- Per-user Firestore access scoping; no cross-user reads
+- Full cascade account deletion with tombstoned group-chat messages
+
+## Pages
+- [Home](https://classminds.app/)
+- [Features](https://classminds.app/features.html): AI tutor, class chat, class hub, schedule import, transcription, notifications
+- [Pricing](https://classminds.app/pricing.html): $8.99/month, free during beta, one plan
+- [How It Works](https://classminds.app/how.html): 5-step onboarding from TestFlight install to studying
+- [FAQ](https://classminds.app/faq.html): common questions about the app, AI, pricing, and data
+- [Security](https://classminds.app/security.html): encryption, access control, compliance, responsible disclosure
+- [About](https://classminds.app/about.html)
+- [Support](https://classminds.app/support.html): support@classminds.app
+- [Privacy Policy](https://classminds.app/privacy.html)
+- [Download Beta](https://classminds.app/beta.html)
+
+## Contact
+- General & support: support@classminds.app
+- Security disclosures: security@classminds.app
+- Founder: Riley Edds
+
+## Full policy document
+- [Privacy Policy](https://classminds.app/privacy.html) — comprehensive data-handling policy; covers OpenAI, Deepgram, OneSignal, Resend, Cloudflare Turnstile, Google Analytics, Trybe, Apple, Giphy, and College Scorecard

@@ -1,0 +1,425 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Features — ClassMinds</title>
+<meta name="description" content="A closer look at ClassMinds — AI tutor grounded in your notes, real-time class chat, assignment tracking, and more."/>
+<link rel="icon" type="image/png" href="/WebsiteLogo.png"/>
+<link rel="apple-touch-icon" href="/WebsiteLogo.png"/>
+<meta name="author" content="ClassMinds"/>
+<meta name="robots" content="index, follow"/>
+<link rel="canonical" href="https://classminds.app/features.html"/>
+<meta property="og:type" content="website"/>
+<meta property="og:url" content="https://classminds.app/features.html"/>
+<meta property="og:title" content="Features – ClassMinds"/>
+<meta property="og:description" content="A closer look at ClassMinds — AI tutor grounded in your notes, real-time class chat, assignment tracking, schedule import, and smart notifications."/>
+<meta property="og:site_name" content="ClassMinds"/>
+<meta property="og:image" content="https://classminds.app/WebsiteLogo.png"/>
+<meta name="twitter:card" content="summary_large_image"/>
+<meta name="twitter:title" content="Features – ClassMinds"/>
+<meta name="twitter:description" content="Every ClassMinds feature — AI tutor, class chat, assignment tracking, and more."/>
+<meta name="twitter:image" content="https://classminds.app/WebsiteLogo.png"/>
+<meta name="theme-color" content="#040d1f"/>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+<link rel="stylesheet" href="_base.css"/>
+
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-081YYS6HV7"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'G-081YYS6HV7');
+</script>
+
+<!-- JSON-LD SoftwareApplication schema -->
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "MobileApplication",
+  "name": "ClassMinds",
+  "description": "AI-powered study app for college students. AI tutor grounded in your notes, real-time class chat, assignment tracking, and schedule import.",
+  "url": "https://classminds.app",
+  "applicationCategory": "EducationApplication",
+  "operatingSystem": "iOS 17+",
+  "offers": {"@type": "Offer", "price": "8.99", "priceCurrency": "USD", "priceValidUntil": "2027-12-31"},
+  "featureList": [
+    "AI Tutor grounded in your uploaded class notes",
+    "Real-time per-class group chat",
+    "Class hub with assignment and deadline tracking",
+    "Schedule import via photo with OCR and AI parsing",
+    "Audio note transcription",
+    "Smart notifications with per-type preferences"
+  ]
+}
+</script>
+<style>
+  .feature-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 64px;
+    align-items: center;
+    padding: 80px 0;
+    border-bottom: 1px solid var(--navy-border);
+  }
+  .feature-row:last-child { border-bottom: none; }
+  .feature-row.reverse .copy { order: 2; }
+  .feature-row.reverse .visual { order: 1; }
+  .feature-tag {
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    color: var(--blue-bright);
+    margin-bottom: 14px;
+  }
+  .feature-h {
+    font-family: var(--font-display);
+    font-size: 36px;
+    font-weight: 800;
+    letter-spacing: -1px;
+    line-height: 1.1;
+    margin-bottom: 16px;
+  }
+  .feature-p {
+    color: var(--muted);
+    font-size: 16px;
+    line-height: 1.7;
+    font-weight: 300;
+    margin-bottom: 22px;
+  }
+  .feature-list { list-style: none; }
+  .feature-list li {
+    display: flex;
+    gap: 12px;
+    padding: 8px 0;
+    font-size: 14px;
+    color: rgba(240,244,255,0.75);
+  }
+  .feature-list li::before {
+    content: '';
+    width: 6px; height: 6px;
+    background: var(--blue-bright);
+    border-radius: 50%;
+    margin-top: 9px;
+    flex-shrink: 0;
+  }
+  .visual {
+    background: linear-gradient(135deg, var(--navy-card) 0%, rgba(26,107,255,0.06) 100%);
+    border: 1px solid var(--navy-border);
+    border-radius: 24px;
+    padding: 40px;
+    min-height: 320px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    overflow: hidden;
+  }
+  .visual::before {
+    content: '';
+    position: absolute;
+    top: -50%; left: -50%;
+    width: 200%; height: 200%;
+    background: radial-gradient(ellipse at center, rgba(26,107,255,0.1) 0%, transparent 50%);
+    pointer-events: none;
+  }
+  /* mini phone */
+  .mini-phone {
+    width: 200px;
+    height: 380px;
+    background: var(--navy);
+    border-radius: 28px;
+    border: 1.5px solid rgba(26,107,255,0.3);
+    overflow: hidden;
+    box-shadow: 0 30px 60px rgba(0,0,0,0.5), 0 0 40px rgba(26,107,255,0.12);
+    position: relative;
+    z-index: 1;
+  }
+  .mini-notch {
+    width: 64px; height: 18px;
+    background: var(--navy);
+    border-radius: 0 0 12px 12px;
+    margin: 0 auto;
+  }
+  .mini-content {
+    padding: 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+  .mini-h {
+    font-family: var(--font-display);
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--white);
+    text-align: center;
+    padding: 8px 0 4px;
+  }
+  .mini-card {
+    background: rgba(26,107,255,0.1);
+    border: 1px solid rgba(26,107,255,0.2);
+    border-radius: 10px;
+    padding: 8px 10px;
+  }
+  .mini-card-lbl {
+    font-family: var(--font-display);
+    font-size: 10px;
+    font-weight: 700;
+    color: var(--blue-bright);
+  }
+  .mini-card-sub { font-size: 8px; color: var(--muted); margin-top: 2px; }
+  .mini-msg {
+    padding: 6px 10px;
+    border-radius: 12px;
+    font-size: 9px;
+    line-height: 1.4;
+    max-width: 78%;
+  }
+  .mini-msg.them { background: rgba(255,255,255,0.07); color: rgba(240,244,255,0.8); align-self: flex-start; }
+  .mini-msg.ai { background: rgba(26,107,255,0.15); border: 1px solid rgba(26,107,255,0.2); align-self: flex-start; max-width: 88%; }
+  .mini-msg.me { background: var(--blue); color: white; align-self: flex-end; }
+
+  @media (max-width: 900px) {
+    .feature-row { grid-template-columns: 1fr; gap: 40px; padding: 48px 0; }
+    .feature-row.reverse .copy { order: 1; }
+    .feature-row.reverse .visual { order: 2; }
+  }
+</style>
+</head>
+<body>
+
+<nav class="site-nav">
+  <a href="index.html" class="nav-logo" aria-label="ClassMinds home">
+    <img src="/WebsiteLogo.png" alt="ClassMinds logo" class="nav-logo-img"/>
+    <span class="nav-logo-text">Class<span>Minds</span></span>
+  </a>
+  <ul class="nav-links" id="nav-links">
+    <li><a href="features.html">Features</a></li>
+    <li><a href="pricing.html">Pricing</a></li>
+    <li><a href="about.html">About</a></li>
+    <li><a href="support.html">Support</a></li>
+    <li><a href="beta.html" class="nav-cta">Download Beta</a></li>
+    <li><a href="login.html" style="color:#4d8fff;font-weight:600">Sign In</a></li>
+  </ul>
+  <button class="nav-toggle" aria-label="Toggle menu" aria-expanded="false" aria-controls="nav-links">
+    <span></span><span></span><span></span>
+  </button>
+</nav>
+
+<section class="page-hero">
+  <div class="page-hero-glow"></div>
+  <div class="badge"><span class="badge-dot"></span>Features</div>
+  <h1 class="page-title">Built for the way<br/><span class="accent">students actually study.</span></h1>
+  <p class="page-sub">Every feature exists to kill a real friction point — the browser tabs, the missed deadlines, the group chat buried in iMessage, the tutor who doesn't know your class.</p>
+</section>
+
+<section class="section">
+
+  <!-- AI TUTOR -->
+  <div class="feature-row">
+    <div class="copy">
+      <div class="feature-tag">AI Tutor</div>
+      <h2 class="feature-h">A tutor that<br/>knows your notes.</h2>
+      <p class="feature-p">Upload your lecture slides, PDFs, and notes. The AI tutor answers questions using your actual class materials — not the whole internet, not a generic textbook.</p>
+      <ul class="feature-list">
+        <li>Grounded answers with citations back to your notes</li>
+        <li>Generates practice quizzes from your material</li>
+        <li>Explains concepts at your level, not a professor's</li>
+        <li>Private to you — your notes aren't training data</li>
+      </ul>
+    </div>
+    <div class="visual">
+      <div class="mini-phone">
+        <div class="mini-notch"></div>
+        <div class="mini-content">
+          <div class="mini-h">AI Tutor · CS 310</div>
+          <div class="mini-msg them">Explain linked lists</div>
+          <div class="mini-msg ai">From your CS 310 notes — a linked list is a sequence of nodes where each node holds data and a pointer to the next node…</div>
+          <div class="mini-msg me">Quiz me on this</div>
+          <div class="mini-msg ai">Q1: What's the time complexity to insert at the head of a singly linked list?</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- CLASS CHAT -->
+  <div class="feature-row reverse">
+    <div class="copy">
+      <div class="feature-tag">Class Chat</div>
+      <h2 class="feature-h">One chat room<br/>per class.</h2>
+      <p class="feature-p">Real-time group chat scoped to your course — not another Discord server you'll forget about. Join with a class code and you're in.</p>
+      <ul class="feature-list">
+        <li>Per-class rooms, auto-created when you add the course</li>
+        <li>Share notes, slides, and study guides directly</li>
+        <li>@-mention classmates for study-group coordination</li>
+        <li>Push notifications for replies, muted by default</li>
+      </ul>
+    </div>
+    <div class="visual">
+      <div class="mini-phone">
+        <div class="mini-notch"></div>
+        <div class="mini-content">
+          <div class="mini-h">ECON 201 · Chat</div>
+          <div class="mini-msg them">anyone got notes from thursday?</div>
+          <div class="mini-msg them">i missed the review session</div>
+          <div class="mini-msg me">i got you — sharing now</div>
+          <div class="mini-msg them">thx 🙏</div>
+          <div class="mini-msg me">midterm is ch 5-7 right?</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- CLASS HUB -->
+  <div class="feature-row">
+    <div class="copy">
+      <div class="feature-tag">Class Hub</div>
+      <h2 class="feature-h">Every class,<br/>in one screen.</h2>
+      <p class="feature-p">Stop juggling Canvas, email, and Notion. Every class has a hub with assignments, notes, deadlines, and chat — always in sync.</p>
+      <ul class="feature-list">
+        <li>Assignment tracking with deadlines and progress</li>
+        <li>Upload slides, PDFs, and notes per class</li>
+        <li>See what's due this week across all classes</li>
+        <li>Color-coded by course, sortable by urgency</li>
+      </ul>
+    </div>
+    <div class="visual">
+      <div class="mini-phone">
+        <div class="mini-notch"></div>
+        <div class="mini-content">
+          <div class="mini-h">My Classes</div>
+          <div class="mini-card">
+            <div class="mini-card-lbl">ECON 201</div>
+            <div class="mini-card-sub">3 assignments · Midterm Thu</div>
+          </div>
+          <div class="mini-card">
+            <div class="mini-card-lbl">CS 310</div>
+            <div class="mini-card-sub">Lab 4 due Friday</div>
+          </div>
+          <div class="mini-card">
+            <div class="mini-card-lbl">MATH 215</div>
+            <div class="mini-card-sub">Exam Friday</div>
+          </div>
+          <div class="mini-card">
+            <div class="mini-card-lbl">PSYC 110</div>
+            <div class="mini-card-sub">Reading Ch 8</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SCHEDULE IMPORT -->
+  <div class="feature-row reverse">
+    <div class="copy">
+      <div class="feature-tag">Schedule Import</div>
+      <h2 class="feature-h">Set up in<br/>under 60 seconds.</h2>
+      <p class="feature-p">Snap a photo of your schedule or paste your registrar list. ClassMinds parses it, creates your classes, and sets up chat rooms and deadline tracking automatically.</p>
+      <ul class="feature-list">
+        <li>Photo-based schedule parsing via OCR + AI</li>
+        <li>Supports major university registrar formats</li>
+        <li>Editable before commit — you approve every class</li>
+        <li>Zero typing required on the happy path</li>
+      </ul>
+    </div>
+    <div class="visual">
+      <div class="mini-phone">
+        <div class="mini-notch"></div>
+        <div class="mini-content">
+          <div class="mini-h">Import Schedule</div>
+          <div class="mini-msg ai" style="max-width:95%">Found 5 classes in your screenshot:</div>
+          <div class="mini-card"><div class="mini-card-lbl">✓ ECON 201</div><div class="mini-card-sub">MWF 10:00 AM</div></div>
+          <div class="mini-card"><div class="mini-card-lbl">✓ CS 310</div><div class="mini-card-sub">TTh 2:00 PM</div></div>
+          <div class="mini-card"><div class="mini-card-lbl">✓ MATH 215</div><div class="mini-card-sub">MWF 1:00 PM</div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- NOTIFICATIONS -->
+  <div class="feature-row">
+    <div class="copy">
+      <div class="feature-tag">Smart Notifications</div>
+      <h2 class="feature-h">Reminders that<br/>don't spam.</h2>
+      <p class="feature-p">Get notified when it matters: deadlines approaching, classmates mentioning you, AI tutor finishing a long task. Everything else stays quiet.</p>
+      <ul class="feature-list">
+        <li>Deadline reminders at 1 week, 1 day, 1 hour</li>
+        <li>@-mentions and direct replies only by default</li>
+        <li>Quiet hours respect iOS Focus modes</li>
+        <li>Per-class notification control</li>
+      </ul>
+    </div>
+    <div class="visual">
+      <div class="mini-phone">
+        <div class="mini-notch"></div>
+        <div class="mini-content">
+          <div class="mini-h">Today</div>
+          <div class="mini-card">
+            <div class="mini-card-lbl">Due in 2 hours</div>
+            <div class="mini-card-sub">CS 310 — Lab 4 submission</div>
+          </div>
+          <div class="mini-card">
+            <div class="mini-card-lbl">@ mention</div>
+            <div class="mini-card-sub">Sarah tagged you in ECON 201</div>
+          </div>
+          <div class="mini-card">
+            <div class="mini-card-lbl">Exam tomorrow</div>
+            <div class="mini-card-sub">MATH 215 — 9:00 AM</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</section>
+
+<div class="cta-band">
+  <h2>See it all in one place.</h2>
+  <p>Free during beta. Install via TestFlight.</p>
+  <a href="beta.html" class="btn-primary">Join Beta →</a>
+</div>
+
+<footer>
+  <a href="index.html" class="footer-logo">Class<span>Minds</span></a>
+  <ul class="footer-links">
+    <li><a href="features.html">Features</a></li>
+    <li><a href="pricing.html">Pricing</a></li>
+    <li><a href="how.html">How It Works</a></li>
+    <li><a href="faq.html">FAQ</a></li>
+    <li><a href="security.html">Security</a></li>
+    <li><a href="about.html">About</a></li>
+    <li><a href="support.html">Support</a></li>
+    <li><a href="privacy.html">Privacy</a></li>
+    <li><a href="terms.html">Terms</a></li>
+  </ul>
+  <span class="footer-copy">© 2026 ClassMinds. All rights reserved.</span>
+</footer>
+
+<script>
+  const navToggle = document.querySelector('.nav-toggle');
+  const navLinks = document.querySelector('.nav-links');
+  if (navToggle && navLinks) {
+    const closeMenu = () => {
+      navLinks.classList.remove('open');
+      navToggle.classList.remove('open');
+      navToggle.setAttribute('aria-expanded', 'false');
+    };
+    navToggle.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const open = navLinks.classList.toggle('open');
+      navToggle.classList.toggle('open', open);
+      navToggle.setAttribute('aria-expanded', open);
+    });
+    navLinks.querySelectorAll('a').forEach(a => a.addEventListener('click', closeMenu));
+    document.addEventListener('click', (e) => {
+      if (!navLinks.contains(e.target) && !navToggle.contains(e.target)) closeMenu();
+    });
+  }
+</script>
+
+</body>
+</html>

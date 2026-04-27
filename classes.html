@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<link rel="icon" type="image/png" href="/WebsiteLogo.png"/>
+<link rel="apple-touch-icon" href="/WebsiteLogo.png"/>
+<link rel="shortcut icon" href="/WebsiteLogo.png"/>
+<title>Classes – ClassMinds</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=DM+Sans:ital,wght@0,400;0,500;0,600;0,700;1,400&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet"/>
+<link rel="stylesheet" href="app-styles.css"/>
+</head>
+<body>
+<div id="sidebarSlot"></div>
+<div class="page-glow"></div>
+<div class="main">
+  <div class="page-head">
+    <div>
+      <h1 class="page-title">Classes</h1>
+      <p class="page-sub" id="clsSub">— enrolled</p>
+    </div>
+    <div style="display:flex; gap:10px; align-items:center;">
+      <div class="search" style="width:260px;">
+        <span class="si">⌕</span>
+        <input id="clsSearch" class="input" placeholder="Search classes"/>
+      </div>
+      <button class="btn primary" id="addClsBtn" type="button">+ Add class</button>
+    </div>
+  </div>
+
+  <!-- Canvas: frame 02, classes grid -->
+  <div id="clsGrid" style="display:grid; grid-template-columns: repeat(3, 1fr); gap: 16px;">
+    <div style="grid-column:1/-1;text-align:center;padding:32px;color:var(--muted);"><div class="spinner"></div></div>
+  </div>
+</div>
+
+<script type="module">
+import{requireUser,db,collection,getDocs,loadClasses,esc,COLORS,logError,logSuccess}from'./app-shared.js';
+requireUser().then(async({uid})=>{
+  try{
+  const{classes:allClasses,colorMap:ccMap}=await loadClasses(uid);
+  document.getElementById('clsSub').textContent=allClasses.length+' enrolled';
+
+  const noteCounts={};
+  for(const c of allClasses){
+    const cid=c.classId||c.id;
+    try{const s=await getDocs(collection(db,'classes',cid,'notes'));noteCounts[cid]=s.size;}catch(e){noteCounts[cid]=0;logError('Note count failed for '+c.courseCode+': '+e.message,'classes');}
+  }
+  const grid=document.getElementById('clsGrid');
+  if(!allClasses.length){grid.innerHTML='<div style="grid-column:1/-1;text-align:center;padding:48px;color:var(--muted);">📚 No classes yet. Import your schedule in the iOS app to get started.</div>';return;}
+  grid.innerHTML=allClasses.map((c)=>{
+    const cid=c.classId||c.id;
+    const color=ccMap[cid]||COLORS[0];
+    return`<a class="card cls-card" href="class.html?id=${cid}" style="padding:0; overflow:hidden; text-decoration:none; color:inherit; display:block; transition:border-color 0.15s, transform 0.15s;">
+      <div style="height:3px; background:${color};"></div>
+      <div style="padding:18px 20px 20px;">
+        <div style="font-family:var(--font-display); font-size:18px; font-weight:700; color:var(--white); letter-spacing:-0.3px;">${esc(c.courseCode)}</div>
+        <div style="font-size:13px; color:var(--muted); margin-top:2px;">${esc(c.courseName||'')}</div>
+        <div style="display:flex; gap:16px; margin-top:14px; font-size:11px; color:var(--muted); flex-wrap:wrap;">
+          <span>📝 ${noteCounts[cid]||0} notes</span>
+          <span>🕐 ${esc(c.startTime||'—')}</span>
+          <span>📍 ${esc(c.location||'—')}</span>
+        </div>
+        <div style="display:flex; gap:14px; margin-top:10px; font-size:11px; color:var(--muted-soft); padding-top:10px; border-top:0.5px solid var(--border);">
+          <span>${esc((c.daysOfWeek||[]).join(' '))||'—'}</span>
+          <span>·</span>
+          <span>${esc(c.instructor||'—')}</span>
+        </div>
+      </div>
+    </a>`;
+  }).join('');
+
+  // Hover lift
+  document.querySelectorAll('.cls-card').forEach(c=>{
+    c.addEventListener('mouseenter',()=>{c.style.borderColor='var(--border-hover)';c.style.transform='translateY(-2px)';});
+    c.addEventListener('mouseleave',()=>{c.style.borderColor='var(--border)';c.style.transform='translateY(0)';});
+  });
+
+  document.getElementById('clsSearch').addEventListener('input',function(){
+    const q=this.value.toLowerCase();
+    document.querySelectorAll('.cls-card').forEach(c=>{c.style.display=c.textContent.toLowerCase().includes(q)?'':'none';});
+  });
+
+  document.getElementById('addClsBtn').addEventListener('click',()=>{
+    alert('Coming soon — import from your school in the iOS app.');
+  });
+
+  logSuccess('Classes loaded — '+allClasses.length+' classes','classes');
+  }catch(e){logError('Classes page crash: '+e.message,'classes');}
+});
+</script>
+</body>
+</html>

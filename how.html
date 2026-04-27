@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>How It Works — ClassMinds</title>
+<meta name="description" content="How ClassMinds works — from downloading the app to studying smarter in minutes."/>
+<link rel="icon" type="image/png" href="/WebsiteLogo.png"/>
+<link rel="apple-touch-icon" href="/WebsiteLogo.png"/>
+<meta name="author" content="ClassMinds"/>
+<meta name="robots" content="index, follow"/>
+<link rel="canonical" href="https://classminds.app/how.html"/>
+<meta property="og:type" content="website"/>
+<meta property="og:url" content="https://classminds.app/how.html"/>
+<meta property="og:title" content="How It Works – ClassMinds"/>
+<meta property="og:description" content="How ClassMinds works — from downloading the app to studying smarter in minutes."/>
+<meta property="og:site_name" content="ClassMinds"/>
+<meta property="og:image" content="https://classminds.app/WebsiteLogo.png"/>
+<meta name="twitter:card" content="summary_large_image"/>
+<meta name="twitter:title" content="How It Works – ClassMinds"/>
+<meta name="twitter:description" content="From install to studying smarter — five steps."/>
+<meta name="twitter:image" content="https://classminds.app/WebsiteLogo.png"/>
+<meta name="theme-color" content="#040d1f"/>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+<link rel="stylesheet" href="_base.css"/>
+
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-081YYS6HV7"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'G-081YYS6HV7');
+</script>
+
+<!-- JSON-LD HowTo schema -->
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "HowTo",
+  "name": "How to get started with ClassMinds",
+  "description": "From TestFlight install to studying smarter with your AI tutor in under two minutes.",
+  "totalTime": "PT90S",
+  "step": [
+    {"@type": "HowToStep", "position": 1, "name": "Download from TestFlight", "text": "Tap the beta link, accept the TestFlight invite, and ClassMinds installs like any App Store app."},
+    {"@type": "HowToStep", "position": 2, "name": "Create your account", "text": "Sign in with Apple or email and pick a display name for your class chats."},
+    {"@type": "HowToStep", "position": 3, "name": "Add your classes", "text": "Snap a photo of your schedule or type course codes manually. ClassMinds creates a hub, chat room, and deadline tracker for each class."},
+    {"@type": "HowToStep", "position": 4, "name": "Upload notes to feed the AI", "text": "Drop in lecture slides, PDFs, or your own notes. The AI tutor uses these to answer grounded questions."},
+    {"@type": "HowToStep", "position": 5, "name": "Ask, chat, and stay on top", "text": "Ask the tutor anything about your class, coordinate with classmates, and get reminded before deadlines."}
+  ]
+}
+</script>
+<style>
+  .timeline {
+    max-width: 840px;
+    margin: 60px auto 0;
+    position: relative;
+  }
+  .timeline::before {
+    content: '';
+    position: absolute;
+    left: 32px;
+    top: 32px;
+    bottom: 32px;
+    width: 1px;
+    background: linear-gradient(180deg, rgba(26,107,255,0.4), rgba(26,107,255,0.1));
+  }
+  .step-row {
+    display: flex;
+    gap: 32px;
+    margin-bottom: 56px;
+    position: relative;
+  }
+  .step-circle {
+    width: 64px;
+    height: 64px;
+    background: var(--navy-card);
+    border: 1.5px solid rgba(26,107,255,0.4);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: var(--font-display);
+    font-size: 22px;
+    font-weight: 800;
+    color: var(--blue-bright);
+    flex-shrink: 0;
+    position: relative;
+    z-index: 1;
+    box-shadow: 0 0 30px rgba(26,107,255,0.15);
+  }
+  .step-body { flex: 1; padding-top: 8px; }
+  .step-h {
+    font-family: var(--font-display);
+    font-size: 24px;
+    font-weight: 700;
+    letter-spacing: -0.5px;
+    margin-bottom: 10px;
+  }
+  .step-p {
+    color: var(--muted);
+    font-size: 15px;
+    line-height: 1.65;
+    font-weight: 300;
+    margin-bottom: 18px;
+  }
+  .step-hint {
+    background: var(--navy-card);
+    border: 1px solid var(--navy-border);
+    border-left: 3px solid var(--blue-bright);
+    border-radius: 10px;
+    padding: 14px 18px;
+    font-size: 13px;
+    color: rgba(240,244,255,0.7);
+    line-height: 1.6;
+  }
+  .step-hint strong { color: var(--blue-bright); font-weight: 600; }
+
+  .screens-row {
+    display: flex;
+    gap: 16px;
+    margin-top: 20px;
+    overflow-x: auto;
+    padding-bottom: 12px;
+  }
+  .tiny-screen {
+    width: 140px;
+    height: 260px;
+    background: var(--navy);
+    border-radius: 20px;
+    border: 1.5px solid var(--navy-border);
+    padding: 8px;
+    flex-shrink: 0;
+    font-size: 9px;
+    color: var(--muted);
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+  .tiny-screen .tl {
+    font-family: var(--font-display);
+    font-size: 10px;
+    color: var(--white);
+    text-align: center;
+    padding: 4px 0;
+    font-weight: 700;
+  }
+  .tiny-card {
+    background: rgba(26,107,255,0.1);
+    border: 1px solid rgba(26,107,255,0.2);
+    border-radius: 8px;
+    padding: 6px 8px;
+    font-size: 8px;
+  }
+  .tiny-card .k { color: var(--blue-bright); font-weight: 700; }
+  .tiny-btn {
+    background: var(--blue);
+    color: white;
+    text-align: center;
+    padding: 6px;
+    border-radius: 8px;
+    font-size: 9px;
+    font-weight: 600;
+    margin-top: auto;
+  }
+</style>
+</head>
+<body>
+
+<nav class="site-nav">
+  <a href="index.html" class="nav-logo" aria-label="ClassMinds home">
+    <img src="/WebsiteLogo.png" alt="ClassMinds logo" class="nav-logo-img"/>
+    <span class="nav-logo-text">Class<span>Minds</span></span>
+  </a>
+  <ul class="nav-links" id="nav-links">
+    <li><a href="features.html">Features</a></li>
+    <li><a href="pricing.html">Pricing</a></li>
+    <li><a href="about.html">About</a></li>
+    <li><a href="support.html">Support</a></li>
+    <li><a href="beta.html" class="nav-cta">Download Beta</a></li>
+    <li><a href="login.html" style="color:#4d8fff;font-weight:600">Sign In</a></li>
+  </ul>
+  <button class="nav-toggle" aria-label="Toggle menu" aria-expanded="false" aria-controls="nav-links">
+    <span></span><span></span><span></span>
+  </button>
+</nav>
+
+<section class="page-hero">
+  <div class="page-hero-glow"></div>
+  <div class="badge"><span class="badge-dot"></span>How It Works</div>
+  <h1 class="page-title">From install to<br/><span class="accent">studying in minutes.</span></h1>
+  <p class="page-sub">Five steps. No data migration, no manual setup, no spreadsheets. Just download, add your classes, and start asking your AI tutor real questions.</p>
+</section>
+
+<section class="section">
+  <div class="timeline">
+
+    <div class="step-row">
+      <div class="step-circle">1</div>
+      <div class="step-body">
+        <h3 class="step-h">Download from TestFlight</h3>
+        <p class="step-p">Tap the beta link, accept the TestFlight invite, and ClassMinds installs like any App Store app. No credit card, no sign-up page — just the app.</p>
+        <div class="step-hint"><strong>Tip:</strong> You'll need iOS 17 or newer. TestFlight is Apple's official beta testing app — completely safe.</div>
+      </div>
+    </div>
+
+    <div class="step-row">
+      <div class="step-circle">2</div>
+      <div class="step-body">
+        <h3 class="step-h">Create your account</h3>
+        <p class="step-p">Sign in with Apple or email. Pick a display name for your class chats. That's the whole onboarding — no 12-step wizard.</p>
+        <div class="step-hint"><strong>Privacy note:</strong> Display name is visible only to classmates you share a class with. Your real name stays private.</div>
+      </div>
+    </div>
+
+    <div class="step-row">
+      <div class="step-circle">3</div>
+      <div class="step-body">
+        <h3 class="step-h">Add your classes</h3>
+        <p class="step-p">Snap a photo of your schedule or type course codes manually. ClassMinds creates a hub, chat room, and deadline tracker for each class automatically.</p>
+        <div class="screens-row">
+          <div class="tiny-screen">
+            <div class="tl">Import</div>
+            <div style="flex:1;display:flex;align-items:center;justify-content:center;border:1px dashed var(--navy-border);border-radius:8px;">📷</div>
+            <div class="tiny-btn">Scan Schedule</div>
+          </div>
+          <div class="tiny-screen">
+            <div class="tl">Review</div>
+            <div class="tiny-card"><div class="k">ECON 201</div>MWF 10am</div>
+            <div class="tiny-card"><div class="k">CS 310</div>TTh 2pm</div>
+            <div class="tiny-card"><div class="k">MATH 215</div>MWF 1pm</div>
+            <div class="tiny-btn">Confirm</div>
+          </div>
+          <div class="tiny-screen">
+            <div class="tl">Ready</div>
+            <div class="tiny-card"><div class="k">3 classes</div>set up</div>
+            <div class="tiny-card"><div class="k">3 chats</div>created</div>
+            <div class="tiny-card"><div class="k">Tracker</div>active</div>
+            <div class="tiny-btn">Let's go</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="step-row">
+      <div class="step-circle">4</div>
+      <div class="step-body">
+        <h3 class="step-h">Upload notes to feed the AI</h3>
+        <p class="step-p">Drop in lecture slides, PDFs, or your own notes. The AI tutor uses these to answer grounded questions — it cites the specific pages it pulled from, so you know where the answer came from.</p>
+        <div class="step-hint"><strong>What works:</strong> PDFs, images, typed notes, and pasted text. <strong>What's next:</strong> handwritten-note OCR is on the roadmap.</div>
+      </div>
+    </div>
+
+    <div class="step-row">
+      <div class="step-circle">5</div>
+      <div class="step-body">
+        <h3 class="step-h">Ask, chat, and stay on top</h3>
+        <p class="step-p">Ask the tutor anything about your class. Coordinate with classmates in the class chat. Get reminded before deadlines. Repeat every week, never fall behind.</p>
+        <div class="step-hint"><strong>Pro move:</strong> Ask "quiz me on chapter 5" before an exam — the tutor generates questions from your actual notes.</div>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<div class="cta-band">
+  <h2>Give it a try.</h2>
+  <p>Setup takes about 90 seconds. Free during beta.</p>
+  <a href="beta.html" class="btn-primary">Join Beta →</a>
+</div>
+
+<footer>
+  <a href="index.html" class="footer-logo">Class<span>Minds</span></a>
+  <ul class="footer-links">
+    <li><a href="features.html">Features</a></li>
+    <li><a href="pricing.html">Pricing</a></li>
+    <li><a href="how.html">How It Works</a></li>
+    <li><a href="faq.html">FAQ</a></li>
+    <li><a href="security.html">Security</a></li>
+    <li><a href="about.html">About</a></li>
+    <li><a href="support.html">Support</a></li>
+    <li><a href="privacy.html">Privacy</a></li>
+    <li><a href="terms.html">Terms</a></li>
+  </ul>
+  <span class="footer-copy">© 2026 ClassMinds. All rights reserved.</span>
+</footer>
+
+<script>
+  const navToggle = document.querySelector('.nav-toggle');
+  const navLinks = document.querySelector('.nav-links');
+  if (navToggle && navLinks) {
+    const closeMenu = () => {
+      navLinks.classList.remove('open');
+      navToggle.classList.remove('open');
+      navToggle.setAttribute('aria-expanded', 'false');
+    };
+    navToggle.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const open = navLinks.classList.toggle('open');
+      navToggle.classList.toggle('open', open);
+      navToggle.setAttribute('aria-expanded', open);
+    });
+    navLinks.querySelectorAll('a').forEach(a => a.addEventListener('click', closeMenu));
+    document.addEventListener('click', (e) => {
+      if (!navLinks.contains(e.target) && !navToggle.contains(e.target)) closeMenu();
+    });
+  }
+</script>
+
+</body>
+</html>

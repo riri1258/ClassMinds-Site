@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<link rel="icon" type="image/png" href="/WebsiteLogo.png"/>
+<link rel="apple-touch-icon" href="/WebsiteLogo.png"/>
+<title>Schedules – ClassMinds Admin</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+<link rel="stylesheet" href="admin-styles.css"/>
+<style>
+  .tabs { display:flex; gap:6px; margin-bottom:18px; border-bottom:1px solid rgba(180,200,255,0.08); }
+  .tab { padding:10px 16px; cursor:pointer; color:var(--muted); font-size:13px; border-bottom:2px solid transparent; }
+  .tab.active { color:#fff; border-bottom-color:#1a6bff; }
+  .tab-panel { display:none; } .tab-panel.active { display:block; }
+  .user-card { padding:14px 18px; margin-bottom:10px; background:rgba(180,200,255,0.04); border-radius:10px; border:1px solid rgba(180,200,255,0.06); }
+  .user-card .meta { font-size:12px; color:var(--muted); margin-top:4px; }
+  .badge { display:inline-block; padding:2px 8px; font-size:10px; border-radius:6px; margin-left:6px; }
+  .badge.flag { background:rgba(255,180,80,0.15); color:#ffb450; }
+</style>
+</head>
+<body>
+<div class="admin-wrap" id="adminWrap">
+  <div class="sidebar" id="sidebarSlot"></div>
+  <div class="main">
+    <div class="page-header">
+      <div class="page-title">Schedules</div>
+      <div class="page-desc">Recent uploads, suspicious patterns, per-user lookup &amp; invalidation.</div>
+    </div>
+
+    <div class="tabs">
+      <div class="tab active" data-tab="recent">Recent uploads</div>
+      <div class="tab" data-tab="flagged">Suspicious</div>
+      <div class="tab" data-tab="lookup">Schedule by user</div>
+    </div>
+
+    <div id="tabRecent" class="tab-panel active">
+      <div id="recentList"><div class="empty-state"><div class="spinner"></div></div></div>
+    </div>
+
+    <div id="tabFlagged" class="tab-panel">
+      <div style="font-size:12px;color:var(--muted);margin-bottom:10px">
+        Flag rules: more than 8 active entries, or matchKeys not seen on any other user at the same school.
+      </div>
+      <div id="flaggedList"><div class="empty-state">Click the tab to load.</div></div>
+    </div>
+
+    <div id="tabLookup" class="tab-panel">
+      <div style="display:flex;gap:10px;margin-bottom:14px">
+        <input class="search-input" id="lookupInput" placeholder="Enter uid or email..." style="width:320px"/>
+        <button class="btn btn-blue" id="lookupBtn">Load</button>
+      </div>
+      <div id="lookupOut"></div>
+    </div>
+  </div>
+</div>
+<div class="toast" id="toast"></div>
+
+<script src="config.js"></script>
+<script type="module">
+import {
+  requireAdmin, db, doc, getDoc, collection, getDocs, query, where, orderBy, limit, fmtDate, escapeHtml, toast,
+  collectionGroup, storage, storageRef, listAll, getDownloadURL,
+  adminInvalidateUserScheduleFn,
+} from './admin-shared.js';
+import { renderSidebar } from './admin-sidebar.js';
+renderSidebar();
+
+requireAdmin().then(async () => {
+  document.querySelectorAll('.tab').forEach(t => {
+    t.addEventListener('click', () => {
+      document.querySelectorAll('.tab').forEach(x => x.classList.remove('active'));
+      document.querySelectorAll('.tab-panel').forEach(x => x.classList.remove('active'));
+      t.classList.add('active');
+      const id = 'tab' + t.dataset.tab.charAt(0).toUpperCase() + t.dataset.tab.slice(1);
+      document.getElementById(id).classList.add('active');
+    });
+  });
+
+  // ---- Recent uploads (collection group) ----
+  await loadRecent();
+  async function loadRecent() {
+    const list = document.getElementById('recentList');
+    list.innerHTML = '<div class="empty-state"><div class="spinner"></div></div>';
+    let snap;
+    try {
+      snap = await getDocs(query(
+        collectionGroup(db, 'scheduleClasses'),
+        orderBy('parsedAt', 'desc'),
+        limit(200)
+      ));
+    } catch (e) {
+      list.textContent = 'Failed to load (you may need to create the collection-group index Firestore prints in the console): ' + (e.message || e);
+      return;
+    }
+    // Group by uid
+    const byUid = new Map();
+    for (const d of snap.docs) {
+      const data = d.data();
+      const uid = d.ref.parent.parent.id;
+      if (!byUid.has(uid)) byUid.set(uid, { uid, count: 0, latest: 0, schoolId: data.schoolId || '' });
+      const e = byUid.get(uid);
+      e.count++;
+      e.latest = Math.max(e.latest, Number(data.parsedAt || 0));
+    }
+    const rows = Array.from(byUid.values()).sort((a, b) => b.latest - a.latest);
+    list.innerHTML = '';
+    for (const r of rows) {
+      const card = document.createElement('div');
+      card.className = 'user-card';
+      const userSnap = await getDoc(doc(db, 'users', r.uid));
+      const u = userSnap.exists() ? userSnap.data() : {};
+      const head = document.createElement('div');
+      head.style.cssText = 'display:flex;justify-content:space-between;align-items:center;gap:10px';
+      const left = document.createElement('div');
+      left.innerHTML = `<div style="font-weight:600">${escapeHtml((u.firstName||'')+' '+(u.lastName||'') || r.uid)}</div>
+        <div class="meta"><code>${escapeHtml(r.uid)}</code> · ${escapeHtml(u.college || r.schoolId || '—')}</div>
+        <div class="meta">${r.count} active entries · last parsed ${fmtDate(new Date(r.latest * 1000))}</div>`;
+      const actions = document.createElement('div');
+      actions.style.cssText = 'display:flex;flex-direction:column;gap:6px';
+      const viewPdf = document.createElement('button'); viewPdf.className='btn btn-blue'; viewPdf.textContent='View PDF';
+      viewPdf.style.fontSize = '11px'; viewPdf.style.padding = '6px 10px';
+      viewPdf.addEventListener('click', () => openLatestPDF(r.uid));
+      actions.appendChild(viewPdf);
+      head.append(left, actions);
+      card.appendChild(head);
+      list.appendChild(card);
+    }
+    if (!rows.length) {
+      list.innerHTML = '<div class="empty-state" style="padding:48px;color:var(--muted)">No recent uploads.</div>';
+    }
+  }
+
+  async function openLatestPDF(uid) {
+    try {
+      const folderRef = storageRef(storage, `schedule-uploads/${uid}`);
+      const listRes = await listAll(folderRef);
+      if (!listRes.items.length) { alert('No PDF on file for ' + uid); return; }
+      // Files are named `${ts}.pdf`; sort by name desc to get latest.
+      const sorted = listRes.items.slice().sort((a, b) => b.name.localeCompare(a.name));
+      const url = await getDownloadURL(sorted[0]);
+      window.open(url, '_blank', 'noopener');
+    } catch (e) {
+      alert('Failed: ' + (e.message || e));
+    }
+  }
+
+  // ---- Suspicious patterns ----
+  document.querySelector('[data-tab="flagged"]').addEventListener('click', loadFlagged, { once: true });
+  async function loadFlagged() {
+    const list = document.getElementById('flaggedList');
+    list.innerHTML = '<div class="empty-state"><div class="spinner"></div></div>';
+    let snap;
+    try {
+      snap = await getDocs(query(collectionGroup(db, 'scheduleClasses'), where('status', '==', 'active'), limit(2000)));
+    } catch (e) {
+      list.textContent = 'Failed: ' + (e.message || e);
+      return;
+    }
+    // count by uid + matchKey occurrence by (schoolId, matchKey)
+    const byUid = new Map();
+    const matchKeyCount = new Map();
+    for (const d of snap.docs) {
+      const data = d.data();
+      const uid = d.ref.parent.parent.id;
+      byUid.set(uid, (byUid.get(uid) || 0) + 1);
+      const key = (data.schoolId || '') + '|' + (data.matchKey || '');
+      matchKeyCount.set(key, (matchKeyCount.get(key) || 0) + 1);
+    }
+    // Per-user flag set
+    const flags = [];
+    for (const [uid, count] of byUid.entries()) {
+      const reasons = [];
+      if (count > 8) reasons.push(`heavy load (${count} active)`);
+      flags.push({ uid, count, reasons });
+    }
+    // Add solo-matchKey reasons (per uid: any active entry whose matchKey count is 1 across the whole school)
+    for (const d of snap.docs) {
+      const data = d.data();
+      const uid = d.ref.parent.parent.id;
+      const key = (data.schoolId || '') + '|' + (data.matchKey || '');
+      if ((matchKeyCount.get(key) || 0) === 1) {
+        const f = flags.find(x => x.uid === uid);
+        if (f && !f.reasons.includes('lone matchKey at school')) f.reasons.push('lone matchKey at school');
+      }
+    }
+    const flagged = flags.filter(f => f.reasons.length).sort((a, b) => b.count - a.count);
+    if (!flagged.length) {
+      list.innerHTML = '<div class="empty-state" style="padding:48px;color:var(--muted)">Nothing flagged.</div>';
+      return;
+    }
+    list.innerHTML = '';
+    for (const f of flagged) {
+      const card = document.createElement('div');
+      card.className = 'user-card';
+      const userSnap = await getDoc(doc(db, 'users', f.uid));
+      const u = userSnap.exists() ? userSnap.data() : {};
+      card.innerHTML = `<div style="font-weight:600">${escapeHtml((u.firstName||'')+' '+(u.lastName||'') || f.uid)}
+        ${f.reasons.map(r => `<span class="badge flag">${escapeHtml(r)}</span>`).join('')}</div>
+        <div class="meta"><code>${escapeHtml(f.uid)}</code> · ${escapeHtml(u.college || '—')}</div>`;
+      list.appendChild(card);
+    }
+  }
+
+  // ---- Lookup ----
+  document.getElementById('lookupBtn').addEventListener('click', loadLookup);
+  document.getElementById('lookupInput').addEventListener('keydown', (e) => { if (e.key === 'Enter') loadLookup(); });
+  async function loadLookup() {
+    const out = document.getElementById('lookupOut');
+    const raw = document.getElementById('lookupInput').value.trim();
+    if (!raw) return;
+    out.innerHTML = '<div class="empty-state"><div class="spinner"></div></div>';
+    // Resolve uid (raw might be email).
+    let uid = raw;
+    if (raw.includes('@')) {
+      try {
+        const usnap = await getDocs(query(collection(db, 'users'), where('email', '==', raw.toLowerCase()), limit(1)));
+        if (usnap.empty) { out.textContent = 'No user with that email.'; return; }
+        uid = usnap.docs[0].id;
+      } catch (e) { out.textContent = 'Lookup failed: ' + (e.message || e); return; }
+    }
+    let entries;
+    try {
+      entries = await getDocs(collection(db, 'users', uid, 'scheduleClasses'));
+    } catch (e) { out.textContent = 'Failed: ' + (e.message || e); return; }
+    const userSnap = await getDoc(doc(db, 'users', uid));
+    const u = userSnap.exists() ? userSnap.data() : {};
+
+    out.innerHTML = '';
+    const header = document.createElement('div');
+    header.className = 'user-card';
+    header.innerHTML = `<div style="font-weight:600">${escapeHtml((u.firstName||'')+' '+(u.lastName||'') || uid)}</div>
+      <div class="meta"><code>${escapeHtml(uid)}</code> · ${escapeHtml(u.college || '—')}</div>
+      <div class="meta">${entries.size} schedule entries · hasImportedSchedule: ${u.hasImportedSchedule ? 'yes' : 'no'}</div>`;
+    const actions = document.createElement('div');
+    actions.style.cssText = 'margin-top:10px;display:flex;gap:8px';
+    const invalidateBtn = document.createElement('button');
+    invalidateBtn.className = 'btn btn-red'; invalidateBtn.textContent = 'Mark all inactive';
+    invalidateBtn.style.fontSize = '12px'; invalidateBtn.style.padding = '6px 12px';
+    invalidateBtn.addEventListener('click', async () => {
+      const reason = prompt('Reason for invalidation (≤500 chars, required):', '');
+      if (!reason || !reason.trim()) return;
+      if (!confirm(`Flip all ${entries.size} entries to inactive + clear hasImportedSchedule for ${uid}?\n\nThe user will be sent back through scheduleImport on next sign-in. Existing class memberships are PRESERVED.`)) return;
+      invalidateBtn.disabled = true; invalidateBtn.textContent = 'Working…';
+      try {
+        const res = await adminInvalidateUserScheduleFn({ targetUid: uid, reason: reason.trim().slice(0, 500) });
+        toast(`Flipped ${res.data?.flipped || 0} entries`);
+        loadLookup();
+      } catch (e) {
+        alert('Failed: ' + (e.message || e));
+        invalidateBtn.disabled = false; invalidateBtn.textContent = 'Mark all inactive';
+      }
+    });
+    actions.appendChild(invalidateBtn);
+    header.appendChild(actions);
+    out.appendChild(header);
+
+    if (entries.empty) {
+      const empty = document.createElement('div');
+      empty.className = 'empty-state'; empty.style.padding = '24px';
+      empty.style.color = 'var(--muted)'; empty.textContent = 'No schedule entries.';
+      out.appendChild(empty);
+      return;
+    }
+    const wrap = document.createElement('div'); wrap.className = 'table-card'; wrap.style.marginTop = '14px';
+    const tbl = document.createElement('table');
+    tbl.innerHTML = '<thead><tr><th>Course</th><th>Section</th><th>Term</th><th>Status</th><th>classId</th></tr></thead>';
+    const tbody = document.createElement('tbody');
+    for (const d of entries.docs) {
+      const e = d.data();
+      const tr = document.createElement('tr');
+      const c1 = document.createElement('td'); c1.textContent = e.courseCode || '—';
+      const c2 = document.createElement('td'); c2.textContent = e.section || '—';
+      const c3 = document.createElement('td'); c3.textContent = e.term || '—';
+      const c4 = document.createElement('td');
+      c4.innerHTML = `<span class="badge ${e.status === 'active' ? '' : 'flag'}">${escapeHtml(e.status || '?')}</span>`;
+      const c5 = document.createElement('td'); c5.style.fontSize = '11px'; c5.style.color = 'var(--muted)';
+      c5.textContent = e.classId || '—';
+      tr.append(c1, c2, c3, c4, c5);
+      tbody.appendChild(tr);
+    }
+    tbl.appendChild(tbody);
+    const scroll = document.createElement('div'); scroll.style.overflowX = 'auto'; scroll.appendChild(tbl);
+    wrap.appendChild(scroll);
+    out.appendChild(wrap);
+  }
+});
+
+document.getElementById('logoutBtn')?.addEventListener('click', () => {
+  import('./admin-shared.js').then(m => m.doLogout());
+});
+</script>
+</body>
+</html>

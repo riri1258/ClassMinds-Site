@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>Admin Sign In — ClassMinds</title>
+  <link rel="icon" type="image/png" href="/WebsiteLogo.png"/>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Syne:wght@600;700;800&display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" href="admin-styles.css"/>
+  <style>
+    .info-banner { font-size: 12px; color: var(--blue-bright); background: rgba(26,107,255,0.08); border: 1px solid rgba(26,107,255,0.25); border-radius: 8px; padding: 10px 12px; margin-bottom: 18px; line-height: 1.45; text-align: left; display: none; }
+    .info-banner.show { display: block; }
+    #step-mfa .auth-input { font-family: monospace; font-size: 18px; letter-spacing: 4px; text-align: center; }
+    .link-back { font-size: 12px; color: var(--muted); margin-top: 14px; cursor: pointer; text-decoration: underline; display: inline-block; }
+  </style>
+  <script src="config.js"></script>
+</head>
+<body>
+  <div class="auth-wrap">
+    <div class="auth-card">
+      <div class="auth-logo">Class<span>Minds</span> Admin</div>
+      <div class="auth-sub">Sign in to continue</div>
+
+      <div class="info-banner" id="mfaBanner">
+        Multi-factor sign-in required. Sign in below — you'll be prompted for your authenticator code.
+      </div>
+
+      <div id="step-creds">
+        <input class="auth-input" id="email" type="email" placeholder="Email" autocomplete="username"/>
+        <input class="auth-input" id="pw" type="password" placeholder="Password" autocomplete="current-password"/>
+        <button class="auth-btn" id="signinBtn">Sign in</button>
+        <div class="auth-error" id="errMsg"></div>
+        <a class="auth-reset" id="resetLink">Forgot password?</a>
+      </div>
+
+      <div id="step-mfa" style="display:none">
+        <div class="auth-sub" style="margin-bottom: 18px; margin-top: 8px;">
+          Enter the 6-digit code from your authenticator app
+        </div>
+        <input class="auth-input" id="otp" type="text" inputmode="numeric" maxlength="6" placeholder="123456" autocomplete="one-time-code"/>
+        <button class="auth-btn" id="otpBtn">Verify</button>
+        <div class="auth-error" id="otpErr"></div>
+        <a class="link-back" id="cancelMfa">Use a different account</a>
+      </div>
+    </div>
+  </div>
+
+  <script type="module">
+    import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
+    import {
+      getAuth, signInWithEmailAndPassword, sendPasswordResetEmail, onAuthStateChanged, signOut,
+      getIdTokenResult, getMultiFactorResolver, TotpMultiFactorGenerator
+    } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js';
+    import { getFirestore, doc, getDoc } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
+    import { initializeAppCheck, ReCaptchaEnterpriseProvider } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app-check.js';
+
+    const app = initializeApp({
+      apiKey: "AIzaSyD7BVxbfGskF10IcifVxyvWwAaAYPb-frw",
+      authDomain: "classmind-9a22a.firebaseapp.com",
+      projectId: "classmind-9a22a",
+      storageBucket: "classmind-9a22a.firebasestorage.app",
+      messagingSenderId: "893980768351",
+      appId: "1:893980768351:web:972e20a662054f29c483ea"
+    });
+
+    const RECAPTCHA_PLACEHOLDERS = new Set([
+      '__SET_RECAPTCHA_ENTERPRISE_SITE_KEY__',
+      '__PASTE_REAL_SITE_KEY_HERE__',
+    ]);
+    try {
+      const key = window.RECAPTCHA_ENTERPRISE_SITE_KEY || '__PASTE_REAL_SITE_KEY_HERE__';
+      if (key && !RECAPTCHA_PLACEHOLDERS.has(key)) {
+        initializeAppCheck(app, {
+          provider: new ReCaptchaEnterpriseProvider(key),
+          isTokenAutoRefreshEnabled: true,
+        });
+      }
+    } catch (_) { /* App Check optional on the login page */ }
+
+    const auth = getAuth(app);
+    const db = getFirestore(app);
+    const $ = (id) => document.getElementById(id);
+
+    const params = new URLSearchParams(window.location.search);
+    const nextUrl = params.get('next') || 'admin.html';
+    if (params.get('mfa') === '1') $('mfaBanner').classList.add('show');
+
+    let pendingResolver = null;
+    let signingIn = false;
+
+    function showErr(elId, msg) {
+      const el = $(elId);
+      el.textContent = msg;
+      el.style.display = 'block';
+    }
+    function clearErr(elId) {
+      const el = $(elId);
+      el.textContent = '';
+      el.style.display = 'none';
+    }
+
+    function friendlyAuthError(code, fallback) {
+      switch (code) {
+        case 'auth/invalid-email':            return 'Enter a valid email address.';
+        case 'auth/user-disabled':            return 'This account has been disabled.';
+        case 'auth/user-not-found':
+        case 'auth/wrong-password':
+        case 'auth/invalid-credential':       return 'Email or password is incorrect.';
+        case 'auth/too-many-requests':        return 'Too many attempts. Please wait a moment and try again.';
+        case 'auth/network-request-failed':   return 'Network error. Check your connection.';
+        case 'auth/invalid-verification-code':return 'That code is incorrect. Try the next one from your app.';
+        default:                              return fallback || 'Sign-in failed. Please try again.';
+      }
+    }
+
+    async function gateAndRedirect(user) {
+      let isAdmin = false;
+      try {
+        const tokenResult = await getIdTokenResult(user, true);
+        if (tokenResult?.claims?.admin === true) isAdmin = true;
+      } catch (_) {}
+      // Legacy fallback: users/{uid}.isAdmin === true. Mirrors admin-shared.js
+      // requireAdmin() — server self-heals the claim on the next admin callable,
+      // so future sign-ins go through the claim path.
+      if (!isAdmin) {
+        try {
+          const snap = await getDoc(doc(db, 'users', user.uid));
+          if (snap.exists() && snap.data()?.isAdmin === true) isAdmin = true;
+        } catch (_) {}
+      }
+      if (!isAdmin) {
+        await signOut(auth);
+        showErr('errMsg', 'That account is not an admin.');
+        return false;
+      }
+      window.location.href = nextUrl;
+      return true;
+    }
+
+    onAuthStateChanged(auth, async (user) => {
+      if (!user || signingIn) return;
+      try { await gateAndRedirect(user); } catch (_) {}
+    });
+
+    $('signinBtn').addEventListener('click', async () => {
+      if (signingIn) return;
+      clearErr('errMsg');
+      const email = $('email').value.trim().toLowerCase();
+      const pw = $('pw').value;
+      if (!email || !pw) {
+        showErr('errMsg', 'Enter your email and password.');
+        return;
+      }
+      signingIn = true;
+      $('signinBtn').disabled = true;
+      try {
+        const cred = await signInWithEmailAndPassword(auth, email, pw);
+        await gateAndRedirect(cred.user);
+      } catch (e) {
+        if (e?.code === 'auth/multi-factor-auth-required') {
+          try {
+            pendingResolver = getMultiFactorResolver(auth, e);
+            const totpHint = (pendingResolver.hints || []).find(
+              h => h.factorId === TotpMultiFactorGenerator.FACTOR_ID
+            );
+            if (!totpHint) {
+              showErr('errMsg', 'No supported second factor on this account.');
+              pendingResolver = null;
+            } else {
+              $('step-creds').style.display = 'none';
+              $('step-mfa').style.display = 'block';
+              $('otp').focus();
+            }
+          } catch (resErr) {
+            showErr('errMsg', 'Could not start MFA challenge: ' + (resErr?.message || resErr));
+          }
+        } else {
+          showErr('errMsg', friendlyAuthError(e?.code, e?.message));
+        }
+      } finally {
+        signingIn = false;
+        $('signinBtn').disabled = false;
+      }
+    });
+
+    $('otpBtn').addEventListener('click', async () => {
+      if (!pendingResolver) return;
+      clearErr('otpErr');
+      const code = $('otp').value.trim();
+      if (code.length !== 6 || !/^\d{6}$/.test(code)) {
+        showErr('otpErr', 'Enter the 6-digit code from your authenticator app.');
+        return;
+      }
+      $('otpBtn').disabled = true;
+      try {
+        const totpHint = pendingResolver.hints.find(
+          h => h.factorId === TotpMultiFactorGenerator.FACTOR_ID
+        );
+        const assertion = TotpMultiFactorGenerator.assertionForSignIn(totpHint.uid, code);
+        signingIn = true;
+        const cred = await pendingResolver.resolveSignIn(assertion);
+        pendingResolver = null;
+        await gateAndRedirect(cred.user);
+      } catch (e) {
+        showErr('otpErr', friendlyAuthError(e?.code, e?.message));
+      } finally {
+        signingIn = false;
+        $('otpBtn').disabled = false;
+      }
+    });
+
+    $('cancelMfa').addEventListener('click', () => {
+      pendingResolver = null;
+      $('otp').value = '';
+      $('step-mfa').style.display = 'none';
+      $('step-creds').style.display = 'block';
+      clearErr('errMsg');
+      clearErr('otpErr');
+    });
+
+    $('resetLink').addEventListener('click', async () => {
+      const email = $('email').value.trim().toLowerCase();
+      if (!email) {
+        showErr('errMsg', 'Enter your email above first, then tap "Forgot password".');
+        return;
+      }
+      try {
+        await sendPasswordResetEmail(auth, email);
+        clearErr('errMsg');
+        const note = $('errMsg');
+        note.textContent = 'Password reset email sent (if the account exists).';
+        note.style.color = 'var(--blue-bright)';
+        note.style.display = 'block';
+      } catch (e) {
+        showErr('errMsg', friendlyAuthError(e?.code, e?.message));
+      }
+    });
+
+    $('pw').addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') $('signinBtn').click();
+    });
+    $('otp').addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') $('otpBtn').click();
+    });
+  </script>
+</body>
+</html>

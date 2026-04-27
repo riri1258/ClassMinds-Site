@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<link rel="icon" type="image/png" href="/WebsiteLogo.png"/>
+<link rel="apple-touch-icon" href="/WebsiteLogo.png"/>
+<link rel="shortcut icon" href="/WebsiteLogo.png"/>
+<title>Study – ClassMinds</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=DM+Sans:ital,wght@0,400;0,500;0,600;0,700;1,400&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet"/>
+<link rel="stylesheet" href="app-styles.css"/>
+</head>
+<body>
+<div id="sidebarSlot"></div>
+<div class="page-glow"></div>
+<div class="main">
+  <div class="page-head">
+    <div>
+      <h1 class="page-title">Study</h1>
+      <p class="page-sub">review flashcards and quiz yourself — on what you're actually studying.</p>
+    </div>
+  </div>
+
+  <div class="pill-row" id="scopePills">
+    <span class="pillf active" data-scope="all">all classes <span class="cnt" id="scopeAllCnt">—</span></span>
+    <span class="pillf" data-scope="class">one class</span>
+    <span class="pillf" data-scope="note">single note</span>
+  </div>
+
+  <!-- Per-scope chooser -->
+  <div id="scopeChooser" style="display:none;"></div>
+
+  <div class="card" style="display:flex; align-items:center; justify-content:space-between; padding:16px 20px;">
+    <div style="font-size:13px; color:var(--muted);">scope · <span id="scopeSummary" style="color:var(--white); font-weight:600;">loading…</span></div>
+    <div style="display:flex; align-items:center; gap:10px;">
+      <span class="label">session length</span>
+      <span class="chip muted" style="font-family:var(--font-mono);">25 cards</span>
+    </div>
+  </div>
+
+  <div style="display:grid; grid-template-columns:1fr 1fr; gap:16px;">
+    <div class="card" style="padding:24px; background: linear-gradient(135deg, rgba(168,85,247,0.08), var(--navy-card)); border-color: rgba(168,85,247,0.22);">
+      <div style="display:flex; align-items:center; gap:12px; margin-bottom:12px;">
+        <div style="width:44px; height:44px; border-radius:var(--r-xl); background:rgba(168,85,247,0.18); border:0.5px solid rgba(168,85,247,0.3); display:flex; align-items:center; justify-content:center; font-size:20px;">🃏</div>
+        <div>
+          <div style="font-family:var(--font-display); font-size:18px; font-weight:700; color:var(--white);">Review flashcards</div>
+          <div style="font-size:12px; color:var(--muted);">spaced-repetition, scoped to today</div>
+        </div>
+      </div>
+      <div style="display:flex; gap:18px; font-size:12px; color:var(--muted); padding:14px 0; border-top:0.5px solid var(--border); border-bottom:0.5px solid var(--border); margin-bottom:14px;">
+        <span><b style="color:var(--white); font-family:var(--font-display); font-size:15px;" id="cardsReady">—</b> cards ready</span>
+        <span><b style="color:var(--green); font-family:var(--font-display); font-size:15px;">—</b> mastered</span>
+        <span><b style="color:var(--yellow); font-family:var(--font-display); font-size:15px;">—</b> due today</span>
+      </div>
+      <button class="btn primary" id="startSessionBtn">Start session →</button>
+    </div>
+
+    <div class="card" style="padding:24px; background: linear-gradient(135deg, rgba(245,158,11,0.06), var(--navy-card)); border-color: rgba(245,158,11,0.2);">
+      <div style="display:flex; align-items:center; gap:12px; margin-bottom:12px;">
+        <div style="width:44px; height:44px; border-radius:var(--r-xl); background:rgba(245,158,11,0.14); border:0.5px solid rgba(245,158,11,0.3); display:flex; align-items:center; justify-content:center; font-size:20px;">❓</div>
+        <div>
+          <div style="font-family:var(--font-display); font-size:18px; font-weight:700; color:var(--white);">Take a quiz</div>
+          <div style="font-size:12px; color:var(--muted);">10 questions pulled from your notes</div>
+        </div>
+      </div>
+      <div style="display:flex; gap:18px; font-size:12px; color:var(--muted); padding:14px 0; border-top:0.5px solid var(--border); border-bottom:0.5px solid var(--border); margin-bottom:14px;">
+        <span>last score <b style="color:var(--white); font-family:var(--font-display); font-size:15px;">—</b></span>
+        <span><b style="color:var(--white); font-family:var(--font-display); font-size:15px;">0</b> taken</span>
+        <span>avg <b style="color:var(--blue-bright); font-family:var(--font-display); font-size:15px;">—</b></span>
+      </div>
+      <button class="btn ghost" id="startQuizBtn">Start quiz →</button>
+    </div>
+  </div>
+
+  <div class="label">Study by class</div>
+  <div id="studyByClass" style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
+    <div style="grid-column:1/-1;text-align:center;padding:24px;color:var(--muted);"><div class="spinner"></div></div>
+  </div>
+</div>
+
+<script type="module">
+import{requireUser,db,collection,getDocs,query,orderBy,limit,loadClasses,esc,COLORS,logError,logSuccess,logInfo}from'./app-shared.js';
+
+requireUser().then(async({uid})=>{
+  try{
+  const{classes:allClasses,colorMap:ccMap}=await loadClasses(uid);
+
+  // Per-class aggregation: count notes + sum keyPoints
+  const perClass=[];
+  for(const c of allClasses){
+    const cid=c.classId||c.id;
+    let notes=[],kpTotal=0;
+    try{
+      const s=await getDocs(query(collection(db,'classes',cid,'notes'),orderBy('createdAt','desc'),limit(50)));
+      notes=s.docs.map(d=>({id:d.id,...d.data()}));
+      kpTotal=notes.reduce((acc,n)=>acc+(n.keyPoints?.length||0),0);
+    }catch(e){logError('Study load failed for '+c.courseCode+': '+e.message,'study');}
+    perClass.push({...c,_cid:cid,_notes:notes,_kpTotal:kpTotal,_color:ccMap[cid]||COLORS[0]});
+  }
+
+  // Scope state — 'all' | {class:cid} | {note:{classId,noteId}}
+  let scope='all';
+
+  function totalsForScope(){
+    if(scope==='all'){
+      const noteCount=perClass.reduce((a,b)=>a+b._notes.length,0);
+      const kp=perClass.reduce((a,b)=>a+b._kpTotal,0);
+      return{label:`all ${perClass.length} classes · ${noteCount} notes · ${kp} key points`,kp,firstNote:findFirstNote()};
+    }
+    if(scope.class){
+      const c=perClass.find(p=>p._cid===scope.class);
+      if(!c)return{label:'—',kp:0};
+      return{label:`${c.courseCode} · ${c._notes.length} notes · ${c._kpTotal} key points`,kp:c._kpTotal,firstNote:c._notes[0]?{classId:c._cid,noteId:c._notes[0].id}:null};
+    }
+    if(scope.note){
+      const c=perClass.find(p=>p._cid===scope.note.classId);
+      const n=c?._notes.find(x=>x.id===scope.note.noteId);
+      return{label:`${c?.courseCode||''} · 1 note · ${n?.keyPoints?.length||0} key points`,kp:n?.keyPoints?.length||0,firstNote:scope.note};
+    }
+    return{label:'—',kp:0};
+  }
+  function findFirstNote(){
+    for(const c of perClass){if(c._notes.length)return{classId:c._cid,noteId:c._notes[0].id};}
+    return null;
+  }
+
+  function renderSummary(){
+    const t=totalsForScope();
+    document.getElementById('scopeSummary').textContent=t.label;
+    document.getElementById('cardsReady').textContent=t.kp;
+    document.getElementById('scopeAllCnt').textContent=perClass.length;
+  }
+
+  function renderChooser(){
+    const ch=document.getElementById('scopeChooser');
+    if(scope==='all'){ch.style.display='none';ch.innerHTML='';return;}
+    if(scope.class!==undefined||(typeof scope==='object'&&!scope.note)){
+      ch.style.display='grid';
+      ch.style.gridTemplateColumns='repeat(auto-fill, minmax(220px, 1fr))';
+      ch.style.gap='10px';
+      ch.innerHTML=perClass.map(c=>`
+        <div class="card" data-cid="${c._cid}" style="padding:12px 16px; cursor:pointer; display:flex; align-items:center; gap:12px; ${scope.class===c._cid?'border-color:var(--border-active);background:var(--blue-tint-12);':''}">
+          <div style="width:3px; height:28px; border-radius:var(--r-full); background:${c._color};"></div>
+          <div style="flex:1;">
+            <div style="font-family:var(--font-display); font-size:13px; font-weight:700; color:var(--white);">${esc(c.courseCode)}</div>
+            <div style="font-size:11px; color:var(--muted);">${c._notes.length} notes · ${c._kpTotal} kp</div>
+          </div>
+        </div>`).join('');
+      ch.querySelectorAll('[data-cid]').forEach(el=>el.addEventListener('click',()=>{scope={class:el.dataset.cid};renderChooser();renderSummary();}));
+      return;
+    }
+    if(scope.note!==undefined||(typeof scope==='object'&&'note' in scope===false)){
+      // Note picker — flatten all notes
+      const flat=[];
+      perClass.forEach(c=>c._notes.forEach(n=>flat.push({c,n})));
+      ch.style.display='grid';ch.style.gridTemplateColumns='repeat(auto-fill, minmax(280px, 1fr))';ch.style.gap='10px';
+      ch.innerHTML=flat.map(({c,n})=>{
+        const sel=scope.note&&scope.note.noteId===n.id;
+        return`<div class="card" data-cid="${c._cid}" data-nid="${n.id}" style="padding:12px 16px; cursor:pointer; display:flex; align-items:center; gap:12px; ${sel?'border-color:var(--border-active);background:var(--blue-tint-12);':''}">
+          <div style="width:3px; height:28px; border-radius:var(--r-full); background:${c._color};"></div>
+          <div style="flex:1; min-width:0;">
+            <div style="font-size:13px; font-weight:600; color:var(--white); white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${esc(n.title||'Untitled')}</div>
+            <div style="font-size:11px; color:var(--muted);">${esc(c.courseCode)} · ${n.keyPoints?.length||0} kp</div>
+          </div>
+        </div>`;
+      }).join('')||'<div style="grid-column:1/-1;color:var(--muted);text-align:center;padding:24px;">No notes yet</div>';
+      ch.querySelectorAll('[data-nid]').forEach(el=>el.addEventListener('click',()=>{scope={note:{classId:el.dataset.cid,noteId:el.dataset.nid}};renderChooser();renderSummary();}));
+    }
+  }
+
+  document.getElementById('scopePills').addEventListener('click',e=>{
+    const p=e.target.closest('.pillf');if(!p)return;
+    document.querySelectorAll('#scopePills .pillf').forEach(x=>x.classList.remove('active'));
+    p.classList.add('active');
+    if(p.dataset.scope==='all')scope='all';
+    else if(p.dataset.scope==='class')scope={class:perClass[0]?._cid||null};
+    else scope={note:findFirstNote()||null};
+    renderChooser();renderSummary();
+  });
+
+  // TODO: extract flashcard/quiz engine into study-engine.js for true standalone sessions.
+  // For now, both buttons route to note.html?autostart=… on the first note in scope.
+  function startSession(mode){
+    const t=totalsForScope();
+    if(!t.firstNote){alert('No notes in scope yet — record a lecture from the Record page first.');return;}
+    window.location.href=`note.html?classId=${t.firstNote.classId}&noteId=${t.firstNote.noteId}&autostart=${mode}`;
+  }
+  document.getElementById('startSessionBtn').addEventListener('click',()=>startSession('flashcards'));
+  document.getElementById('startQuizBtn').addEventListener('click',()=>startSession('quiz'));
+
+  // Study by class grid
+  const grid=document.getElementById('studyByClass');
+  if(!perClass.length){grid.innerHTML='<div style="grid-column:1/-1;text-align:center;padding:24px;color:var(--muted);">📚 No classes yet</div>';}
+  else{
+    grid.innerHTML=perClass.map(c=>`
+      <a class="card" href="note.html?classId=${c._cid}&noteId=${c._notes[0]?.id||''}&autostart=flashcards" style="padding:14px 18px; display:flex; align-items:center; gap:14px; text-decoration:none; color:inherit; ${!c._notes.length?'opacity:0.4;pointer-events:none;':''}">
+        <div style="width:3px; height:32px; border-radius:var(--r-full); background:${c._color};"></div>
+        <div style="flex:1;">
+          <div style="font-family:var(--font-display); font-size:14px; font-weight:700; color:var(--white);">${esc(c.courseCode)}</div>
+          <div style="font-size:11px; color:var(--muted);">${c._kpTotal} cards · ${c._notes.length} notes</div>
+        </div>
+        <span style="font-size:12px; color:var(--blue-bright); font-weight:600;">study →</span>
+      </a>`).join('');
+  }
+
+  renderSummary();
+  // Honor ?class= param to deep-link
+  const urlClass=new URLSearchParams(window.location.search).get('class');
+  if(urlClass){
+    const c=perClass.find(p=>(p.courseCode||'').toLowerCase()===urlClass.toLowerCase()||p._cid===urlClass);
+    if(c){scope={class:c._cid};document.querySelectorAll('#scopePills .pillf').forEach(x=>x.classList.remove('active'));document.querySelector('#scopePills .pillf[data-scope="class"]').classList.add('active');renderChooser();renderSummary();}
+  }
+  logSuccess('Study page loaded — '+perClass.length+' classes','study');
+  }catch(e){logError('Study page crash: '+e.message,'study');}
+});
+</script>
+</body>
+</html>

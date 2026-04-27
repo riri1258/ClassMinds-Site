@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<!-- Favicon & Icons -->
+<link rel="icon" type="image/png" href="/WebsiteLogo.png"/>
+<link rel="apple-touch-icon" href="/WebsiteLogo.png"/>
+<link rel="shortcut icon" href="/WebsiteLogo.png"/>
+<title>Console – ClassMinds Admin</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+<link rel="stylesheet" href="admin-styles.css"/>
+</head>
+<body>
+<div class="admin-wrap" id="adminWrap">
+  <div class="sidebar" id="sidebarSlot"></div>
+  <div class="main">
+    <div class="page-header">
+      <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;width:100%">
+        <div><div class="page-title">Console</div><div class="page-desc">iOS app events and errors</div></div>
+        <div style="display:flex;gap:8px">
+          <button class="btn btn-ghost log-filter active" data-filter="all" style="font-size:11px">All</button>
+          <button class="btn btn-ghost log-filter" data-filter="success" style="font-size:11px">✔ Success</button>
+          <button class="btn btn-ghost log-filter" data-filter="error" style="font-size:11px">✘ Errors</button>
+          <button class="btn btn-ghost log-filter" data-filter="info" style="font-size:11px">ℹ Info</button>
+          <button class="btn btn-red" id="clearLogsBtn" style="font-size:11px">Clear All</button>
+        </div>
+      </div>
+    </div>
+    <div class="stats-row" id="logStats"></div>
+    <div id="logsContainer" style="font-family:monospace;font-size:12px"><div class="empty-state"><div class="spinner"></div></div></div>
+  </div>
+</div>
+<div class="toast" id="toast"></div>
+<script src="config.js"></script>
+<script type="module">
+import { requireAdmin, db, doc, deleteDoc, collection, getDocs, query, orderBy, limit, toast, escapeHtml } from './admin-shared.js';
+import { renderSidebar } from './admin-sidebar.js';
+renderSidebar();
+requireAdmin().then(async () => {
+  let allLogs = [];
+  let currentFilter = 'all';
+
+  async function load(){
+    const [appSnap,errSnap] = await Promise.all([
+      getDocs(query(collection(db,'appLogs'),orderBy('timestamp','desc'),limit(100))),
+      getDocs(query(collection(db,'errorLogs'),orderBy('timestamp','desc'),limit(50)))
+    ]);
+    const appLogs=appSnap.docs.map(d=>({id:d.id,source:'appLogs',...d.data()}));
+    const errLogs=errSnap.docs.map(d=>{const data=d.data();return{id:d.id,source:'errorLogs',level:'error',message:data.message||'',context:data.context||'',userId:data.userId||'',userName:data.userName||'',timestamp:data.timestamp?.seconds||data.timestamp||0,platform:data.platform||'iOS',appVersion:data.appVersion||''};});
+    const seen=new Set();allLogs=[];
+    for(const l of [...appLogs,...errLogs]){
+      // Skip web logs — those go to Web Console
+      if(l.platform==='web'||l.platform==='admin-web')continue;
+      const key=(l.context||'')+(l.message||'').substring(0,50)+Math.floor((l.timestamp||0)/10);if(!seen.has(key)){seen.add(key);allLogs.push(l);}
+    }
+    allLogs.sort((a,b)=>(b.timestamp||0)-(a.timestamp||0));
+    renderStats();filter(currentFilter);
+  }
+
+  function renderStats(){
+    const errors=allLogs.filter(l=>l.level==='error').length,successes=allLogs.filter(l=>l.level==='success').length,infos=allLogs.filter(l=>l.level==='info').length;
+    document.getElementById('logStats').innerHTML=`<div class="stat-card" style="--stat-color:var(--blue)"><div class="stat-val">${allLogs.length}</div><div class="stat-lbl">Total Events</div></div><div class="stat-card" style="--stat-color:var(--green)"><div class="stat-val">${successes}</div><div class="stat-lbl">Success</div></div><div class="stat-card" style="--stat-color:var(--red)"><div class="stat-val">${errors}</div><div class="stat-lbl">Errors</div></div><div class="stat-card" style="--stat-color:var(--yellow)"><div class="stat-val">${infos}</div><div class="stat-lbl">Info</div></div>`;
+  }
+
+  function filter(f){
+    currentFilter=f;
+    document.querySelectorAll('.log-filter').forEach(b=>{b.classList.toggle('active',b.dataset.filter===f);});
+    const filtered=f==='all'?allLogs:allLogs.filter(l=>l.level===f);
+    render(filtered);
+  }
+
+  function render(logs){
+    const el=document.getElementById('logsContainer');
+    if(!logs.length){el.innerHTML='<div class="empty-state"><div class="empty-icon">✅</div>No events logged</div>';return;}
+    el.innerHTML=logs.map(l=>{
+      const level=l.level||'error';
+      const icon=level==='error'?'✘':level==='success'?'✔':'ℹ';
+      const color=level==='error'?'var(--red)':level==='success'?'var(--green)':'var(--yellow)';
+      const bg=level==='error'?'rgba(239,68,68,0.06)':level==='success'?'rgba(34,197,94,0.06)':'rgba(245,158,11,0.06)';
+      const ts=l.timestamp?new Date(l.timestamp*1000).toLocaleString('en-US',{month:'short',day:'numeric',hour:'numeric',minute:'2-digit',second:'2-digit'}):'';
+      const userName=l.userName&&l.userName!=='unknown'?l.userName:'';
+      const userId=l.userId&&l.userId!=='unknown'?l.userId.substring(0,8)+'...':'';
+      const userDisplay=userName||userId||'';
+      return `<div style="display:flex;gap:10px;align-items:flex-start;padding:10px 14px;background:${bg};border-left:3px solid ${color};border-radius:0 8px 8px 0;margin-bottom:4px"><span style="color:${color};font-size:14px;flex-shrink:0;width:16px;text-align:center">${icon}</span><div style="flex:1;min-width:0"><div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap"><span style="font-size:10px;font-weight:600;color:${color};text-transform:uppercase;padding:1px 6px;background:${color}22;border-radius:4px">${level}</span><span style="font-size:11px;color:var(--blue-bright);font-weight:500">${escapeHtml(l.context||'')}</span>${userDisplay?'<span style="font-size:10px;color:var(--muted)">'+escapeHtml(userDisplay)+'</span>':''}<span style="font-size:10px;color:var(--muted);margin-left:auto;white-space:nowrap">${ts}</span></div><div style="font-size:12px;color:var(--white);margin-top:4px;line-height:1.5;word-break:break-word">${escapeHtml(l.message||'')}</div></div></div>`;
+    }).join('');
+  }
+
+  document.querySelectorAll('.log-filter').forEach(b=>b.addEventListener('click',function(){filter(this.dataset.filter);}));
+  document.getElementById('clearLogsBtn').addEventListener('click',async function(){
+    if(!confirm('Clear ALL console logs?'))return;
+    try{for(const l of allLogs){await deleteDoc(doc(db,l.source==='appLogs'?'appLogs':'errorLogs',l.id));}allLogs=[];renderStats();render([]);toast('Console cleared ✓');}catch(e){toast('Failed','error');}
+  });
+
+  await load();
+});
+document.getElementById('logoutBtn')?.addEventListener('click',()=>{import('./admin-shared.js').then(m=>m.doLogout());});
+</script>
+</body>
+</html>

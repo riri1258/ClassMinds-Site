@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<link rel="icon" type="image/png" href="/WebsiteLogo.png"/>
+<link rel="apple-touch-icon" href="/WebsiteLogo.png"/>
+<link rel="shortcut icon" href="/WebsiteLogo.png"/>
+<title>Home – ClassMinds</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=DM+Sans:ital,wght@0,400;0,500;0,600;0,700;1,400&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet"/>
+<link rel="stylesheet" href="app-styles.css"/>
+</head>
+<body>
+<div id="sidebarSlot"></div>
+<div class="page-glow"></div>
+<div class="main">
+  <div class="page-head">
+    <div>
+      <h1 class="page-title lg" id="greet">Good morning 👋</h1>
+      <p class="page-sub" id="hdrSub"></p>
+    </div>
+    <div class="search" style="width:240px;">
+      <span class="si">⌕</span>
+      <input id="hdrSearch" class="input" placeholder="Search notes, classes…"/>
+    </div>
+  </div>
+
+  <!-- Canvas: frame 01, day strip -->
+  <div style="display:flex;align-items:center;gap:10px;">
+    <button class="btn ghost sm" id="pw" type="button">◀</button>
+    <div class="day-strip" id="dayStrip" style="flex:1;"></div>
+    <button class="btn ghost sm" id="nw" type="button">▶</button>
+    <span class="label" id="wkLbl" style="margin-left:8px;white-space:nowrap;">This week</span>
+  </div>
+
+  <div style="display:grid; grid-template-columns: 1fr 380px; gap: 20px; flex:1; min-height:0;">
+    <!-- LEFT column -->
+    <div style="display:flex; flex-direction:column; gap:16px;">
+      <div class="card">
+        <div class="card-head">
+          <span class="card-title"><span class="ico">📅</span><span id="schT">Today's schedule</span></span>
+          <span class="card-more" id="schCount">0 classes</span>
+        </div>
+        <div id="schL"><div style="text-align:center;padding:24px;color:var(--muted);"><div class="spinner"></div></div></div>
+      </div>
+
+      <div class="card" style="flex:1;">
+        <div class="card-head">
+          <span class="card-title"><span class="ico">📋</span>Assignments <span class="card-more" id="aC" style="margin-left:6px;font-family:var(--font-mono);font-size:11px;">0</span></span>
+          <div class="tabs">
+            <span class="tab active" data-f="upcoming">upcoming</span>
+            <span class="tab" data-f="all">all</span>
+          </div>
+        </div>
+        <div id="aL"><div style="text-align:center;padding:24px;color:var(--muted);"><div class="spinner"></div></div></div>
+      </div>
+    </div>
+
+    <!-- RIGHT column -->
+    <div style="display:flex; flex-direction:column; gap:16px;">
+      <div class="card">
+        <div class="card-head">
+          <span class="card-title"><span class="ico">📊</span>Quick stats</span>
+          <span class="card-more">this week</span>
+        </div>
+        <div class="stat-grid">
+          <div class="stat"><span class="k">streak</span><span class="v blue" id="ss">— <small>days</small></span></div>
+          <div class="stat"><span class="k">classes</span><span class="v" id="sc2">—</span></div>
+          <div class="stat"><span class="k">cards reviewed</span><span class="v" id="sf">—</span></div>
+          <div class="stat"><span class="k">quiz avg</span><span class="v" id="sq">—<small>%</small></span></div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-head">
+          <span class="card-title"><span class="ico">✨</span>Recent notes <span class="card-more" id="nC" style="margin-left:6px;font-family:var(--font-mono);font-size:11px;">0</span></span>
+          <a href="classes.html" class="card-more" style="text-decoration:none;">see all</a>
+        </div>
+        <div id="nL"><div style="text-align:center;padding:24px;color:var(--muted);"><div class="spinner"></div></div></div>
+      </div>
+
+      <div class="card">
+        <div class="card-head">
+          <span class="card-title"><span class="ico">🎓</span>Exams</span>
+          <span class="card-more" id="eC">0</span>
+        </div>
+        <div id="eL"><div style="text-align:center;padding:24px;color:var(--muted);"><div class="spinner"></div></div></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script type="module">
+import{requireUser,db,doc,getDoc,updateDoc,collection,getDocs,query,orderBy,limit,loadClasses,loadAssignments,loadTests,esc,sameDay,timeMin,getSun,DAYS,logError,logSuccess,logInfo}from'./app-shared.js';
+requireUser().then(async({uid,profile})=>{
+  try{
+  const h=new Date().getHours();
+  document.getElementById('greet').textContent=(h<12?'Good morning':h<17?'Good afternoon':'Good evening')+(profile.firstName?' '+profile.firstName:'')+' 👋';
+  document.getElementById('hdrSub').textContent=new Date().toLocaleDateString('en-US',{weekday:'long',month:'long',day:'numeric'}).toLowerCase();
+
+  const{classes:allClasses,colorMap:ccMap}=await loadClasses(uid);
+  const allAssignments=await loadAssignments(uid);
+  const allTests=await loadTests(uid);
+  document.getElementById('sc2').textContent=allClasses.length;
+
+  try{const s=await getDoc(doc(db,'users',uid,'stats','summary'));if(s.exists()){const d=s.data();document.getElementById('ss').innerHTML=(d.dayStreak||0)+' <small>days</small>';document.getElementById('sf').textContent=d.flashcardsDone||0;document.getElementById('sq').innerHTML=(d.avgQuizScore||0)+'<small>%</small>';}}catch(e){logError('Stats load failed: '+e.message,'home/stats');}
+
+  let selectedDate=new Date(),weekStart=getSun(new Date());
+  function renderDayStrip(){
+    const strip=document.getElementById('dayStrip'),today=new Date();today.setHours(0,0,0,0);
+    let h='';for(let i=0;i<7;i++){
+      const d=new Date(weekStart);d.setDate(d.getDate()+i);
+      const code=DAYS[d.getDay()];
+      const dayCount=allClasses.filter(c=>c.daysOfWeek?.includes(code)).length;
+      const dots=Array.from({length:Math.min(dayCount,3)}).map(()=>'<span class="pt"></span>').join('')||'&nbsp;';
+      const isToday=sameDay(d,today),isSel=sameDay(d,selectedDate);
+      h+=`<div class="day${isToday?' today':''}" data-i="${i}" style="${isSel&&!isToday?'border-color:var(--border-active);background:var(--blue-tint-08);':''}">
+        <span class="dow">${code.toLowerCase()}</span>
+        <span class="dn">${d.getDate()}</span>
+        <span class="dots">${dots}</span>
+      </div>`;
+    }
+    strip.innerHTML=h;
+    strip.querySelectorAll('.day').forEach(el=>el.addEventListener('click',function(){const d=new Date(weekStart);d.setDate(d.getDate()+parseInt(this.dataset.i));selectedDate=d;renderDayStrip();renderSchedule();}));
+    const thisSun=getSun(new Date()),diff=Math.round((weekStart-thisSun)/(7*86400000));
+    document.getElementById('wkLbl').textContent=diff===0?'This week':diff===1?'Next week':diff===-1?'Last week':weekStart.toLocaleDateString('en-US',{month:'short',day:'numeric'})+' – '+new Date(weekStart.getTime()+6*86400000).toLocaleDateString('en-US',{month:'short',day:'numeric'});
+  }
+  document.getElementById('pw').addEventListener('click',()=>{weekStart=new Date(weekStart.getTime()-7*86400000);renderDayStrip();renderSchedule();});
+  document.getElementById('nw').addEventListener('click',()=>{weekStart=new Date(weekStart.getTime()+7*86400000);renderDayStrip();renderSchedule();});
+
+  function renderSchedule(){
+    const code=DAYS[selectedDate.getDay()],classes=allClasses.filter(c=>c.daysOfWeek?.includes(code)).sort((a,b)=>timeMin(a.startTime)-timeMin(b.startTime));
+    const isT=sameDay(selectedDate,new Date()),isTm=sameDay(selectedDate,new Date(Date.now()+86400000));
+    document.getElementById('schT').textContent=(isT?"Today's":isTm?"Tomorrow's":selectedDate.toLocaleDateString('en-US',{weekday:'long'})+"'s")+' schedule';
+    document.getElementById('schCount').textContent=classes.length+(classes.length===1?' class':' classes');
+    const el=document.getElementById('schL');
+    if(!classes.length){el.innerHTML=`<div style="text-align:center;padding:24px;color:var(--muted);">🎉 No classes on ${isT?'today':DAYS[selectedDate.getDay()]}</div>`;return;}
+    el.innerHTML=classes.map(c=>{
+      const color=ccMap[c.classId||c.id]||'var(--blue)';
+      return`<div class="row" style="--c:${color}">
+        <div class="bar"></div>
+        <div class="body">
+          <span class="t">${esc(c.courseCode)} · ${esc(c.courseName)}</span>
+          <span class="m">${esc(c.startTime||'')} — ${esc(c.endTime||'')} · ${esc(c.location||'')} · ${esc(c.instructor||'')}</span>
+        </div>
+        <div class="end"><span class="chip muted">${esc(c.startTime||'')}</span></div>
+      </div>`;
+    }).join('');
+  }
+
+  let aFilter='upcoming';
+  function renderAssignments(){
+    const now=Date.now()/1000;
+    let items=[...allAssignments,...allTests].sort((a,b)=>{
+      const o={overdue:0,started:1,notStarted:2,done:3};
+      const ae=a.status!=='done'&&a.dueDate>0&&a.dueDate<now?'overdue':a.status;
+      const be=b.status!=='done'&&b.dueDate>0&&b.dueDate<now?'overdue':b.status;
+      const r=(o[ae]??2)-(o[be]??2);
+      return r!==0?r:(a.dueDate||0)-(b.dueDate||0);
+    });
+    if(aFilter==='upcoming')items=items.filter(a=>!(a.status==='done'&&a.dueDate>0&&a.dueDate<now));
+    document.getElementById('aC').textContent=items.length;
+    const el=document.getElementById('aL');
+    if(!items.length){el.innerHTML='<div style="text-align:center;padding:24px;color:var(--muted);">✅ All caught up!</div>';return;}
+    el.innerHTML=items.slice(0,12).map(a=>{
+      const od=a.status!=='done'&&a.dueDate>0&&a.dueDate<now;
+      const ef=od?'overdue':a.status;
+      const ds=a.dueDate?new Date(a.dueDate*1000).toLocaleDateString('en-US',{month:'short',day:'numeric'}):'no date';
+      const dl=a.dueDate?Math.ceil((a.dueDate-now)/86400):'';
+      let chip='';
+      if(ef==='overdue')chip=`<span class="chip red"><span class="d"></span>overdue${dl<0?' '+Math.abs(dl)+'d':''}</span>`;
+      else if(ef==='done')chip='<span class="chip green"><span class="d"></span>done</span>';
+      else if(a.isExam)chip='<span class="chip purple"><span class="d"></span>exam</span>';
+      else if(ef==='started')chip='<span class="chip yellow"><span class="d"></span>started</span>';
+      else if(dl!==''&&dl===0)chip='<span class="chip blue"><span class="d"></span>today</span>';
+      else if(dl!==''&&dl>0&&dl<=7)chip=`<span class="chip muted">${dl===1?'tomorrow':dl+'d'}</span>`;
+      const color=ccMap[a.classId]||'var(--blue)';
+      return`<div class="row" style="--c:${color}">
+        <span class="cb ${ef}" data-id="${a.id}" data-ex="${a.isExam?1:0}"></span>
+        <div class="body">
+          <span class="t" style="${ef==='done'?'text-decoration:line-through;opacity:0.5;':''}">${esc(a.title)}</span>
+          <span class="m">${esc(a.courseCode||a.className||'')} · ${ds}</span>
+        </div>
+        ${chip}
+      </div>`;
+    }).join('');
+    el.querySelectorAll('.cb').forEach(c=>c.addEventListener('click',async function(){
+      try{const id=this.dataset.id,isEx=this.dataset.ex==='1';const col=isEx?'tests':'assignments';const arr=isEx?allTests:allAssignments;const it=arr.find(a=>a.id===id);if(!it)return;const next=it.status==='notStarted'?'started':it.status==='started'?'done':'notStarted';it.status=next;await updateDoc(doc(db,'users',uid,col,id),{status:next,completed:next==='done'});renderAssignments();logInfo('Assignment status → '+next,'home/assignment');}
+      catch(e){logError('Assignment update failed: '+e.message,'home/assignment');}
+    }));
+  }
+  document.querySelectorAll('.tabs .tab').forEach(b=>b.addEventListener('click',function(){document.querySelectorAll('.tabs .tab').forEach(x=>x.classList.remove('active'));this.classList.add('active');aFilter=this.dataset.f;renderAssignments();}));
+
+  function renderExams(){
+    const now=Date.now()/1000;
+    const up=allTests.filter(t=>t.dueDate>now&&t.status!=='done').sort((a,b)=>a.dueDate-b.dueDate).slice(0,5);
+    document.getElementById('eC').textContent=up.length;
+    const el=document.getElementById('eL');
+    if(!up.length){el.innerHTML='<div style="text-align:center;padding:24px;color:var(--muted);">🎓 No upcoming exams</div>';return;}
+    el.innerHTML=up.map(t=>{
+      const ds=new Date(t.dueDate*1000).toLocaleDateString('en-US',{weekday:'short',month:'short',day:'numeric'}).toLowerCase();
+      const dl=Math.ceil((t.dueDate-now)/86400);
+      const color=ccMap[t.classId]||'var(--blue)';
+      return`<div class="row" style="--c:${color}">
+        <div class="bar"></div>
+        <div class="body">
+          <span class="t">${esc(t.courseCode||t.className||'')} · ${esc(t.title)}</span>
+          <span class="m">${ds}</span>
+        </div>
+        <span class="chip purple"><span class="d"></span>${dl<=0?'today':dl===1?'1d':dl+'d'}</span>
+      </div>`;
+    }).join('');
+  }
+
+  async function loadRecentNotes(){
+    try{
+    let notes=[];
+    for(const cls of allClasses){
+      const cid=cls.classId||cls.id;
+      try{const s=await getDocs(query(collection(db,'classes',cid,'notes'),orderBy('createdAt','desc'),limit(3)));s.docs.forEach(d=>{notes.push({id:d.id,classId:cid,courseCode:cls.courseCode,...d.data()});});}catch(e){logError('Notes load failed for '+cls.courseCode+': '+e.message,'home/notes');}
+    }
+    notes.sort((a,b)=>(b.createdAt||0)-(a.createdAt||0));
+    document.getElementById('nC').textContent=notes.length;
+    const el=document.getElementById('nL');
+    if(!notes.length){el.innerHTML='<div style="text-align:center;padding:24px;color:var(--muted);">📝 No notes yet</div>';return;}
+    el.innerHTML=notes.slice(0,6).map(n=>{
+      const color=ccMap[n.classId]||'var(--blue)';
+      const has=n.summary&&n.summary.length>50;
+      const when=n.createdAt?relTime(n.createdAt):'';
+      return`<a class="row" style="--c:${color};text-decoration:none;color:inherit;cursor:pointer;" href="note.html?classId=${n.classId}&noteId=${n.id}">
+        <div class="bar"></div>
+        <div class="body">
+          <span class="t">${has?'✨ ':'📄 '}${esc(n.title||'Untitled')}</span>
+          <span class="m">${esc(n.courseCode||'')} · ${when}</span>
+        </div>
+      </a>`;
+    }).join('');
+    }catch(e){logError('Recent notes failed: '+e.message,'home/notes');}
+  }
+
+  function relTime(ts){
+    const diff=(Date.now()/1000)-ts;
+    if(diff<3600)return Math.max(1,Math.round(diff/60))+'m ago';
+    if(diff<86400)return Math.round(diff/3600)+'h ago';
+    if(diff<7*86400)return Math.round(diff/86400)+'d ago';
+    return new Date(ts*1000).toLocaleDateString('en-US',{month:'short',day:'numeric'});
+  }
+
+  // Quick search — filters notes/classes by name (just routes for now)
+  document.getElementById('hdrSearch').addEventListener('keydown',e=>{
+    if(e.key==='Enter'){
+      const q=e.target.value.trim().toLowerCase();
+      if(!q)return;
+      const cls=allClasses.find(c=>(c.courseCode||'').toLowerCase().includes(q)||(c.courseName||'').toLowerCase().includes(q));
+      if(cls)window.location.href='class.html?id='+(cls.classId||cls.id);
+      else window.location.href='classes.html';
+    }
+  });
+
+  renderDayStrip();renderSchedule();renderAssignments();renderExams();loadRecentNotes();
+  logSuccess('Home loaded — '+allClasses.length+' classes, '+(allAssignments.length+allTests.length)+' assignments','home');
+  }catch(e){logError('Home page crash: '+e.message,'home');}
+});
+</script>
+</body>
+</html>

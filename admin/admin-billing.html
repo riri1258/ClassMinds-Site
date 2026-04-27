@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<link rel="icon" type="image/png" href="/WebsiteLogo.png"/>
+<link rel="apple-touch-icon" href="/WebsiteLogo.png"/>
+<link rel="shortcut icon" href="/WebsiteLogo.png"/>
+<title>Billing – ClassMinds Admin</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+<link rel="stylesheet" href="admin-styles.css"/>
+<style>
+  /* Billing page — responsive overrides. The base admin @media forces
+     stats-row to repeat(2,1fr) on mobile, which crushes Deepgram's 4
+     cards. We want each card to stay legible, so use auto-fit with a
+     minimum card width and let it wrap naturally at every breakpoint. */
+  .billing-header {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    margin-bottom: 0;
+  }
+  .billing-header .page-title { line-height: 1.1; }
+  #refreshBtn { padding: 10px 16px; font-weight: 600; white-space: nowrap; width: auto; }
+  .billing-meta { margin-top: 8px; font-size: 13px; color: var(--muted, #8b95b2); }
+  .billing-section-hdr { margin-top: 24px; margin-bottom: 12px; }
+  .billing-section-hdr .page-title { font-size: 16px; }
+  .billing-stats { grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)) !important; }
+  .stat-val { word-break: break-word; }
+  .empty-state { margin-top: 8px; margin-bottom: 16px; padding: 10px 14px; font-size: 12px; line-height: 1.5; }
+
+  @media (max-width: 560px) {
+    #refreshBtn { width: 100%; justify-content: center; display: flex; align-items: center; gap: 8px; }
+    .billing-header > div:first-child { flex: 1 1 100%; }
+    .stat-card { padding: 14px 16px; }
+    .stat-val { font-size: 20px; }
+    .stat-lbl { font-size: 11px; }
+    .billing-stats { gap: 10px; }
+  }
+  @media (max-width: 360px) {
+    .billing-stats { grid-template-columns: 1fr !important; }
+  }
+</style>
+</head>
+<body>
+<div class="admin-wrap" id="adminWrap">
+  <div class="sidebar" id="sidebarSlot"></div>
+  <div class="main">
+    <div class="page-header billing-header">
+      <div>
+        <div class="page-title">Billing</div>
+        <div class="page-desc">OpenAI + Deepgram + Firebase/GCP spend. Snapshot refreshes every 12h.</div>
+      </div>
+      <button id="refreshBtn" class="nav-item">
+        <span class="icon">&#128260;</span><span id="refreshLabel">Refresh now</span>
+      </button>
+    </div>
+
+    <div class="billing-meta">
+      Last refreshed: <span id="fetchedAt">—</span>
+    </div>
+
+    <!-- OpenAI -->
+    <div class="page-header billing-section-hdr"><div class="page-title">OpenAI</div></div>
+    <div class="stats-row billing-stats">
+      <div class="stat-card" style="--stat-color:var(--blue)"><div class="stat-val" id="openai-30">—</div><div class="stat-lbl">Last 30 days</div></div>
+      <div class="stat-card" style="--stat-color:var(--green)"><div class="stat-val" id="openai-24">—</div><div class="stat-lbl">Last 24 hours</div></div>
+    </div>
+    <div id="openai-err" class="empty-state" style="display:none"></div>
+
+    <!-- Deepgram -->
+    <div class="page-header billing-section-hdr"><div class="page-title">Deepgram</div></div>
+    <div class="stats-row billing-stats">
+      <div class="stat-card" style="--stat-color:#06b6d4"><div class="stat-val" id="dg-cost">—</div><div class="stat-lbl">Est. 30d spend</div></div>
+      <div class="stat-card" style="--stat-color:var(--blue)"><div class="stat-val" id="dg-balance">—</div><div class="stat-lbl">Balance</div></div>
+      <div class="stat-card" style="--stat-color:var(--green)"><div class="stat-val" id="dg-requests">—</div><div class="stat-lbl">30d requests</div></div>
+      <div class="stat-card" style="--stat-color:var(--yellow)"><div class="stat-val" id="dg-hours">—</div><div class="stat-lbl">30d hours</div></div>
+    </div>
+    <div id="dg-err" class="empty-state" style="display:none"></div>
+
+    <!-- Firebase / GCP -->
+    <div class="page-header billing-section-hdr"><div class="page-title">Firebase / GCP</div></div>
+    <div class="stats-row billing-stats">
+      <div class="stat-card" style="--stat-color:#f59e0b"><div class="stat-val" id="fb-30">—</div><div class="stat-lbl">Last 30 days (net)</div></div>
+      <div class="stat-card" style="--stat-color:#f97316"><div class="stat-val" id="fb-24">—</div><div class="stat-lbl">Last 24 hours (net)</div></div>
+    </div>
+    <div id="fb-err" class="empty-state" style="display:none"></div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script src="config.js"></script>
+<script type="module">
+import {
+  requireAdmin, db, doc, getDoc,
+  refreshBillingSnapshotFn, toast, fmtDate, logError
+} from './admin-shared.js';
+import { renderSidebar } from './admin-sidebar.js';
+
+renderSidebar();
+requireAdmin().then(async () => {
+  document.getElementById('refreshBtn').addEventListener('click', refresh);
+  await load();
+});
+
+function money(n) {
+  if (n === null || n === undefined || isNaN(n)) return '—';
+  return '$' + Number(n).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+}
+function int(n) {
+  if (n === null || n === undefined || isNaN(n)) return '—';
+  return Number(n).toLocaleString('en-US');
+}
+function hours(n) {
+  if (n === null || n === undefined || isNaN(n)) return '—';
+  return Number(n).toFixed(1) + ' h';
+}
+
+function showErr(elId, msg) {
+  const el = document.getElementById(elId);
+  if (!msg) { el.style.display = 'none'; return; }
+  el.style.display = 'block';
+  el.textContent = '⚠ ' + msg;
+}
+
+function statusMsg(block) {
+  if (block?.error) return block.error;
+  if (block?.stale) {
+    const when = block.lastErrorAt ? new Date(block.lastErrorAt).toLocaleString() : '';
+    const why  = block.lastError ? ` (${block.lastError})` : '';
+    return `stale — last upstream fetch failed${why}${when ? ' at ' + when : ''}. Showing last known values.`;
+  }
+  return '';
+}
+
+async function load() {
+  try {
+    const snap = await getDoc(doc(db, 'billingSnapshots', 'latest'));
+    if (!snap.exists()) {
+      toast('No snapshot yet — press Refresh', 'warn');
+      return;
+    }
+    apply(snap.data());
+  } catch (e) {
+    logError(e?.message || String(e), 'admin-billing.load');
+    toast('Failed to load snapshot', 'error');
+  }
+}
+
+async function refresh() {
+  const btn = document.getElementById('refreshBtn');
+  const label = document.getElementById('refreshLabel');
+  btn.disabled = true;
+  label.textContent = 'Refreshing…';
+  try {
+    await refreshBillingSnapshotFn({});
+    await load();
+    toast('Refreshed');
+  } catch (e) {
+    logError(e?.message || String(e), 'admin-billing.refresh');
+    toast('Refresh failed: ' + (e?.message || 'unknown'), 'error');
+  } finally {
+    btn.disabled = false;
+    label.textContent = 'Refresh now';
+  }
+}
+
+function apply(data) {
+  const ts = data.fetchedAt?.toDate ? data.fetchedAt.toDate() : (data.fetchedAt ? new Date(data.fetchedAt) : null);
+  document.getElementById('fetchedAt').textContent = ts ? fmtDate(ts) : '—';
+
+  const o = data.openai || {};
+  document.getElementById('openai-30').textContent = money(o.last30DaysUsd);
+  document.getElementById('openai-24').textContent = money(o.last24hUsd);
+  showErr('openai-err', statusMsg(o));
+
+  const d = data.deepgram || {};
+  document.getElementById('dg-cost').textContent = money(d.last30DaysEstUsd);
+  document.getElementById('dg-balance').textContent = money(d.balanceUsd);
+  document.getElementById('dg-requests').textContent = int(d.last30DaysRequests);
+  document.getElementById('dg-hours').textContent = hours(d.last30DaysHours);
+  showErr('dg-err', statusMsg(d));
+
+  const f = data.firebase || {};
+  document.getElementById('fb-30').textContent = money(f.last30DaysUsd);
+  document.getElementById('fb-24').textContent = money(f.last24hUsd);
+  showErr('fb-err', statusMsg(f));
+}
+</script>
+</body>
+</html>

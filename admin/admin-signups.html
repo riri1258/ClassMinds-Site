@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<!-- Favicon & Icons -->
+<link rel="icon" type="image/png" href="/WebsiteLogo.png"/>
+<link rel="apple-touch-icon" href="/WebsiteLogo.png"/>
+<link rel="shortcut icon" href="/WebsiteLogo.png"/>
+<title>Signups – ClassMinds Admin</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+<link rel="stylesheet" href="admin-styles.css"/>
+</head>
+<body>
+<div class="admin-wrap" id="adminWrap">
+  <div class="sidebar" id="sidebarSlot"></div>
+  <div class="main">
+    <div class="page-header"><div class="page-title">Beta Signups</div><div class="page-desc">Everyone who requested access</div></div>
+    <div class="toggle-card">
+      <div class="toggle-info"><h3>Beta Signup Form</h3><p>classminds.app/beta.html</p></div>
+      <div style="display:flex;align-items:center;gap:12px">
+        <span class="status-badge closed" id="formBadge"><span class="status-dot"></span> Closed</span>
+        <label class="toggle-switch"><input type="checkbox" id="formToggle"/><span class="toggle-slider"></span></label>
+      </div>
+    </div>
+    <div class="stats-row" style="grid-template-columns:repeat(4,1fr)">
+      <div class="stat-card" style="--stat-color:var(--blue)"><div class="stat-val" id="su-total">—</div><div class="stat-lbl">Total</div></div>
+      <div class="stat-card" style="--stat-color:var(--yellow)"><div class="stat-val" id="su-pending">—</div><div class="stat-lbl">Pending</div></div>
+      <div class="stat-card" style="--stat-color:var(--green)"><div class="stat-val" id="su-approved">—</div><div class="stat-lbl">Approved</div></div>
+      <div class="stat-card" style="--stat-color:var(--red)"><div class="stat-val" id="su-rejected">—</div><div class="stat-lbl">Rejected</div></div>
+    </div>
+    <div class="table-card">
+      <div class="table-header">
+        <div class="table-title" id="signupCount">Signups</div>
+        <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+          <input class="search-input" id="signupSearch" placeholder="Search email..."/>
+          <select class="search-input" id="signupFilter" style="width:auto"><option value="">All</option><option value="pending">Pending</option><option value="approved">Approved</option><option value="rejected">Rejected</option></select>
+        </div>
+      </div>
+      <div style="overflow-x:auto"><table><thead><tr><th>Email</th><th>Phone</th><th>Year</th><th>Classes</th><th>Date</th><th>Status</th><th>Actions</th></tr></thead><tbody id="signupsTable"><tr><td colspan="7"><div class="empty-state"><div class="spinner"></div></div></td></tr></tbody></table></div>
+    </div>
+  </div>
+</div>
+
+<!-- EDIT SIGNUP MODAL -->
+<div class="modal-overlay" id="editSignupModal">
+  <div class="modal-box wide">
+    <div class="modal-title">Edit Signup</div>
+    <div class="modal-sub" id="editSignupSub"></div>
+    <input type="hidden" id="editSignupId"/>
+    <label class="field-label">Email</label><input type="email" class="field-input" id="editSignupEmail"/>
+    <label class="field-label">Phone</label><input type="text" class="field-input" id="editSignupPhone"/>
+    <label class="field-label">Year</label>
+    <select class="field-input" id="editSignupGrade"><option value="Freshman">Freshman</option><option value="Sophomore">Sophomore</option><option value="Junior">Junior</option><option value="Senior">Senior</option><option value="Graduate">Graduate</option><option value="Other">Other</option></select>
+    <label class="field-label">Classes</label><textarea class="field-input" id="editSignupClasses" style="min-height:80px"></textarea>
+    <label class="field-label">Status</label>
+    <select class="field-input" id="editSignupStatus"><option value="pending">Pending</option><option value="approved">Approved</option><option value="rejected">Rejected</option></select>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" onclick="closeModal('editSignupModal')">Cancel</button>
+      <button class="btn btn-blue" id="editSignupSaveBtn">Save Changes &#8594;</button>
+    </div>
+  </div>
+</div>
+
+<!-- INVITE MODAL -->
+<div class="modal-overlay" id="inviteModal">
+  <div class="modal-box wide">
+    <div class="modal-title">Send TestFlight Invite</div>
+    <div class="modal-sub">Edit the message before sending</div>
+    <div style="display:flex;align-items:center;gap:10px;background:rgba(26,107,255,0.08);border:1px solid rgba(26,107,255,0.2);border-radius:10px;padding:10px 14px;margin-bottom:16px">
+      <span style="font-size:11px;font-weight:600;color:rgba(180,200,255,0.4);text-transform:uppercase;letter-spacing:0.5px;flex-shrink:0">To</span>
+      <div id="inviteAvatar" style="width:26px;height:26px;border-radius:50%;background:rgba(26,107,255,0.2);border:1px solid rgba(26,107,255,0.3);display:flex;align-items:center;justify-content:center;font-family:var(--font-display);font-size:9px;font-weight:800;color:#4d8fff;flex-shrink:0"></div>
+      <span id="inviteTo" style="font-size:13px;color:#f0f4ff;font-weight:500"></span>
+    </div>
+    <label class="field-label">Subject</label><input type="text" class="field-input" id="inviteSubject" value="You're invited to test ClassMinds!"/>
+    <label class="field-label">Quick inserts</label>
+    <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:14px">
+      <div class="insert-chip" data-text="https://testflight.apple.com/join/5ujsJBav" style="background:rgba(26,107,255,0.1);border:1px solid rgba(26,107,255,0.2);border-radius:100px;padding:4px 12px;font-size:11px;color:#4d8fff;cursor:pointer;font-weight:500">+ TestFlight link</div>
+      <div class="insert-chip" data-text="support@classminds.app" style="background:rgba(26,107,255,0.1);border:1px solid rgba(26,107,255,0.2);border-radius:100px;padding:4px 12px;font-size:11px;color:#4d8fff;cursor:pointer;font-weight:500">+ Support email</div>
+      <div class="insert-chip" data-text="classminds.app" style="background:rgba(26,107,255,0.1);border:1px solid rgba(26,107,255,0.2);border-radius:100px;padding:4px 12px;font-size:11px;color:#4d8fff;cursor:pointer;font-weight:500">+ Website</div>
+    </div>
+    <label class="field-label">Message</label>
+    <textarea class="field-input" id="inviteBody" style="min-height:180px;line-height:1.7"></textarea>
+    <div id="tfIndicator" style="display:flex;align-items:center;gap:8px;border-radius:8px;padding:8px 12px;margin-bottom:4px;font-size:12px;background:rgba(34,197,94,0.08);border:1px solid rgba(34,197,94,0.2)">
+      <div style="width:6px;height:6px;border-radius:50%;background:#22c55e;flex-shrink:0"></div>
+      <span style="color:#22c55e;font-weight:500">TestFlight link included ✓</span>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" onclick="closeModal('inviteModal')">Cancel</button>
+      <button class="btn btn-green" id="inviteSendBtn">Send Invite &#8594;</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script src="config.js"></script>
+<script type="module">
+import { requireAdmin, db, doc, getDoc, setDoc, updateDoc, deleteDoc, collection, getDocs, query, orderBy, toast, fmtDate, escapeHtml, openModal, closeModal, sendBetaInviteFn } from './admin-shared.js';
+import { renderSidebar } from './admin-sidebar.js';
+window.closeModal = closeModal;
+
+renderSidebar();
+requireAdmin().then(async () => {
+  // Load signups
+  const snap = await getDocs(query(collection(db,'betaSignups'), orderBy('submittedAt','desc')));
+  let allSignups = snap.docs.map(d=>{const data=d.data();return{id:d.id,...data,submittedAt:data.submittedAt?.toDate?data.submittedAt.toDate():new Date()};});
+
+  // Form toggle
+  const settingsSnap = await getDoc(doc(db,'admin','settings'));
+  const formOpen = settingsSnap.exists() ? settingsSnap.data().betaFormOpen !== false : true;
+  setFormUI(formOpen);
+  document.getElementById('formToggle').addEventListener('change', async function(){
+    const isOpen = this.checked;
+    await setDoc(doc(db,'admin','settings'),{betaFormOpen:isOpen},{merge:true});
+    setFormUI(isOpen);
+    toast(isOpen?'✅ Form is Open':'🔒 Form is Closed');
+  });
+  function setFormUI(isOpen){
+    document.getElementById('formToggle').checked = isOpen;
+    const b = document.getElementById('formBadge');
+    b.className = isOpen?'status-badge open':'status-badge closed';
+    b.innerHTML = '<span class="status-dot"></span> '+(isOpen?'Open':'Closed');
+  }
+
+  function updateStats(){
+    document.getElementById('su-total').textContent=allSignups.length;
+    document.getElementById('su-pending').textContent=allSignups.filter(s=>s.status==='pending').length;
+    document.getElementById('su-approved').textContent=allSignups.filter(s=>s.status==='approved').length;
+    document.getElementById('su-rejected').textContent=allSignups.filter(s=>s.status==='rejected').length;
+    document.getElementById('signupCount').textContent=allSignups.length+' Signups';
+  }
+
+  function render(data){
+    const tbody=document.getElementById('signupsTable');
+    if(!data.length){tbody.innerHTML='<tr><td colspan="7"><div class="empty-state"><div class="empty-icon">📭</div>No signups yet</div></td></tr>';return;}
+    tbody.innerHTML=data.map(s=>`<tr><td style="font-size:13px">${escapeHtml(s.email)}</td><td style="font-size:12px;color:var(--muted)">${escapeHtml(s.phone||'—')}</td><td><span class="grade-chip">${escapeHtml(s.grade||'—')}</span></td><td><div class="classes-text">${escapeHtml(s.classes||'—')}</div></td><td style="font-size:11px;color:var(--muted);white-space:nowrap">${fmtDate(s.submittedAt)}</td><td><select class="status-select" data-id="${s.id}"><option value="pending" ${s.status==='pending'?'selected':''}>Pending</option><option value="approved" ${s.status==='approved'?'selected':''}>Approved</option><option value="rejected" ${s.status==='rejected'?'selected':''}>Rejected</option></select></td><td><div style="display:flex;gap:6px"><button class="btn btn-green invite-btn" data-id="${s.id}">✉️ Invite</button><button class="btn btn-ghost edit-btn" data-id="${s.id}">✏ Edit</button><button class="btn btn-red del-btn" data-id="${s.id}">✕</button></div></td></tr>`).join('');
+
+    // Event delegation
+    tbody.querySelectorAll('.status-select').forEach(sel=>sel.addEventListener('change',async function(){
+      const id=this.dataset.id;
+      await updateDoc(doc(db,'betaSignups',id),{status:this.value});
+      const s=allSignups.find(s=>s.id===id);if(s)s.status=this.value;
+      updateStats();toast('Status updated ✓');
+    }));
+    tbody.querySelectorAll('.del-btn').forEach(btn=>btn.addEventListener('click',async function(){
+      const id=this.dataset.id;
+      if(!confirm('Delete this signup?'))return;
+      await deleteDoc(doc(db,'betaSignups',id));
+      allSignups=allSignups.filter(s=>s.id!==id);filter();updateStats();toast('Deleted ✓');
+    }));
+    tbody.querySelectorAll('.edit-btn').forEach(btn=>btn.addEventListener('click',function(){
+      const s=allSignups.find(s=>s.id===this.dataset.id);if(!s)return;
+      document.getElementById('editSignupId').value=s.id;
+      document.getElementById('editSignupSub').textContent='Submitted '+fmtDate(s.submittedAt);
+      document.getElementById('editSignupEmail').value=s.email||'';
+      document.getElementById('editSignupPhone').value=s.phone||'';
+      document.getElementById('editSignupGrade').value=s.grade||'Freshman';
+      document.getElementById('editSignupClasses').value=s.classes||'';
+      document.getElementById('editSignupStatus').value=s.status||'pending';
+      openModal('editSignupModal');
+    }));
+    tbody.querySelectorAll('.invite-btn').forEach(btn=>btn.addEventListener('click',function(){
+      const s=allSignups.find(s=>s.id===this.dataset.id);if(!s)return;
+      currentInviteSignup=s;
+      document.getElementById('inviteTo').textContent=s.email;
+      document.getElementById('inviteAvatar').textContent=s.email.slice(0,2).toUpperCase();
+      document.getElementById('inviteSubject').value="You're invited to test ClassMinds!";
+      document.getElementById('inviteBody').value="Hi! You've been approved for the ClassMinds beta.\n\nDownload TestFlight from the App Store, then tap the link below to install ClassMinds:\n\nhttps://testflight.apple.com/join/5ujsJBav\n\nLet us know if you have any questions — support@classminds.app\n\nThanks for testing!";
+      checkTF();openModal('inviteModal');
+    }));
+  }
+
+  function filter(){
+    const q=document.getElementById('signupSearch').value.toLowerCase();
+    const f=document.getElementById('signupFilter').value;
+    render(allSignups.filter(s=>(!q||s.email?.toLowerCase().includes(q))&&(!f||s.status===f)));
+  }
+  document.getElementById('signupSearch').addEventListener('input',filter);
+  document.getElementById('signupFilter').addEventListener('change',filter);
+
+  // Edit save
+  document.getElementById('editSignupSaveBtn').addEventListener('click',async function(){
+    const id=document.getElementById('editSignupId').value;
+    this.disabled=true;this.innerHTML='<span class="spinner"></span>';
+    const data={email:document.getElementById('editSignupEmail').value.trim(),phone:document.getElementById('editSignupPhone').value.trim(),grade:document.getElementById('editSignupGrade').value,classes:document.getElementById('editSignupClasses').value.trim(),status:document.getElementById('editSignupStatus').value};
+    try{await updateDoc(doc(db,'betaSignups',id),data);const s=allSignups.find(s=>s.id===id);if(s)Object.assign(s,data);filter();updateStats();closeModal('editSignupModal');toast('Updated ✓');}catch(e){toast('Failed','error');}
+    this.disabled=false;this.textContent='Save Changes →';
+  });
+
+  // Invite
+  let currentInviteSignup=null;
+  function checkTF(){const body=document.getElementById('inviteBody').value,el=document.getElementById('tfIndicator');if(body.includes('testflight.apple.com')){el.style.background='rgba(34,197,94,0.08)';el.style.borderColor='rgba(34,197,94,0.2)';el.innerHTML='<div style="width:6px;height:6px;border-radius:50%;background:#22c55e;flex-shrink:0"></div><span style="color:#22c55e;font-weight:500">TestFlight link included ✓</span>';}else{el.style.background='rgba(239,68,68,0.08)';el.style.borderColor='rgba(239,68,68,0.2)';el.innerHTML='<div style="width:6px;height:6px;border-radius:50%;background:#ef4444;flex-shrink:0"></div><span style="color:#ef4444;font-weight:500">⚠️ TestFlight link missing!</span>';}}
+  document.getElementById('inviteBody').addEventListener('input',checkTF);
+  document.querySelectorAll('.insert-chip').forEach(c=>c.addEventListener('click',function(){const ta=document.getElementById('inviteBody');const pos=ta.selectionStart||ta.value.length;ta.value=ta.value.slice(0,pos)+this.dataset.text+ta.value.slice(pos);ta.focus();checkTF();}));
+  document.getElementById('inviteSendBtn').addEventListener('click',async function(){
+    if(!currentInviteSignup)return;
+    const subject=document.getElementById('inviteSubject').value.trim(),body=document.getElementById('inviteBody').value.trim();
+    if(!subject||!body){toast('Fill in all fields','error');return;}
+    this.disabled=true;this.innerHTML='<span class="spinner"></span> Sending...';
+    try{await sendBetaInviteFn({to:currentInviteSignup.email,subject,body});await updateDoc(doc(db,'betaSignups',currentInviteSignup.id),{status:'approved',inviteSentAt:new Date()});const s=allSignups.find(s=>s.id===currentInviteSignup.id);if(s)s.status='approved';filter();updateStats();closeModal('inviteModal');toast('✅ Invite sent!');}catch(e){toast('Failed: '+e.message,'error');}
+    this.disabled=false;this.textContent='Send Invite →';
+  });
+
+  render(allSignups);updateStats();
+});
+document.getElementById('logoutBtn')?.addEventListener('click',()=>{import('./admin-shared.js').then(m=>m.doLogout());});
+</script>
+</body>
+</html>

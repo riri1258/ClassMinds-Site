@@ -1,0 +1,17 @@
+# Security response headers — ClassMinds admin console
+# Stricter than the public-site .htaccess: denies framing entirely and
+# forbids caching of admin pages (session/PII sensitivity).
+#
+# NOTE: 'unsafe-inline' is retained in script-src for now — inline event
+# handlers + inline <script> blocks still exist (tracked as M-10). Remove
+# 'unsafe-inline' once those are refactored to addEventListener.
+<IfModule mod_headers.c>
+  Header always set Strict-Transport-Security "max-age=31536000; includeSubDomains; preload"
+  Header always set X-Content-Type-Options "nosniff"
+  Header always set X-Frame-Options "DENY"
+  Header always set Referrer-Policy "strict-origin-when-cross-origin"
+  Header always set Permissions-Policy "camera=(), microphone=(), geolocation=(), payment=()"
+  Header always set Cache-Control "no-store, no-cache, must-revalidate, max-age=0"
+  Header always set Pragma "no-cache"
+  Header always set Content-Security-Policy "default-src 'self'; script-src 'self' https://www.gstatic.com https://challenges.cloudflare.com https://www.googletagmanager.com 'unsafe-inline'; style-src 'self' https://fonts.googleapis.com 'unsafe-inline'; font-src https://fonts.gstatic.com; connect-src 'self' https://*.firebaseio.com wss://*.firebaseio.com https://*.googleapis.com https://identitytoolkit.googleapis.com https://securetoken.googleapis.com https://firestore.googleapis.com https://challenges.cloudflare.com https://onesignal.com https://cdn.onesignal.com; img-src 'self' data: blob: https://firebasestorage.googleapis.com https://*.googleusercontent.com https://media.giphy.com https://media0.giphy.com https://media1.giphy.com https://media2.giphy.com https://media3.giphy.com https://media4.giphy.com; frame-src https://challenges.cloudflare.com; frame-ancestors 'none'; worker-src 'self' blob:; base-uri 'self'; form-action 'self'; upgrade-insecure-requests"
+</IfModule>

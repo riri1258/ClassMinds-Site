@@ -1,0 +1,355 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<link rel="icon" type="image/png" href="/WebsiteLogo.png"/>
+<link rel="apple-touch-icon" href="/WebsiteLogo.png"/>
+<link rel="shortcut icon" href="/WebsiteLogo.png"/>
+<title>Note – ClassMinds</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=DM+Sans:ital,wght@0,400;0,500;0,600;0,700;1,400&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet"/>
+<link rel="stylesheet" href="app-styles.css"/>
+<style>
+/* Note-page-only summary rendering */
+.nv-sum-body { font-size:14px; line-height:1.7; color:rgba(240,244,255,0.88); }
+.nv-sum-body h2 { font-family:var(--font-display); font-size:18px; font-weight:700; letter-spacing:-0.2px; color:var(--white); margin:18px 0 8px; padding-bottom:6px; border-bottom:0.5px solid var(--border); }
+.nv-sum-body h2:first-child { margin-top:0; }
+.nv-sum-body table { width:100%; border-collapse:collapse; margin:12px 0; font-size:13px; border:0.5px solid var(--border); border-radius:var(--r-xl); overflow:hidden; }
+.nv-sum-body th { text-align:left; padding:10px 14px; background:var(--surface-02); border:0.5px solid var(--border); font-weight:600; color:var(--muted); font-size:10px; text-transform:uppercase; letter-spacing:0.5px; }
+.nv-sum-body td { padding:10px 14px; border:0.5px solid var(--border); color:rgba(240,244,255,0.82); }
+.nv-sum-body ul { margin:8px 0; padding-left:20px; }
+.nv-sum-body li { margin-bottom:4px; }
+.nv-kp { background:var(--surface-02); border:0.5px solid var(--border); border-radius:var(--r-xl); padding:14px 16px; margin-bottom:8px; display:flex; align-items:flex-start; gap:12px; }
+.nv-kp-num { width:24px; height:24px; border-radius:50%; background:var(--blue-tint-15); display:flex; align-items:center; justify-content:center; font-size:11px; font-weight:700; color:var(--blue-bright); flex-shrink:0; margin-top:1px; font-family:var(--font-mono); }
+.nv-transcript { background:var(--surface-02); border:0.5px solid var(--border); border-radius:var(--r-xl); padding:20px; font-size:13px; color:rgba(240,244,255,0.7); line-height:1.75; max-height:600px; overflow-y:auto; white-space:pre-wrap; }
+.fc-card { width:100%; min-height:240px; border-radius:var(--r-3xl); display:flex; flex-direction:column; align-items:center; justify-content:center; padding:32px; cursor:pointer; gap:14px; text-align:center; transition:border-color 0.15s; }
+.fc-q { background:var(--blue-tint-06); border:0.5px solid var(--border); }
+.fc-q:hover { border-color:var(--border-hover); }
+.fc-a { background:rgba(34,197,94,0.06); border:0.5px solid rgba(34,197,94,0.25); }
+.fc-btns { display:flex; gap:10px; margin-top:16px; }
+.fc-btn { flex:1; padding:12px; border-radius:var(--r-xl); text-align:center; cursor:pointer; font-size:12px; font-weight:600; border:none; font-family:var(--font-body); transition:opacity 0.15s; }
+.qz-opt { padding:14px 18px; border:0.5px solid var(--border); border-radius:var(--r-xl); cursor:pointer; margin-bottom:8px; font-size:14px; display:flex; align-items:center; gap:12px; background:var(--surface-02); transition:border-color 0.15s, background 0.15s; }
+.qz-opt:hover { border-color:var(--border-hover); background:var(--blue-tint-06); }
+.qz-opt.correct { border-color:var(--green); background:rgba(34,197,94,0.1); }
+.qz-opt.wrong { border-color:var(--red); background:rgba(239,68,68,0.1); }
+.qz-letter { width:28px; height:28px; border-radius:var(--r-md); background:var(--surface-04); display:flex; align-items:center; justify-content:center; font-size:12px; font-weight:700; flex-shrink:0; font-family:var(--font-mono); }
+.qz-prog { width:100%; height:4px; background:var(--surface-06); border-radius:var(--r-full); overflow:hidden; margin:12px 0; }
+.qz-prog-bar { height:100%; background:var(--blue); border-radius:var(--r-full); transition:width 0.3s; }
+.ver-bar { display:flex; align-items:center; gap:10px; padding:10px 14px; background:rgba(249,115,22,0.06); border:0.5px solid rgba(249,115,22,0.25); border-radius:var(--r-xl); }
+.ver-select { background:var(--navy-card); border:0.5px solid rgba(249,115,22,0.4); border-radius:var(--r-md); color:var(--white); font-family:var(--font-body); font-size:13px; padding:6px 12px; cursor:pointer; outline:none; }
+</style>
+</head>
+<body>
+<div id="sidebarSlot"></div>
+<div class="page-glow"></div>
+<div class="main">
+  <!-- Crumb -->
+  <div style="display:flex; align-items:center; gap:12px; font-size:12px; color:var(--muted);">
+    <a id="nvBack" href="classes.html" style="color:var(--muted); text-decoration:none;">← back</a>
+  </div>
+
+  <!-- Title block -->
+  <div>
+    <div style="display:flex; align-items:center; gap:10px; margin-bottom:6px;">
+      <span class="chip blue" id="nvCodeChip"><span class="d"></span>—</span>
+      <span id="nvKicker" style="font-size:11px; color:var(--muted); font-family:var(--font-mono);"></span>
+    </div>
+    <h1 id="nvTitle" style="font-family:var(--font-display); font-size:26px; font-weight:800; letter-spacing:-0.6px; color:var(--white); margin:0; line-height:1.1;">Loading…</h1>
+    <div id="nvMeta" style="display:flex; gap:14px; margin-top:10px; font-size:12px; color:var(--muted); flex-wrap:wrap;"></div>
+  </div>
+
+  <div id="verBar" class="ver-bar" style="display:none;">
+    <span style="font-size:12px; color:var(--orange); font-weight:600;">📄 Multiple recordings</span>
+    <select id="verSelect" class="ver-select"></select>
+    <span class="chip orange" id="verCount"><span class="d"></span></span>
+  </div>
+
+  <!-- Tabs -->
+  <div class="tabs" id="nvTabs" style="align-self:flex-start;">
+    <span class="tab active" data-tab="summary">summary</span>
+    <span class="tab" data-tab="keypoints">key points</span>
+    <span class="tab" data-tab="transcript">transcript</span>
+    <span class="tab" data-tab="flashcards">flashcards</span>
+    <span class="tab" data-tab="quiz">quiz</span>
+  </div>
+
+  <!-- Body -->
+  <div id="nvWrap" style="flex:1; display:flex; flex-direction:column; min-height:0;">
+    <div id="nvBody" class="card" style="flex:1; padding:0; overflow:hidden; display:flex; flex-direction:column;">
+      <div style="text-align:center;padding:48px;color:var(--muted);"><div class="spinner"></div></div>
+    </div>
+  </div>
+</div>
+
+<script type="module">
+import{requireUser,db,doc,getDoc,collection,getDocs,query,orderBy,loadClasses,esc,COLORS,logError,logSuccess,logInfo}from'./app-shared.js';
+const params=new URLSearchParams(window.location.search);
+const classId=params.get('classId'),noteId=params.get('noteId');
+const autostart=params.get('autostart');
+if(!classId||!noteId){window.location.href='classes.html';}
+
+requireUser().then(async({uid})=>{
+  // Mark Classes nav active in sidebar (note is a deeper detail page)
+  setTimeout(()=>{document.querySelector('.sidebar nav .ni[href="classes.html"]')?.classList.add('active');},0);
+
+  try{
+  document.getElementById('nvBack').href='class.html?id='+classId;
+
+  // Load class to get color + course code
+  const{classes:allClasses,colorMap:ccMap}=await loadClasses(uid);
+  const cls=allClasses.find(c=>(c.classId||c.id)===classId);
+  const color=ccMap[classId]||COLORS[0];
+  if(cls){
+    const chip=document.getElementById('nvCodeChip');
+    chip.innerHTML=`<span class="d"></span>${esc(cls.courseCode||'')}`;
+    chip.style.color=color;chip.style.background=color+'26';chip.style.borderColor=color+'40';
+    chip.querySelector('.d').style.background=color;
+  }
+
+  // Load primary note
+  let primaryNote=null;
+  try{const s=await getDoc(doc(db,'classes',classId,'notes',noteId));if(s.exists())primaryNote={id:s.id,...s.data()};}catch(e){logError('Note fetch failed: '+e.message,'note');}
+  if(!primaryNote){document.getElementById('nvBody').innerHTML='<div style="text-align:center;padding:48px;color:var(--muted);">Note not found</div>';return;}
+
+  // Load alternates
+  let alternates=[];
+  if(primaryNote.alternateCount>0){
+    try{
+      const altSnap=await getDocs(query(collection(db,'classes',classId,'notes',noteId,'alternates'),orderBy('createdAt','asc')));
+      alternates=altSnap.docs.map(d=>({id:d.id,...d.data()}));
+      logInfo('Loaded '+alternates.length+' alternates','note/alternates');
+    }catch(e){logError('Alternates load failed: '+e.message,'note/alternates');}
+  }
+
+  const allVersions=[primaryNote,...alternates];
+  let currentVersionIndex=0;
+  function getCurrentNote(){return allVersions[currentVersionIndex];}
+
+  if(alternates.length>0){
+    document.getElementById('verBar').style.display='flex';
+    document.getElementById('verCount').innerHTML=`<span class="d"></span>${allVersions.length} versions`;
+    const sel=document.getElementById('verSelect');
+    sel.innerHTML=allVersions.map((v,i)=>{
+      const date=v.createdAt?new Date(v.createdAt*1000).toLocaleString('en-US',{month:'short',day:'numeric',hour:'numeric',minute:'2-digit'}):'';
+      const label=i===0?'Version 1 (Primary) — '+date:'Version '+(i+1)+' — '+date;
+      return`<option value="${i}">${label}</option>`;
+    }).join('');
+    sel.addEventListener('change',function(){
+      currentVersionIndex=parseInt(this.value);
+      updateHeader();
+      loadTab(getActiveTab());
+      logInfo('Switched to version '+(currentVersionIndex+1),'note/version');
+    });
+  }
+
+  function updateHeader(){
+    const note=getCurrentNote();
+    document.title=(note.title||'Note')+' – ClassMinds';
+    document.getElementById('nvTitle').textContent=note.title||'Untitled';
+    const wd=(note.transcript||'').split(' ').filter(Boolean).length;
+    const date=note.createdAt?new Date(note.createdAt*1000).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'}).toLowerCase():'';
+    const meta=document.getElementById('nvMeta');
+    const parts=[];
+    if(date)parts.push(`<span>${date}</span>`);
+    if(wd)parts.push(`<span>${wd.toLocaleString()} words</span>`);
+    if(note.summary&&note.summary.length>50)parts.push(`<span style="color:var(--blue-bright);">✨ AI summary</span>`);
+    if(currentVersionIndex>0)parts.push(`<span style="color:var(--orange);">version ${currentVersionIndex+1}</span>`);
+    meta.innerHTML=parts.join('<span style="color:rgba(180,200,255,0.25);">·</span>');
+  }
+  updateHeader();
+  logSuccess('Note opened: '+primaryNote.title+(alternates.length?' ('+allVersions.length+' versions)':''),'note');
+
+  function getActiveTab(){const active=document.querySelector('#nvTabs .tab.active');return active?.dataset.tab||'summary';}
+
+  document.getElementById('nvTabs').addEventListener('click',function(e){
+    const tab=e.target.closest('.tab');if(!tab)return;
+    document.querySelectorAll('#nvTabs .tab').forEach(t=>t.classList.remove('active'));
+    tab.classList.add('active');loadTab(tab.dataset.tab);
+  });
+
+  function loadTab(tab){
+    const body=document.getElementById('nvBody');
+    const note=getCurrentNote();
+    try{
+      if(tab==='summary')renderSummary(body,note);
+      else if(tab==='keypoints')renderKeyPoints(body,note);
+      else if(tab==='transcript')renderTranscript(body,note);
+      else if(tab==='flashcards')renderFlashcards(body,note);
+      else if(tab==='quiz')renderQuiz(body,note);
+    }catch(e){body.innerHTML='<div style="text-align:center;padding:32px;color:var(--red);">Failed to render</div>';logError('Tab "'+tab+'" crashed: '+e.message,'note/'+tab);}
+  }
+
+  function summaryHeaderHTML(note,label){
+    const when=note.createdAt?new Date(note.createdAt*1000).toLocaleDateString('en-US',{month:'short',day:'numeric'}).toLowerCase()+' · '+new Date(note.createdAt*1000).toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit'}).toLowerCase():'';
+    return`<div style="background: linear-gradient(90deg, rgba(26,107,255,0.18), transparent 70%); padding: 14px 24px; border-bottom: 0.5px solid var(--border); display:flex; align-items:center; gap:10px;">
+      <span style="font-family:var(--font-display); font-size:13px; font-weight:700; letter-spacing:-0.1px; color:var(--blue-bright);">${label}</span>
+      ${when?`<span style="font-size:11px; color:var(--muted);">generated ${when}</span>`:''}
+    </div>`;
+  }
+
+  function renderSummary(el,note){
+    if(!note.summary||note.summary.length<50){el.innerHTML=summaryHeaderHTML(note,'✨ Summary')+'<div style="text-align:center;padding:48px;color:var(--muted);">✨ No AI summary available</div>';return;}
+    // Defensive: old versions of the recorder had a bug where raw JSON got dumped into `summary`.
+    let summary=note.summary;
+    const trimmed=summary.trim();
+    if(trimmed.startsWith('{')||trimmed.startsWith('```')){
+      let cleaned=trimmed;
+      const fm=cleaned.match(/```(?:json)?\s*\n?([\s\S]*?)\n?\s*```/i);
+      if(fm)cleaned=fm[1].trim();
+      if(!cleaned.startsWith('{')){const fb=cleaned.indexOf('{'),lb=cleaned.lastIndexOf('}');if(fb!==-1&&lb>fb)cleaned=cleaned.slice(fb,lb+1);}
+      cleaned=cleaned.replace(/\\(?!["\\/bfnrtu])/g,'\\\\');
+      try{
+        const parsed=JSON.parse(cleaned);
+        if(parsed&&typeof parsed.summary==='string'&&parsed.summary.length>20){
+          summary=parsed.summary;
+          logInfo('Recovered stale JSON summary for note '+(note.id||''),'note/repair');
+        }else{
+          el.innerHTML=summaryHeaderHTML(note,'✨ Summary')+'<div style="padding:24px 28px;color:var(--yellow);">⚠️ This note has a malformed summary. Your transcript is still available — open the Transcript tab to re-run the summary from the record page.</div>';
+          return;
+        }
+      }catch(e){
+        el.innerHTML=summaryHeaderHTML(note,'✨ Summary')+'<div style="padding:24px 28px;color:var(--yellow);">⚠️ This note has a malformed summary. Your transcript is still available — open the Transcript tab to re-run the summary from the record page.</div>';
+        logError('Stale summary recovery failed: '+e.message,'note/repair');
+        return;
+      }
+    }
+    let safe=esc(summary);
+    let html=safe.replace(/^## (.+)$/gm,'<h2>$1</h2>')
+      .replace(/\|(.+)\|/g,(m)=>{const cells=m.split('|').filter(x=>x.trim());if(cells.every(c=>/^[\s-]+$/.test(c)))return'';return'<tr>'+cells.map(c=>`<td>${c.trim()}</td>`).join('')+'</tr>';})
+      .replace(/((?:<tr>.*<\/tr>\s*)+)/g,'<table>$1</table>')
+      .replace(/^- (.+)$/gm,'<li>$1</li>')
+      .replace(/((?:<li>.*<\/li>\s*)+)/g,'<ul>$1</ul>')
+      .replace(/\n{2,}/g,'<br/><br/>')
+      .replace(/\n/g,'<br/>');
+    html=html.replace(/<table>(.*?)<\/table>/gs,(m,inner)=>{const rows=inner.match(/<tr>.*?<\/tr>/gs)||[];if(rows.length<2)return m;const hr=rows[0].replace(/<td>/g,'<th>').replace(/<\/td>/g,'</th>');const rest=rows.slice(1).filter(r=>!/<td>\s*-+\s*<\/td>/g.test(r));return'<table><thead>'+hr+'</thead><tbody>'+rest.join('')+'</tbody></table>';});
+    el.innerHTML=summaryHeaderHTML(note,'✨ Summary'+(currentVersionIndex>0?' (v'+(currentVersionIndex+1)+')':''))
+      +`<div class="nv-sum-body" style="padding:24px 28px; overflow-y:auto; flex:1; display:flex; flex-direction:column; gap:14px;">${html}</div>`;
+  }
+
+  function renderKeyPoints(el,note){
+    const kp=note.keyPoints||[];
+    el.innerHTML=summaryHeaderHTML(note,'📌 Key points'+(currentVersionIndex>0?' (v'+(currentVersionIndex+1)+')':''));
+    if(!kp.length){el.innerHTML+='<div style="text-align:center;padding:48px;color:var(--muted);">📌 No key points available</div>';return;}
+    el.innerHTML+=`<div style="padding:24px 28px; overflow-y:auto; flex:1;">
+      <div style="font-size:12px; color:var(--muted); margin-bottom:14px;">${kp.length} key points</div>
+      ${kp.map((p,i)=>`<div class="nv-kp"><div class="nv-kp-num">${i+1}</div><div style="font-size:13px; line-height:1.6; color:rgba(240,244,255,0.85);">${esc(p)}</div></div>`).join('')}
+    </div>`;
+  }
+
+  function renderTranscript(el,note){
+    el.innerHTML=summaryHeaderHTML(note,'📄 Transcript'+(currentVersionIndex>0?' (v'+(currentVersionIndex+1)+')':''));
+    if(!note.transcript){el.innerHTML+='<div style="text-align:center;padding:48px;color:var(--muted);">📄 No transcript available</div>';return;}
+    const wc=note.transcript.split(' ').filter(Boolean).length;
+    el.innerHTML+=`<div style="padding:24px 28px; overflow-y:auto; flex:1;">
+      <div style="font-size:12px; color:var(--muted); margin-bottom:12px;">${wc.toLocaleString()} words</div>
+      <div class="nv-transcript">${esc(note.transcript)}</div>
+    </div>`;
+  }
+
+  function renderFlashcards(el,note){
+    const kp=note.keyPoints||[];
+    el.innerHTML=summaryHeaderHTML(note,'🃏 Flashcards'+(currentVersionIndex>0?' (v'+(currentVersionIndex+1)+')':''));
+    if(kp.length<2){el.innerHTML+='<div style="text-align:center;padding:48px;color:var(--muted);">🃏 Need at least 2 key points for flashcards</div>';return;}
+    let idx=0,flipped=false,mastered=new Set();
+    const wrap=document.createElement('div');
+    wrap.style.cssText='padding:24px 28px; overflow-y:auto; flex:1;';
+    el.appendChild(wrap);
+    function render(){
+      const p=kp[idx],hint=p.split(' ').slice(0,4).join(' ')+'…';
+      wrap.innerHTML=`<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;">
+        <span style="font-size:13px;color:var(--muted);font-family:var(--font-mono);">${idx+1} / ${kp.length}</span>
+        <span style="font-size:12px;color:var(--green);">✓ ${mastered.size} mastered</span>
+      </div>
+      <div class="qz-prog"><div class="qz-prog-bar" style="width:${((idx+1)/kp.length)*100}%"></div></div>
+      <div class="fc-card ${flipped?'fc-a':'fc-q'}" id="fcCard">
+        ${flipped
+          ?`<div style="font-size:24px;">💡</div><div style="font-size:16px;font-weight:600;line-height:1.6;max-width:520px;">${esc(p)}</div>`
+          :`<div style="font-size:24px;">❓</div><div style="font-size:13px;color:var(--muted);margin-bottom:4px;">What do you know about this concept?</div><div style="font-size:18px;font-weight:600;">${esc(hint)}</div><div style="font-size:11px;color:var(--muted);margin-top:8px;">click to reveal</div>`}
+      </div>
+      ${flipped?`<div class="fc-btns">
+        <button class="fc-btn" style="background:rgba(239,68,68,0.1);color:var(--red);" id="fcAgain">↻ Again</button>
+        <button class="fc-btn" style="background:rgba(245,158,11,0.1);color:var(--yellow);" id="fcHard">👎 Hard</button>
+        <button class="fc-btn" style="background:var(--green);color:var(--white);" id="fcGot">✓ Got it</button>
+      </div>`:''}`;
+      const fcCard=document.getElementById('fcCard');if(fcCard)fcCard.addEventListener('click',()=>{if(!flipped){flipped=true;render();}});
+      if(flipped){
+        document.getElementById('fcAgain')?.addEventListener('click',()=>next(false));
+        document.getElementById('fcHard')?.addEventListener('click',()=>next(false));
+        document.getElementById('fcGot')?.addEventListener('click',()=>next(true));
+      }
+    }
+    function next(got){
+      if(got)mastered.add(idx);
+      idx=(idx+1)%kp.length;flipped=false;
+      if(mastered.size===kp.length){
+        wrap.innerHTML=`<div style="text-align:center;padding:60px;">
+          <div style="font-size:48px;margin-bottom:16px;">🎉</div>
+          <div style="font-family:var(--font-display);font-size:24px;font-weight:800;margin-bottom:8px;">All mastered!</div>
+          <div style="color:var(--muted);">You've reviewed all ${kp.length} cards</div>
+          <button class="btn primary" style="margin-top:20px;" id="fcRestart">Start over</button>
+        </div>`;
+        document.getElementById('fcRestart')?.addEventListener('click',()=>{mastered.clear();idx=0;render();});
+        logSuccess('Flashcards complete — '+kp.length+' cards','note/flashcards');
+        return;
+      }
+      render();
+    }
+    render();
+  }
+
+  function renderQuiz(el,note){
+    const kp=note.keyPoints||[];
+    el.innerHTML=summaryHeaderHTML(note,'❓ Quiz'+(currentVersionIndex>0?' (v'+(currentVersionIndex+1)+')':''));
+    if(kp.length<3){el.innerHTML+='<div style="text-align:center;padding:48px;color:var(--muted);">❓ Need at least 3 key points for a quiz</div>';return;}
+    const wrap=document.createElement('div');
+    wrap.style.cssText='padding:24px 28px; overflow-y:auto; flex:1;';
+    el.appendChild(wrap);
+    const questions=kp.slice(0,5).map(p=>{const opts=[p,...kp.filter(x=>x!==p).sort(()=>Math.random()-0.5).slice(0,3)].sort(()=>Math.random()-0.5);return{q:'Which of the following was discussed in this lecture?',opts,correct:opts.indexOf(p)};});
+    let qi=0,score=0;const letters=['A','B','C','D'];
+    function render(){
+      if(qi>=questions.length){
+        wrap.innerHTML=`<div style="text-align:center;padding:60px;">
+          <div style="font-size:48px;margin-bottom:16px;">${score===questions.length?'🎉':score>=questions.length/2?'👍':'📚'}</div>
+          <div style="font-family:var(--font-display);font-size:32px;font-weight:800;margin-bottom:8px;">${score} / ${questions.length}</div>
+          <div style="color:var(--muted);margin-bottom:20px;">${score===questions.length?'Perfect!':score>=questions.length/2?'Good job!':'Keep studying!'}</div>
+          <button class="btn primary" id="qzRetry">Try again</button>
+        </div>`;
+        document.getElementById('qzRetry')?.addEventListener('click',()=>{qi=0;score=0;render();});
+        logInfo('Quiz complete: '+score+'/'+questions.length,'note/quiz');
+        return;
+      }
+      const q=questions[qi];
+      wrap.innerHTML=`<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;">
+        <span style="font-size:13px;color:var(--muted);font-family:var(--font-mono);">${qi+1} / ${questions.length}</span>
+        <span style="font-size:13px;color:var(--green);">score: ${score}</span>
+      </div>
+      <div class="qz-prog"><div class="qz-prog-bar" style="width:${(qi/questions.length)*100}%"></div></div>
+      <div style="font-size:16px;font-weight:600;margin:20px 0;color:var(--white);">${q.q}</div>
+      <div id="qzOpts">${q.opts.map((o,i)=>`<div class="qz-opt" data-i="${i}"><div class="qz-letter">${letters[i]}</div><div style="flex:1;font-size:13px;">${esc(o.length>140?o.substring(0,140)+'…':o)}</div></div>`).join('')}</div>
+      <div id="qzNext" style="display:none;margin-top:16px;text-align:right;"><button class="btn primary sm" id="qzNextBtn">Next →</button></div>`;
+      let answered=false;
+      wrap.querySelectorAll('.qz-opt').forEach(o=>o.addEventListener('click',function(){
+        if(answered)return;answered=true;
+        const sel=+this.dataset.i;
+        if(sel===q.correct)score++;
+        wrap.querySelectorAll('.qz-opt').forEach((x,j)=>{
+          if(j===q.correct)x.classList.add('correct');
+          else if(j===sel&&sel!==q.correct)x.classList.add('wrong');
+        });
+        document.getElementById('qzNext').style.display='block';
+        document.getElementById('qzNextBtn').addEventListener('click',()=>{qi++;render();});
+      }));
+    }
+    render();
+  }
+
+  // Honor ?autostart=flashcards|quiz from study.html
+  if(autostart==='flashcards'||autostart==='quiz'){
+    document.querySelectorAll('#nvTabs .tab').forEach(t=>t.classList.remove('active'));
+    const target=document.querySelector(`#nvTabs .tab[data-tab="${autostart}"]`);
+    if(target){target.classList.add('active');loadTab(autostart);} else loadTab('summary');
+  } else loadTab('summary');
+  }catch(e){logError('Note page crash: '+e.message,'note');}
+});
+</script>
+</body>
+</html>

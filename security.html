@@ -1,0 +1,330 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Security &amp; Trust — ClassMinds</title>
+<meta name="description" content="How ClassMinds protects your notes, chats, and account. Encryption, access control, AI data handling, and compliance."/>
+<link rel="icon" type="image/png" href="/WebsiteLogo.png"/>
+<link rel="apple-touch-icon" href="/WebsiteLogo.png"/>
+<meta name="author" content="ClassMinds"/>
+<meta name="robots" content="index, follow"/>
+<link rel="canonical" href="https://classminds.app/security.html"/>
+<meta property="og:type" content="website"/>
+<meta property="og:url" content="https://classminds.app/security.html"/>
+<meta property="og:title" content="Security &amp; Trust – ClassMinds"/>
+<meta property="og:description" content="How ClassMinds protects your notes, chats, and account. Encryption, access control, AI data handling, and compliance."/>
+<meta property="og:site_name" content="ClassMinds"/>
+<meta property="og:image" content="https://classminds.app/WebsiteLogo.png"/>
+<meta name="twitter:card" content="summary_large_image"/>
+<meta name="twitter:title" content="Security &amp; Trust – ClassMinds"/>
+<meta name="twitter:description" content="Encryption, access control, AI data handling, and compliance."/>
+<meta name="twitter:image" content="https://classminds.app/WebsiteLogo.png"/>
+<meta name="theme-color" content="#040d1f"/>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+<link rel="stylesheet" href="_base.css"/>
+
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-081YYS6HV7"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'G-081YYS6HV7');
+</script>
+
+<!-- JSON-LD WebPage schema -->
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "WebPage",
+  "name": "ClassMinds Security & Trust",
+  "description": "How ClassMinds protects user data with encryption, access control, and a zero-training AI policy.",
+  "url": "https://classminds.app/security.html",
+  "about": {
+    "@type": "SoftwareApplication",
+    "name": "ClassMinds",
+    "applicationCategory": "EducationApplication"
+  }
+}
+</script>
+<style>
+  .pillars {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    gap: 20px;
+    margin: 56px 0 0;
+  }
+  .pillar {
+    background: var(--navy-card);
+    border: 1px solid var(--navy-border);
+    border-radius: 18px;
+    padding: 28px;
+  }
+  .pillar-icon {
+    width: 44px; height: 44px;
+    background: rgba(26,107,255,0.12);
+    border: 1px solid rgba(26,107,255,0.2);
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 20px;
+    margin-bottom: 18px;
+  }
+  .pillar-h {
+    font-family: var(--font-display);
+    font-size: 17px;
+    font-weight: 700;
+    margin-bottom: 10px;
+    letter-spacing: -0.3px;
+  }
+  .pillar-p {
+    color: var(--muted);
+    font-size: 14px;
+    line-height: 1.65;
+    font-weight: 300;
+  }
+
+  .detail-block {
+    margin-top: 80px;
+    max-width: 860px;
+    margin-left: auto;
+    margin-right: auto;
+  }
+  .detail-block h3 {
+    font-family: var(--font-display);
+    font-size: 24px;
+    letter-spacing: -0.5px;
+    margin-bottom: 14px;
+  }
+  .detail-block p, .detail-block li {
+    color: rgba(240,244,255,0.75);
+    font-size: 15px;
+    line-height: 1.75;
+    font-weight: 300;
+  }
+  .detail-block ul { list-style: none; margin: 16px 0 28px; }
+  .detail-block li {
+    display: flex;
+    gap: 12px;
+    padding: 8px 0;
+  }
+  .detail-block li::before {
+    content: '→';
+    color: var(--blue-bright);
+    flex-shrink: 0;
+  }
+  .detail-block + .detail-block {
+    border-top: 1px solid var(--navy-border);
+    padding-top: 48px;
+  }
+
+  .status-row {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 16px;
+    margin: 40px 0 0;
+  }
+  .status-item {
+    background: var(--navy-card);
+    border: 1px solid var(--navy-border);
+    border-radius: 14px;
+    padding: 18px 20px;
+  }
+  .status-item .st-lbl {
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: var(--muted);
+    margin-bottom: 8px;
+  }
+  .status-item .st-val {
+    font-family: var(--font-display);
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--white);
+  }
+  .status-item.on .st-val { color: var(--blue-bright); }
+  .status-item.soon .st-val { color: rgba(240,244,255,0.4); }
+  .status-dot {
+    display: inline-block;
+    width: 7px; height: 7px;
+    border-radius: 50%;
+    margin-right: 8px;
+    vertical-align: middle;
+  }
+  .status-item.on .status-dot { background: #4ade80; box-shadow: 0 0 10px rgba(74,222,128,0.5); }
+  .status-item.soon .status-dot { background: rgba(180,200,255,0.3); }
+
+  .responsible-box {
+    background: var(--navy-card);
+    border: 1px solid var(--navy-border);
+    border-left: 3px solid var(--blue-bright);
+    border-radius: 12px;
+    padding: 24px 28px;
+    margin-top: 24px;
+  }
+  .responsible-box code {
+    background: rgba(26,107,255,0.1);
+    padding: 2px 8px;
+    border-radius: 5px;
+    color: var(--blue-bright);
+    font-size: 13px;
+  }
+</style>
+</head>
+<body>
+
+<nav class="site-nav">
+  <a href="index.html" class="nav-logo" aria-label="ClassMinds home">
+    <img src="/WebsiteLogo.png" alt="ClassMinds logo" class="nav-logo-img"/>
+    <span class="nav-logo-text">Class<span>Minds</span></span>
+  </a>
+  <ul class="nav-links" id="nav-links">
+    <li><a href="features.html">Features</a></li>
+    <li><a href="pricing.html">Pricing</a></li>
+    <li><a href="about.html">About</a></li>
+    <li><a href="support.html">Support</a></li>
+    <li><a href="beta.html" class="nav-cta">Download Beta</a></li>
+    <li><a href="login.html" style="color:#4d8fff;font-weight:600">Sign In</a></li>
+  </ul>
+  <button class="nav-toggle" aria-label="Toggle menu" aria-expanded="false" aria-controls="nav-links">
+    <span></span><span></span><span></span>
+  </button>
+</nav>
+
+<section class="page-hero">
+  <div class="page-hero-glow"></div>
+  <div class="badge"><span class="badge-dot"></span>Security &amp; Trust</div>
+  <h1 class="page-title">Your notes,<br/><span class="accent">locked down.</span></h1>
+  <p class="page-sub">ClassMinds is built on Firebase and Apple platforms with per-user access controls, encryption at rest, and a zero-training policy on your data.</p>
+</section>
+
+<section class="section">
+
+  <div class="section-tag">Four pillars</div>
+  <h2 class="section-title">How we protect your data.</h2>
+
+  <div class="pillars">
+    <div class="pillar">
+      <div class="pillar-icon">🔐</div>
+      <div class="pillar-h">Encryption everywhere</div>
+      <div class="pillar-p">All data encrypted in transit (TLS 1.3) and at rest via Google Cloud's default encryption. Uploads go to Firebase Storage with server-side AES-256.</div>
+    </div>
+    <div class="pillar">
+      <div class="pillar-icon">👤</div>
+      <div class="pillar-h">Strict access scoping</div>
+      <div class="pillar-p">Firestore security rules enforce per-user reads and writes. Notes are scoped to your UID; class chats are scoped to enrolled members only.</div>
+    </div>
+    <div class="pillar">
+      <div class="pillar-icon">🧠</div>
+      <div class="pillar-h">Zero-training policy</div>
+      <div class="pillar-p">Your notes are never used to train any AI model — yours, ours, or a third party's. They're only used to answer your own questions.</div>
+    </div>
+    <div class="pillar">
+      <div class="pillar-icon">🗑️</div>
+      <div class="pillar-h">Real deletion</div>
+      <div class="pillar-p">Account deletion removes your notes, uploads, and profile. Group-chat messages are tombstoned so classmates' threads stay intact without exposing you.</div>
+    </div>
+  </div>
+
+  <!-- STATUS BOARD -->
+  <div class="detail-block">
+    <h3>Live security status</h3>
+    <p>Real status — not aspirational. Updated with every release.</p>
+    <div class="status-row">
+      <div class="status-item on"><div class="st-lbl"><span class="status-dot"></span>TLS 1.3</div><div class="st-val">Enforced</div></div>
+      <div class="status-item on"><div class="st-lbl"><span class="status-dot"></span>At-rest encryption</div><div class="st-val">AES-256</div></div>
+      <div class="status-item on"><div class="st-lbl"><span class="status-dot"></span>Firestore rules</div><div class="st-val">Per-user scoped</div></div>
+      <div class="status-item on"><div class="st-lbl"><span class="status-dot"></span>Auth MFA</div><div class="st-val">Apple + Email</div></div>
+      <div class="status-item soon"><div class="st-lbl"><span class="status-dot"></span>App Check</div><div class="st-val">Rolling out</div></div>
+      <div class="status-item soon"><div class="st-lbl"><span class="status-dot"></span>SOC 2</div><div class="st-val">Post-launch</div></div>
+    </div>
+  </div>
+
+  <!-- AI DATA HANDLING -->
+  <div class="detail-block">
+    <h3>How your data meets the AI</h3>
+    <p>When you ask the AI tutor a question, ClassMinds fetches the most relevant passages from your notes, sends those — and only those — along with your question to the model. The model generates an answer grounded in that context.</p>
+    <ul>
+      <li>Uploads are indexed privately; the index is scoped to your account</li>
+      <li>Retrieved passages are sent as one-time request context — not stored by the model provider</li>
+      <li>We use OpenAI's zero-retention API mode: prompts aren't retained for training</li>
+      <li>You can delete any uploaded file at any time; its index is removed within minutes</li>
+    </ul>
+  </div>
+
+  <!-- COMPLIANCE -->
+  <div class="detail-block">
+    <h3>Compliance &amp; privacy laws</h3>
+    <p>ClassMinds is built around data-minimization principles from the start.</p>
+    <ul>
+      <li><strong style="color:var(--blue-bright);">GDPR:</strong> Users can export and delete their data from Settings. We don't sell data. DPAs available for EU institutions.</li>
+      <li><strong style="color:var(--blue-bright);">CCPA:</strong> California users have the same export/delete rights. We don't sell personal information.</li>
+      <li><strong style="color:var(--blue-bright);">FERPA:</strong> ClassMinds is consumer-facing today, not a covered school official. If your institution wants to deploy ClassMinds as a FERPA-scoped service, we offer a Data Processing Agreement.</li>
+      <li><strong style="color:var(--blue-bright);">COPPA:</strong> ClassMinds is 13+. We don't knowingly collect data from children under 13.</li>
+    </ul>
+  </div>
+
+  <!-- RESPONSIBLE DISCLOSURE -->
+  <div class="detail-block">
+    <h3>Responsible disclosure</h3>
+    <p>Found a security issue? Report it directly — we read every email and respond within 48 hours. We don't offer a bug bounty yet, but we do credit disclosures publicly (with your permission).</p>
+    <div class="responsible-box">
+      <p style="margin-bottom:8px;"><strong style="color:var(--white);">Email:</strong> <code>security@classminds.app</code></p>
+      <p style="margin-bottom:8px;"><strong style="color:var(--white);">PGP key:</strong> <code>classminds.app/.well-known/security.txt</code></p>
+      <p style="margin:0;"><strong style="color:var(--white);">Don't:</strong> publicly disclose until we've confirmed a fix. <strong style="color:var(--white);">Do:</strong> include reproduction steps and, if possible, a patch suggestion.</p>
+    </div>
+  </div>
+
+</section>
+
+<div class="cta-band">
+  <h2>Questions about security?</h2>
+  <p>We'll answer anything — schools and parents included.</p>
+  <a href="mailto:security@classminds.app" class="btn-primary">Contact Security →</a>
+</div>
+
+<footer>
+  <a href="index.html" class="footer-logo">Class<span>Minds</span></a>
+  <ul class="footer-links">
+    <li><a href="features.html">Features</a></li>
+    <li><a href="pricing.html">Pricing</a></li>
+    <li><a href="how.html">How It Works</a></li>
+    <li><a href="faq.html">FAQ</a></li>
+    <li><a href="security.html">Security</a></li>
+    <li><a href="about.html">About</a></li>
+    <li><a href="support.html">Support</a></li>
+    <li><a href="privacy.html">Privacy</a></li>
+    <li><a href="terms.html">Terms</a></li>
+  </ul>
+  <span class="footer-copy">© 2026 ClassMinds. All rights reserved.</span>
+</footer>
+
+<script>
+  const navToggle = document.querySelector('.nav-toggle');
+  const navLinks = document.querySelector('.nav-links');
+  if (navToggle && navLinks) {
+    const closeMenu = () => {
+      navLinks.classList.remove('open');
+      navToggle.classList.remove('open');
+      navToggle.setAttribute('aria-expanded', 'false');
+    };
+    navToggle.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const open = navLinks.classList.toggle('open');
+      navToggle.classList.toggle('open', open);
+      navToggle.setAttribute('aria-expanded', open);
+    });
+    navLinks.querySelectorAll('a').forEach(a => a.addEventListener('click', closeMenu));
+    document.addEventListener('click', (e) => {
+      if (!navLinks.contains(e.target) && !navToggle.contains(e.target)) closeMenu();
+    });
+  }
+</script>
+
+</body>
+</html>

@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<link rel="icon" type="image/png" href="/WebsiteLogo.png"/>
+<link rel="apple-touch-icon" href="/WebsiteLogo.png"/>
+<link rel="shortcut icon" href="/WebsiteLogo.png"/>
+<title>AI Tutor – ClassMinds</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=DM+Sans:ital,wght@0,400;0,500;0,600;0,700;1,400&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet"/>
+<link rel="stylesheet" href="app-styles.css"/>
+</head>
+<body>
+<div id="sidebarSlot"></div>
+<div class="page-glow"></div>
+<div class="main">
+  <div class="page-head">
+    <div>
+      <h1 class="page-title">AI tutor</h1>
+      <p class="page-sub">I know your notes. ask me anything.</p>
+    </div>
+  </div>
+
+  <div class="pill-row" id="scopePills">
+    <span class="pillf active" data-cid="">all classes <span class="cnt" id="scopeAllCnt">—</span></span>
+  </div>
+
+  <div style="display:flex; flex-direction:column; gap:16px; flex:1; align-items:center; min-height:0;">
+    <div style="max-width:820px; width:100%; display:flex; flex-direction:column; gap:14px; flex:1; overflow-y:auto;" id="msgList">
+      <div id="scopeBanner" style="text-align:center; font-size:11px; color:var(--muted); letter-spacing:0.3px; padding:6px 0;">
+        scoped to <b style="color:var(--blue-bright); font-weight:600;">all classes</b> · <span id="ctxCount">0</span> notes indexed
+      </div>
+    </div>
+
+    <!-- input -->
+    <div style="max-width:820px; width:100%; background:var(--navy-card); border:0.5px solid var(--border); border-radius:var(--r-full); padding:8px 10px 8px 20px; display:flex; align-items:center; gap:12px;">
+      <input id="askInput" class="input" placeholder="ask a question…" style="background:transparent; border:none; padding:10px 0; flex:1;"/>
+      <button id="askSend" type="button" style="width:36px; height:36px; border-radius:50%; background:var(--blue); border:none; color:var(--white); font-size:14px; cursor:pointer;">↑</button>
+    </div>
+  </div>
+</div>
+
+<script type="module">
+/*
+ * AI Tutor — backend contract for `aiChatFn` (httpsCallable):
+ *   Input:  { message, history, scopeClassId|null, noteContext: [{id, title, summary, keyPoints}] }
+ *   Output: { reply: string (may contain [NOTE_REF:id] markers) }
+ *
+ * If the function isn't deployed yet, we fall back to a stub reply.
+ * TODO: when shipping, wire to a real `aiChatFn` callable in functions/index.js.
+ */
+import{requireUser,db,fns,collection,getDocs,doc,setDoc,addDoc,query,orderBy,limit,loadClasses,esc,COLORS,logError,logSuccess,logInfo}from'./app-shared.js';
+import{httpsCallable}from'https://www.gstatic.com/firebasejs/10.12.0/firebase-functions.js';
+
+let uid='',allClasses=[],ccMap={},scopeCid='',allNotes=[],messages=[],chatId='';
+let aiChatFn=null;
+try{aiChatFn=httpsCallable(fns,'aiChatFn');}catch(e){aiChatFn=null;}
+
+requireUser().then(async(ctx)=>{
+  uid=ctx.uid;
+  try{
+    const cl=await loadClasses(uid);allClasses=cl.classes;ccMap=cl.colorMap;
+    document.getElementById('scopeAllCnt').textContent=allClasses.length;
+    const pills=document.getElementById('scopePills');
+    allClasses.forEach(c=>{
+      const cid=c.classId||c.id;
+      const span=document.createElement('span');
+      span.className='pillf';span.dataset.cid=cid;
+      span.textContent=c.courseCode||'';
+      pills.appendChild(span);
+    });
+    pills.addEventListener('click',e=>{
+      const p=e.target.closest('.pillf');if(!p)return;
+      pills.querySelectorAll('.pillf').forEach(x=>x.classList.remove('active'));
+      p.classList.add('active');scopeCid=p.dataset.cid||'';
+      loadContextNotes();
+    });
+
+    // Generate or reuse chatId per session
+    chatId=sessionStorage.getItem('cm-chatId')||crypto.randomUUID();
+    sessionStorage.setItem('cm-chatId',chatId);
+
+    // Load last 50 messages from this chat
+    try{
+      const s=await getDocs(query(collection(db,'users',uid,'tutorChats',chatId,'messages'),orderBy('createdAt','asc'),limit(50)));
+      s.docs.forEach(d=>{const m=d.data();messages.push({role:m.role,text:m.text,citations:m.citations||[]});renderMessage(m.role,m.text,m.citations||[],true);});
+    }catch(e){logError('History load failed: '+e.message,'tutor');}
+
+    await loadContextNotes();
+    logSuccess('Tutor loaded — '+allClasses.length+' classes scope','tutor');
+  }catch(e){logError('Tutor init failed: '+e.message,'tutor');}
+});
+
+async function loadContextNotes(){
+  allNotes=[];
+  const targets=scopeCid?allClasses.filter(c=>(c.classId||c.id)===scopeCid):allClasses;
+  for(const c of targets){
+    const cid=c.classId||c.id;
+    try{
+      const s=await getDocs(query(collection(db,'classes',cid,'notes'),orderBy('createdAt','desc'),limit(20)));
+      s.docs.forEach(d=>{const n=d.data();allNotes.push({id:d.id,classId:cid,courseCode:c.courseCode,title:n.title||'Untitled',summary:n.summary||'',keyPoints:n.keyPoints||[]});});
+    }catch(e){logError('Tutor context load failed for '+c.courseCode+': '+e.message,'tutor');}
+  }
+  document.getElementById('ctxCount').textContent=allNotes.length;
+  document.getElementById('scopeBanner').innerHTML=`scoped to <b style="color:var(--blue-bright); font-weight:600;">${esc(scopeCid?(allClasses.find(c=>(c.classId||c.id)===scopeCid)?.courseCode||''):'all classes')}</b> · ${allNotes.length} notes indexed`;
+}
+
+function renderMessage(role,text,citations,skipScroll){
+  const list=document.getElementById('msgList');
+  const wrap=document.createElement('div');
+  if(role==='user'){
+    wrap.style.cssText='align-self:flex-end; max-width:70%; background:var(--blue); color:var(--white); padding:12px 16px; border-radius:var(--r-4xl) var(--r-4xl) 4px var(--r-4xl); font-size:14px; line-height:1.55;';
+    wrap.textContent=text;
+  } else {
+    wrap.style.cssText='align-self:flex-start; max-width:80%; display:flex; gap:10px; align-items:flex-start;';
+    let citationHTML='';
+    if(citations&&citations.length){
+      citationHTML='<div style="display:flex; gap:6px; margin-top:10px; flex-wrap:wrap;">'+citations.map(cid=>{
+        const n=allNotes.find(x=>x.id===cid);
+        if(!n)return'';
+        return`<a href="note.html?classId=${n.classId}&noteId=${n.id}" style="display:inline-flex; align-items:center; gap:6px; padding:5px 10px; background:var(--blue-tint-15); border:0.5px solid var(--border-active); border-radius:var(--r-full); font-size:11px; font-weight:600; color:var(--blue-bright); text-decoration:none;">📄 ${esc(n.title)}</a>`;
+      }).join('')+'</div>';
+    }
+    wrap.innerHTML=`
+      <div style="width:28px; height:28px; flex-shrink:0; border-radius:50%; background:var(--blue-tint-15); border:0.5px solid var(--border-active); display:flex; align-items:center; justify-content:center; font-size:13px;">✨</div>
+      <div style="background:var(--navy-card); border:0.5px solid var(--border); padding:14px 18px; border-radius:4px var(--r-4xl) var(--r-4xl) var(--r-4xl); font-size:14px; line-height:1.6; color:rgba(240,244,255,0.88);">
+        <div style="white-space:pre-wrap;">${esc(text)}</div>
+        ${citationHTML}
+      </div>`;
+  }
+  list.appendChild(wrap);
+  if(!skipScroll)list.scrollTop=list.scrollHeight;
+  return wrap;
+}
+
+function showThinking(){
+  const list=document.getElementById('msgList');
+  const wrap=document.createElement('div');
+  wrap.id='thinkingBubble';
+  wrap.style.cssText='align-self:flex-start; display:flex; gap:10px; align-items:flex-start;';
+  wrap.innerHTML=`
+    <div style="width:28px; height:28px; flex-shrink:0; border-radius:50%; background:var(--blue-tint-15); border:0.5px solid var(--border-active); display:flex; align-items:center; justify-content:center; font-size:13px;">✨</div>
+    <div style="background:var(--navy-card); border:0.5px solid var(--border); padding:14px 18px; border-radius:4px var(--r-4xl) var(--r-4xl) var(--r-4xl); font-size:14px; color:rgba(240,244,255,0.88); display:flex; align-items:center; gap:10px;">
+      <span style="font-size:13px; color:var(--muted);">thinking</span>
+      <span style="display:inline-flex; gap:4px;">
+        <span style="width:6px; height:6px; border-radius:50%; background:var(--blue-bright); animation: pulse 1.4s ease-in-out infinite;"></span>
+        <span style="width:6px; height:6px; border-radius:50%; background:var(--blue-bright); animation: pulse 1.4s ease-in-out infinite 0.2s;"></span>
+        <span style="width:6px; height:6px; border-radius:50%; background:var(--blue-bright); animation: pulse 1.4s ease-in-out infinite 0.4s;"></span>
+      </span>
+    </div>`;
+  list.appendChild(wrap);
+  list.scrollTop=list.scrollHeight;
+}
+function clearThinking(){document.getElementById('thinkingBubble')?.remove();}
+
+async function persistMessage(role,text,citations){
+  try{
+    await addDoc(collection(db,'users',uid,'tutorChats',chatId,'messages'),{
+      role,text,citations:citations||[],createdAt:Date.now()/1000
+    });
+  }catch(e){logError('Tutor persist failed: '+e.message,'tutor/persist');}
+}
+
+async function send(){
+  const input=document.getElementById('askInput');
+  const text=input.value.trim();if(!text)return;
+  input.value='';
+  renderMessage('user',text,[]);
+  messages.push({role:'user',text,citations:[]});
+  persistMessage('user',text,[]);
+  showThinking();
+
+  try{
+    let reply='';let citations=[];
+    if(aiChatFn){
+      const noteContext=allNotes.slice(0,20).map(n=>({id:n.id,title:n.title,summary:(n.summary||'').slice(0,2000),keyPoints:n.keyPoints||[]}));
+      const result=await aiChatFn({
+        message:text,
+        history:messages.slice(-10),
+        scopeClassId:scopeCid||null,
+        noteContext
+      });
+      reply=result.data?.reply||'(empty reply)';
+      // Parse [NOTE_REF:id] markers
+      reply=reply.replace(/\[NOTE_REF:([^\]]+)\]/g,(m,id)=>{citations.push(id);return'';}).trim();
+    } else {
+      // Stub fallback — backend not deployed
+      await new Promise(r=>setTimeout(r,600));
+      reply="Hey, I'm not wired up yet. The backend function (aiChatFn) is coming soon — once it's deployed I'll be able to answer questions using your actual notes.";
+      logInfo('Tutor stub reply (aiChatFn missing)','tutor');
+    }
+    clearThinking();
+    renderMessage('ai',reply,citations);
+    messages.push({role:'ai',text:reply,citations});
+    persistMessage('ai',reply,citations);
+  }catch(e){
+    clearThinking();
+    renderMessage('ai','Sorry, something went wrong: '+e.message,[]);
+    logError('Tutor send failed: '+e.message,'tutor/send');
+  }
+}
+
+document.getElementById('askSend').addEventListener('click',send);
+document.getElementById('askInput').addEventListener('keydown',e=>{if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();send();}});
+</script>
+</body>
+</html>

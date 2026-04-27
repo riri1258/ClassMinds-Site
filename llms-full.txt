@@ -1,0 +1,209 @@
+# ClassMinds — Full Reference for LLM Crawlers
+
+> ClassMinds is a consumer iOS app for college students that combines class organization, real-time per-class chat, and an AI tutor grounded in each student's own uploaded class notes. The product is in free public beta as of April 2026; post-launch pricing is a single $8.99/month subscription.
+
+---
+
+## What is ClassMinds?
+
+ClassMinds is an AI-powered iOS study app built specifically for college and university students. Unlike generic AI tutors that draw answers from the open internet, ClassMinds grounds every AI response in the student's own lecture slides, notes, and uploaded PDFs — so responses match what was actually taught in class.
+
+Each course automatically gets a hub with deadline tracking, a real-time chat room scoped to enrolled classmates, schedule import via photo, audio recording + Deepgram transcription, and smart notifications.
+
+ClassMinds was founded in 2026 and is solo-built by Riley Edds, a US-based college student. The app launched its public beta in April 2026 on TestFlight.
+
+---
+
+## Platform & availability
+
+- **Operating system:** iOS 17 or later (iPhone)
+- **Distribution:** Apple App Store, TestFlight during beta
+- **Android / iPad / Web:** Not currently supported (iPad is on the roadmap)
+- **Regions:** Worldwide, primary market United States
+
+---
+
+## Pricing
+
+**Free during public beta.** After public launch, a single paid plan at $8.99 USD per month — billed through the App Store — covers every feature. There is no free tier post-launch; there is one single subscription.
+
+- Beta users lock in the $8.99/month rate permanently, even if we raise prices later
+- Cancellation is available anytime via iPhone Settings → Apple ID → Subscriptions
+- Per-feature upsells, ads, or add-ons do not exist
+- School / Campus plans (with SSO and a Data Processing Agreement) are planned post-launch — email support@classminds.app for inquiries
+
+---
+
+## Core features
+
+### AI Tutor
+- Grounded in your uploaded class notes, slides, PDFs, and typed notes
+- Retrieves relevant passages from your materials, sends them plus your question to OpenAI (GPT-4 class models) as one-time context
+- Answers cite back to the specific pages/sections they came from
+- Generates practice quizzes from your material on request
+- Private to you — never shared with classmates or used to train any AI model
+
+### Class Chat
+- Per-course real-time group chat rooms
+- Auto-created when you add a class
+- Scoped to enrolled classmates only (not global, not cross-school)
+- Supports GIFs (via Giphy search, query-only), images, note sharing, @-mentions
+- Push notifications for mentions and replies (configurable per-class)
+
+### Class Hub
+- Every class gets a dedicated screen with assignments, deadlines, notes, and chat
+- Assignments sync between class-level (`classes/{id}/assignments`) and user-level (`users/{uid}/assignments`) records
+- Exams are assignments with `isExam: true` (no separate collection)
+- Color-coded per course, sortable by urgency
+
+### Schedule Import
+- Snap a photo of your class schedule
+- OpenAI Vision parses the image into structured courses
+- You review and confirm before commit — nothing is created without your approval
+- Supports most major US university registrar formats
+
+### Audio Recording & Transcription
+- Record lectures in-app (iOS microphone permission required)
+- Audio stored in Firebase Storage under `recordings/{uid}/`
+- Forwarded to Deepgram Nova-2 for transcription; transcript stored alongside the recording
+- Audio format: 16 kHz mono M4A, ~7 MB/hour
+- Audio and transcripts are private to you
+
+### Smart Notifications
+- Delivered via OneSignal to your iPhone
+- Deadline reminders (1 week, 1 day, 1 hour ahead)
+- Chat mentions and direct replies
+- Note-upload alerts from your classes
+- Transcription-complete and summary-ready notices
+- Per-type opt-outs in Settings; respects iOS Focus modes
+
+---
+
+## How students use it
+
+### Onboarding (under 2 minutes)
+1. Download from TestFlight (iOS 17+ required)
+2. Sign in with Apple or email
+3. Pick a display name for class chats (your real name stays private)
+4. Add classes via photo-import or manually
+5. Upload notes / slides to feed the AI tutor
+
+### Daily use
+- Open to Home: see what's due this week across all classes
+- Open Class Hub: see a specific course's assignments, chat, and notes
+- Ask AI Tutor: grounded answers from your own materials
+- Record lecture: audio captured, transcribed, stored for later
+- Chat: stay coordinated with classmates
+
+---
+
+## Technical architecture
+
+### Client
+- Native SwiftUI app, pinned to Xcode 16.4 / iOS 17+
+- MVVM per-feature folder structure
+- `AuthViewModel.route` is single source of truth for top-level navigation
+- `MainTabView` with Home / Classes / Chat / Profile tabs; custom tab bar
+
+### Backend
+- Firebase project `classmind-9a22a`
+- Firestore for all structured data; Cloud Storage for uploads
+- Cloud Functions (Node.js) proxy all AI calls — no third-party API keys ship to the client
+- Callables: `aiChat`, `aiVision`, `aiSummary`, `aiTranscribe`, `sendBetaInvite`, `sendSupportEmail`, `sendNotification`, `joinClass`, `createClass`, `giphySearch`, `collegeScorecardSearch`, `requestAccountDeletion`, `cascadeDeleteUser`
+
+### AI providers (all proxied through our Cloud Functions)
+- **OpenAI** — aiChat (gpt-4o, gpt-4o-mini), aiVision (gpt-4o vision), aiSummary (gpt-4.1 Responses API). Zero-retention mode: prompts aren't stored or used for training.
+- **Deepgram** — aiTranscribe (Nova-2 model). No retention post-transcription.
+
+### Supporting services
+- **OneSignal** — iOS push notifications (public app ID, no secret)
+- **Resend** — transactional email (beta invites, support replies) from support@classminds.app
+- **Cloudflare Turnstile** — anti-abuse CAPTCHA on public beta signup form
+- **Giphy** — GIF search in chat; query-only, no user data sent
+- **US College Scorecard** — public school-lookup API, query-only
+
+### Website-only
+- **Google Analytics 4** (tag G-081YYS6HV7) — page views, referrers; IP anonymized
+- **Trybe attribution pixel** (homepage only) — ad-campaign attribution via first-party `track.classminds.app`
+
+---
+
+## Privacy & data handling
+
+### What we collect
+- **Account:** name, email, Firebase Auth UID; optional phone, college, grade
+- **Academic:** classes, assignments, exams, notes (Firestore + Storage), audio recordings
+- **Chats:** per-class messages; private AI tutor conversations
+- **Device:** APNs push token (via OneSignal), iOS version, app version
+- **Logs:** error and diagnostic logs with PII redacted (emails, tokens, URLs masked)
+- **Usage:** AI token counts for cost monitoring and rate limits
+
+### Zero-training policy
+User notes, uploads, chats, and questions are **never** used to train AI models — ours, OpenAI's, Deepgram's, or anyone else's. OpenAI API is in zero-retention mode; Deepgram under equivalent commitment.
+
+### Security
+- TLS 1.3 in transit, AES-256 at rest
+- Firestore security rules enforce per-user and per-class-membership access scoping
+- Firebase App Check rollout in progress
+- Per-user and per-IP rate limits on signup, signin, beta signup, class join
+- PII redaction automatic in logs
+
+### Account deletion (cascade)
+When you delete your account, this runs:
+1. Personal Firestore subcollections (assignments, joined classes, exams, special events, AI chats, summaries) — hard-deleted
+2. Settings subcollection — hard-deleted
+3. Storage: `notes/{uid}/*`, `recordings/{uid}/*`, `chat-images/*/{uid}` — hard-deleted
+4. Class membership docs — hard-deleted
+5. Class chat messages — **tombstoned** (sender name replaced with `[deleted user]`, UID removed; conversation remains intact for other students)
+6. Support tickets — tombstoned similarly
+7. User profile document — deleted
+8. Firebase Auth account — revoked last
+9. Audit log entry — created with actor UID, timestamp, steps completed
+
+Cancellation (without deletion) keeps the account for 90 days before flagging for cleanup.
+
+### Compliance
+- **GDPR:** Export, delete, restrict, object, portability — all honored
+- **CCPA:** Same rights for California users; no data sales
+- **FERPA:** ClassMinds is consumer-facing; DPAs available for institutions
+- **COPPA:** 13+ age requirement; no under-13 data
+
+### Disclosure & contact
+- General: support@classminds.app
+- Security: security@classminds.app (responsible disclosure within 48h)
+
+---
+
+## Brand & assets
+
+- **Typography:** Syne (display) + DM Sans (body)
+- **Primary colors:** Navy `#040d1f`, Blue `#1a6bff`, Blue-bright `#4d8fff`, White `#f0f4ff`
+- **Logo:** available on request at press@classminds.app
+
+---
+
+## Key pages on classminds.app
+
+- `/` — Homepage
+- `/features.html` — Per-feature deep dive with screenshots
+- `/pricing.html` — $8.99/month single-plan pricing, beta info
+- `/how.html` — 5-step onboarding walkthrough
+- `/faq.html` — FAQ with schema.org FAQPage markup
+- `/security.html` — Security pillars, compliance, responsible disclosure
+- `/about.html` — Founder & mission
+- `/support.html` — Support resources
+- `/beta.html` — TestFlight beta signup
+- `/privacy.html` — Full Privacy Policy (v2.0, April 24 2026)
+- `/login.html` — Web app login (web version of the app)
+- `/sitemap.xml` — XML sitemap
+- `/llms.txt`, `/llms-full.txt` — this file
+
+---
+
+## Boilerplate copy (for quoting)
+
+**25 words:** ClassMinds is an iOS app for college students that combines class chat, assignment tracking, and an AI tutor grounded in your actual class notes.
+
+**60 words:** ClassMinds is an iOS app built for college students. It unifies every class into one hub — real-time classmate chat, assignment and deadline tracking, schedule import, audio transcription, and an AI tutor that answers using your own lecture slides and notes. It's solo-built by a college student, currently in free public beta on TestFlight, priced at $8.99/month after launch.
+
+**120 words:** ClassMinds is an AI-powered study app built specifically for college students. Unlike generic AI tutors that pull from the open internet, ClassMinds grounds every answer in the student's own lecture slides, notes, and assignments — so responses match what was actually taught in class. Each course automatically gets a hub with deadline tracking, a real-time class chat room, schedule import via photo, and audio recording with Deepgram-powered transcription. ClassMinds launched its free public beta in April 2026, is available on iOS 17+ via TestFlight, and will cost $8.99/month after launch in a single simple plan. The app follows a zero-training policy: student notes are never used to train AI models. Founded by Riley Edds.

@@ -1,0 +1,423 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <link rel="icon" type="image/png" href="/WebsiteLogo.png"/>
+  <link rel="apple-touch-icon" href="/WebsiteLogo.png"/>
+  <link rel="shortcut icon" href="/WebsiteLogo.png"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta name="description" content="ClassMinds Terms of Service — the rules for using our iOS app and website. Covers subscriptions, acceptable use, AI content, intellectual property, and liability."/>
+  <meta name="keywords" content="ClassMinds terms of service, student app terms, AI tutor terms, subscription terms"/>
+  <meta name="author" content="ClassMinds"/>
+  <meta name="robots" content="index, follow"/>
+  <link rel="canonical" href="https://classminds.app/terms.html"/>
+  <meta property="og:type" content="website"/>
+  <meta property="og:url" content="https://classminds.app/terms.html"/>
+  <meta property="og:title" content="Terms of Service – ClassMinds"/>
+  <meta property="og:description" content="The rules for using ClassMinds — subscriptions, AI usage, acceptable conduct, and your rights."/>
+  <meta property="og:site_name" content="ClassMinds"/>
+  <meta property="og:image" content="https://classminds.app/WebsiteLogo.png"/>
+  <meta name="twitter:card" content="summary_large_image"/>
+  <meta name="twitter:title" content="Terms of Service – ClassMinds"/>
+  <meta name="twitter:description" content="The rules for using ClassMinds."/>
+  <meta name="twitter:image" content="https://classminds.app/WebsiteLogo.png"/>
+  <meta name="theme-color" content="#040d1f"/>
+  <title>Terms of Service – ClassMinds</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;1,9..40,300&display=swap" rel="stylesheet"/>
+  <style>
+    :root {
+      --blue: #1a6bff; --blue-bright: #4d8fff;
+      --navy: #040d1f; --navy-card: #0a1c3a;
+      --navy-border: rgba(26,107,255,0.18);
+      --white: #f0f4ff; --muted: rgba(180,200,255,0.5);
+      --font-display: 'Syne', sans-serif; --font-body: 'DM Sans', sans-serif;
+    }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body { background: var(--navy); color: var(--white); font-family: var(--font-body); overflow-x: hidden; }
+    body::before {
+      content: ''; position: fixed; inset: 0;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='1'/%3E%3C/svg%3E");
+      opacity: 0.03; pointer-events: none; z-index: 0;
+    }
+    nav {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 20px 48px; background: rgba(4,13,31,0.7); backdrop-filter: blur(20px);
+      border-bottom: 1px solid var(--navy-border);
+    }
+    .nav-logo { font-family: var(--font-display); font-weight: 800; font-size: 22px; color: var(--white); text-decoration: none; display: inline-flex; align-items: center; gap: 8px; }
+    .nav-logo-img { height: 32px; width: 32px; display: block; }
+    .nav-logo-text span { color: var(--blue-bright); }
+    .nav-links { display: flex; gap: 36px; list-style: none; }
+    .nav-links a { color: var(--muted); text-decoration: none; font-size: 14px; font-weight: 500; transition: color 0.2s; }
+    .nav-links a:hover { color: var(--white); }
+    .nav-cta { background: var(--blue); color: white !important; padding: 9px 22px; border-radius: 8px; font-weight: 600 !important; transition: background 0.2s, transform 0.15s !important; }
+    .nav-cta:hover { background: var(--blue-bright) !important; transform: translateY(-1px); }
+    .nav-toggle { display: none; background: transparent; border: 1px solid var(--navy-border); border-radius: 8px; width: 40px; height: 40px; cursor: pointer; flex-direction: column; align-items: center; justify-content: center; gap: 4px; padding: 0; transition: background 0.2s, border-color 0.2s; }
+    .nav-toggle:hover { background: rgba(26,107,255,0.07); border-color: rgba(26,107,255,0.4); }
+    .nav-toggle span { display: block; width: 18px; height: 2px; background: var(--white); border-radius: 2px; transition: transform 0.25s ease, opacity 0.2s ease; }
+    .nav-toggle.open span:nth-child(1) { transform: translateY(6px) rotate(45deg); }
+    .nav-toggle.open span:nth-child(2) { opacity: 0; }
+    .nav-toggle.open span:nth-child(3) { transform: translateY(-6px) rotate(-45deg); }
+
+    .page-hero { padding: 160px 24px 60px; text-align: center; position: relative; }
+    .hero-glow { position: absolute; top: -80px; left: 50%; transform: translateX(-50%); width: 600px; height: 300px; background: radial-gradient(ellipse, rgba(26,107,255,0.15) 0%, transparent 70%); pointer-events: none; }
+    .page-tag { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 1.5px; color: var(--blue-bright); margin-bottom: 16px; }
+    h1 { font-family: var(--font-display); font-size: clamp(36px, 5vw, 60px); font-weight: 800; letter-spacing: -1.5px; }
+    .page-sub { font-size: 15px; color: var(--muted); margin: 12px auto 0; font-weight: 300; max-width: 640px; line-height: 1.6; }
+
+    .content { max-width: 760px; margin: 0 auto; padding: 60px 24px 100px; position: relative; z-index: 1; }
+    .policy-section { margin-bottom: 48px; }
+    .policy-section h2 {
+      font-family: var(--font-display); font-size: 20px; font-weight: 700;
+      color: var(--blue-bright); margin-bottom: 14px;
+      padding-bottom: 10px; border-bottom: 1px solid var(--navy-border);
+    }
+    .policy-section h3 {
+      font-family: var(--font-display); font-size: 15px; font-weight: 600;
+      color: var(--white); margin: 22px 0 10px;
+    }
+    .policy-section p { font-size: 15px; color: var(--muted); line-height: 1.8; font-weight: 300; margin-bottom: 12px; }
+    .policy-section p strong { color: var(--white); font-weight: 500; }
+    .policy-section a { color: var(--blue-bright); text-decoration: none; }
+    .policy-section a:hover { text-decoration: underline; }
+    .policy-section ul { list-style: none; margin: 12px 0; display: flex; flex-direction: column; gap: 10px; }
+    .policy-section ul li { font-size: 14px; color: var(--muted); line-height: 1.7; padding-left: 20px; position: relative; }
+    .policy-section ul li::before { content: '→'; position: absolute; left: 0; color: var(--blue-bright); font-size: 12px; top: 2px; }
+    .policy-section ul li strong { color: var(--white); font-weight: 500; }
+
+    .highlight-box {
+      background: rgba(26,107,255,0.07);
+      border: 1px solid rgba(26,107,255,0.2);
+      border-radius: 12px;
+      padding: 20px 24px;
+      margin: 16px 0;
+    }
+    .highlight-box p { margin-bottom: 0; }
+
+    .effective-date {
+      display: inline-block; background: var(--navy-card); border: 1px solid var(--navy-border);
+      border-radius: 8px; padding: 8px 16px; font-size: 13px; color: var(--muted); margin-bottom: 48px;
+    }
+    .effective-date strong { color: var(--white); }
+
+    .toc { background: var(--navy-card); border: 1px solid var(--navy-border); border-radius: 12px; padding: 20px 24px; margin-bottom: 48px; }
+    .toc-title { font-family: var(--font-display); font-size: 13px; font-weight: 600; text-transform: uppercase; letter-spacing: 1px; color: var(--blue-bright); margin-bottom: 12px; }
+    .toc ol { list-style: none; columns: 2; column-gap: 20px; }
+    .toc ol li { font-size: 13px; padding: 4px 0; counter-increment: toc-counter; }
+    .toc ol li a { color: var(--muted); text-decoration: none; transition: color 0.2s; }
+    .toc ol li a:hover { color: var(--blue-bright); }
+    .toc ol li a::before { content: counter(toc-counter) ". "; color: var(--blue-bright); font-weight: 500; }
+
+    footer { border-top: 1px solid var(--navy-border); padding: 40px 48px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 20px; position: relative; z-index: 1; }
+    .footer-logo { font-family: var(--font-display); font-weight: 800; font-size: 18px; color: var(--white); text-decoration: none; }
+    .footer-logo span { color: var(--blue-bright); }
+    .footer-links { display: flex; gap: 28px; list-style: none; flex-wrap: wrap; }
+    .footer-links a { color: var(--muted); text-decoration: none; font-size: 13px; transition: color 0.2s; }
+    .footer-links a:hover { color: var(--white); }
+    .footer-copy { font-size: 12px; color: rgba(180,200,255,0.25); }
+
+    @media (max-width: 900px) {
+      nav { padding: 16px 20px; }
+      .nav-logo-text { display: none; }
+      .nav-toggle { display: flex; }
+      .nav-links { position: absolute; top: 100%; left: 0; right: 0; flex-direction: column; align-items: stretch; background: rgba(4,13,31,0.97); backdrop-filter: blur(20px); border-bottom: 1px solid var(--navy-border); padding: 0 24px; gap: 0; max-height: 0; overflow: hidden; opacity: 0; pointer-events: none; transition: max-height 0.3s ease, opacity 0.25s ease, padding 0.3s ease; }
+      .nav-links.open { max-height: 500px; opacity: 1; padding: 18px 24px 22px; pointer-events: auto; }
+      .nav-links li { list-style: none; }
+      .nav-links a { display: block; padding: 12px 0; font-size: 16px; border-bottom: 1px solid rgba(26,107,255,0.08); }
+      .nav-links li:last-child a { border-bottom: none; }
+      .nav-links .nav-cta { background: transparent !important; color: var(--muted) !important; padding: 12px 0 !important; border-radius: 0; font-weight: 500 !important; display: block; box-shadow: none; transform: none !important; }
+      .nav-links .nav-cta:hover { background: transparent !important; color: var(--white) !important; }
+      .toc ol { columns: 1; }
+    }
+    @media (max-width: 768px) {
+      footer { flex-direction: column; text-align: center; }
+    }
+  </style>
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-081YYS6HV7"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'G-081YYS6HV7');
+  </script>
+</head>
+<body>
+
+<nav>
+  <a href="index.html" class="nav-logo" aria-label="ClassMinds home"><img src="/WebsiteLogo.png" alt="ClassMinds logo" class="nav-logo-img"/><span class="nav-logo-text">Class<span>Minds</span></span></a>
+  <ul class="nav-links" id="nav-links">
+    <li><a href="features.html">Features</a></li>
+    <li><a href="pricing.html">Pricing</a></li>
+    <li><a href="about.html">About</a></li>
+    <li><a href="support.html">Support</a></li>
+    <li><a href="beta.html" class="nav-cta">Download Beta</a></li>
+    <li><a href="login.html" style="color:#4d8fff;font-weight:600">Sign In</a></li>
+  </ul>
+  <button class="nav-toggle" aria-label="Toggle menu" aria-expanded="false" aria-controls="nav-links">
+    <span></span><span></span><span></span>
+  </button>
+</nav>
+
+<div class="page-hero">
+  <div class="hero-glow"></div>
+  <div class="page-tag">Legal</div>
+  <h1>Terms of Service</h1>
+  <p class="page-sub">The rules for using ClassMinds. Written in plain language so you can actually read them.</p>
+</div>
+
+<div class="content">
+  <div class="effective-date">Effective Date: <strong>April 24, 2026</strong> · Version 1.0</div>
+
+  <div class="toc">
+    <div class="toc-title">Contents</div>
+    <ol>
+      <li><a href="#accept">Acceptance of terms</a></li>
+      <li><a href="#eligibility">Eligibility &amp; your account</a></li>
+      <li><a href="#service">The ClassMinds service</a></li>
+      <li><a href="#subscription">Subscription &amp; billing</a></li>
+      <li><a href="#ai">AI tutor usage rules</a></li>
+      <li><a href="#conduct">Acceptable use</a></li>
+      <li><a href="#content">Your content &amp; ownership</a></li>
+      <li><a href="#license">License we grant you</a></li>
+      <li><a href="#ip">Our intellectual property</a></li>
+      <li><a href="#thirdparty">Third-party services</a></li>
+      <li><a href="#termination">Termination</a></li>
+      <li><a href="#disclaimer">Disclaimer of warranties</a></li>
+      <li><a href="#liability">Limitation of liability</a></li>
+      <li><a href="#indemnity">Indemnification</a></li>
+      <li><a href="#law">Governing law &amp; disputes</a></li>
+      <li><a href="#changes">Changes to these terms</a></li>
+      <li><a href="#contact">Contact</a></li>
+    </ol>
+  </div>
+
+  <div class="policy-section" id="accept">
+    <h2>1. Acceptance of terms</h2>
+    <p>These Terms of Service ("<strong>Terms</strong>") form a binding agreement between you and <strong>ClassMinds</strong> ("we," "our," or "us") governing your use of the ClassMinds iOS app, the website at classminds.app, and any related services (collectively, the "<strong>Service</strong>").</p>
+    <p>By creating an account, installing the app, signing up for the beta, or otherwise using the Service, you agree to these Terms and to our <a href="privacy.html">Privacy Policy</a>. If you don't agree, don't use the Service.</p>
+  </div>
+
+  <div class="policy-section" id="eligibility">
+    <h2>2. Eligibility &amp; your account</h2>
+    <ul>
+      <li>You must be at least <strong>13 years old</strong> to use ClassMinds. The Service is designed for college and university students.</li>
+      <li>You must provide accurate information when creating your account (name, email) and keep it reasonably up to date.</li>
+      <li>You are responsible for safeguarding your account credentials. You're responsible for activity that happens under your account, whether or not you authorized it.</li>
+      <li>One person per account. Don't share your account with others or let anyone else sign in as you.</li>
+      <li>We may suspend or terminate accounts that violate these Terms (see <a href="#termination">section 11</a>).</li>
+    </ul>
+  </div>
+
+  <div class="policy-section" id="service">
+    <h2>3. The ClassMinds service</h2>
+    <p>ClassMinds provides an iOS app and companion website that help college students organize classes, chat with classmates per course, upload and organize notes, record and transcribe lectures, and interact with an AI tutor grounded in their own class materials.</p>
+    <p>The Service is currently in <strong>public beta</strong>. That means:</p>
+    <ul>
+      <li>Features may change, break, or be removed at any time</li>
+      <li>We may take the Service offline temporarily for maintenance or updates</li>
+      <li>Data loss during beta is possible, though we take every precaution against it</li>
+      <li>The Service is provided on an "as is" basis (see <a href="#disclaimer">section 12</a>)</li>
+    </ul>
+  </div>
+
+  <div class="policy-section" id="subscription">
+    <h2>4. Subscription &amp; billing</h2>
+    <div class="highlight-box">
+      <p><strong>ClassMinds is free during public beta.</strong> After public launch, the Service costs <strong>$8.99 USD per month</strong>, billed through the Apple App Store — one plan, all features included.</p>
+    </div>
+
+    <h3>Billing mechanics</h3>
+    <ul>
+      <li>Subscriptions are offered and processed by <strong>Apple</strong> under the standard App Store subscription rules.</li>
+      <li>Your Apple ID will be charged the then-current price at confirmation of purchase, and automatically renewed each month unless you cancel at least 24 hours before the end of the current period.</li>
+      <li>You can <strong>cancel anytime</strong> from iPhone Settings → Apple ID → Subscriptions. Cancellation takes effect at the end of your current billing period; you retain access until then.</li>
+      <li>We do not process or store credit-card numbers — Apple does. Refer to <a href="https://www.apple.com/legal/internet-services/itunes/" target="_blank" rel="noopener">Apple's Media Services Terms</a>.</li>
+    </ul>
+
+    <h3>Beta-user guarantee</h3>
+    <p>If you join the beta before our public launch, we guarantee you can subscribe at $8.99/month post-launch <strong>even if we raise the price later</strong>. This rate is tied to your Apple ID; it doesn't transfer if you switch accounts.</p>
+
+    <h3>Refunds</h3>
+    <p>All refunds for App Store purchases are handled by Apple. Request a refund through Apple's standard process (<a href="https://reportaproblem.apple.com" target="_blank" rel="noopener">reportaproblem.apple.com</a>). We don't have authority to issue refunds directly.</p>
+
+    <h3>Pricing changes</h3>
+    <p>We may change the subscription price in the future. We'll notify you at least <strong>14 days before</strong> a price change takes effect. Continued use after the change constitutes acceptance; if you don't accept, cancel before the change takes effect.</p>
+
+    <h3>Taxes</h3>
+    <p>Listed prices may not include taxes. Apple handles tax collection for App Store purchases based on your billing location.</p>
+  </div>
+
+  <div class="policy-section" id="ai">
+    <h2>5. AI tutor usage rules</h2>
+    <p>The AI tutor is a study aid. You agree that:</p>
+    <ul>
+      <li><strong>AI output is not infallible.</strong> The AI may produce incorrect, incomplete, or outdated information. Always verify important answers against your own notes, your instructor, or authoritative sources.</li>
+      <li><strong>You, not the AI, are responsible for your academic work.</strong> Submitting AI-generated content as your own without permission may violate your school's academic-integrity policy. Know your school's rules before using the tutor for graded work.</li>
+      <li><strong>Don't try to bypass safety controls.</strong> The AI tutor is configured with certain limits (no instructions for harm, no illegal content, etc.). Don't prompt-inject, jailbreak, or otherwise try to defeat those limits.</li>
+      <li><strong>Don't use the AI to generate abusive, harassing, or illegal content.</strong> We may suspend accounts engaging in such use.</li>
+      <li><strong>Fair-use caps may apply.</strong> Automated, high-volume, or abusive use of AI endpoints may trigger rate limits or suspension.</li>
+    </ul>
+  </div>
+
+  <div class="policy-section" id="conduct">
+    <h2>6. Acceptable use</h2>
+    <p>When using the Service, you agree NOT to:</p>
+    <ul>
+      <li>Break the law or violate anyone's rights (including intellectual property, privacy, or contract rights)</li>
+      <li>Harass, bully, threaten, impersonate, or harm other users — including in class chats</li>
+      <li>Share material you don't have permission to share (including copyrighted course materials)</li>
+      <li>Post content that is discriminatory, hateful, sexually explicit, graphically violent, or targeted at minors</li>
+      <li>Attempt to access accounts or data that aren't yours</li>
+      <li>Reverse-engineer, decompile, or attempt to extract source code from the app (except to the extent law allows)</li>
+      <li>Probe, scan, or stress-test the Service's infrastructure, bypass rate limits, or attempt to disrupt availability</li>
+      <li>Use bots, scrapers, or automated tools to access the Service outside what the app and our APIs expose</li>
+      <li>Introduce malware, exploit vulnerabilities, or try to gain unauthorized access</li>
+      <li>Use the Service to send spam, commercial solicitations, phishing, or chain messages</li>
+      <li>Resell, sublicense, or commercially exploit the Service without our written permission</li>
+    </ul>
+    <p>We may remove content or terminate accounts that violate these rules, at our sole discretion.</p>
+  </div>
+
+  <div class="policy-section" id="content">
+    <h2>7. Your content &amp; ownership</h2>
+    <div class="highlight-box">
+      <p><strong>You own your content.</strong> Notes you upload, messages you send, recordings you capture — all of that stays yours. We don't claim any ownership.</p>
+    </div>
+    <p>By uploading or submitting content to ClassMinds, you grant us a limited, worldwide, royalty-free license to store, process, transmit, and display that content <strong>solely to operate the Service for you</strong> — e.g., showing your notes back to you, sending your chat messages to your classmates, feeding your own materials to the AI tutor to answer your questions.</p>
+    <p>This license ends when you delete the content or your account. The license does not authorize us to train AI models on your content, sell it, share it for advertising, or use it outside what's needed to run the Service.</p>
+    <p>You represent that you have the right to upload anything you upload — you own it, have permission from the owner, or it's otherwise permitted by law. You are solely responsible for your content and the consequences of sharing it.</p>
+  </div>
+
+  <div class="policy-section" id="license">
+    <h2>8. License we grant you</h2>
+    <p>We grant you a <strong>personal, non-exclusive, non-transferable, revocable license</strong> to install and use the ClassMinds app on iOS devices you own or control, and to access the website, strictly for personal, non-commercial use and subject to these Terms.</p>
+    <p>You may not: rent, lease, lend, sell, sublicense, or transfer the Service; use the Service for the benefit of a third party (except incidentally, like chatting with classmates); remove or alter proprietary notices; or use the Service in any way that isn't expressly permitted.</p>
+  </div>
+
+  <div class="policy-section" id="ip">
+    <h2>9. Our intellectual property</h2>
+    <p>The ClassMinds app, website, brand, logo, design, and all original content we provide are owned by ClassMinds or licensed to us, and are protected by copyright, trademark, and other intellectual-property laws.</p>
+    <p>Nothing in these Terms transfers any ClassMinds IP to you, except the limited license in <a href="#license">section 8</a>.</p>
+    <p>If you send us feedback, ideas, or suggestions, we may use them without restriction and without compensation. You're not obligated to send feedback, but if you do, it's not confidential.</p>
+  </div>
+
+  <div class="policy-section" id="thirdparty">
+    <h2>10. Third-party services</h2>
+    <p>ClassMinds relies on third-party services — Firebase, OpenAI, Deepgram, OneSignal, Resend, Cloudflare Turnstile, Giphy, the US College Scorecard API, Apple, and Google Analytics. We use them to deliver the Service. Your use of ClassMinds is also subject to those providers' terms and privacy policies. A full list is in our <a href="privacy.html#sharing">Privacy Policy</a>.</p>
+    <p>We don't control those services, and we're not responsible for their acts, omissions, or outages. If a third-party service becomes unavailable, parts of ClassMinds may not work.</p>
+  </div>
+
+  <div class="policy-section" id="termination">
+    <h2>11. Termination</h2>
+    <h3>You can terminate anytime</h3>
+    <p>Delete your account from <strong>Settings → Account → Delete Account</strong> in the iOS app. That runs the cascade deletion described in our <a href="privacy.html#retention">Privacy Policy</a>. If you have an active subscription, cancel it through Apple separately.</p>
+    <h3>We may terminate or suspend</h3>
+    <p>We can suspend or terminate your account, without notice and without liability, if we reasonably believe you've:</p>
+    <ul>
+      <li>Violated these Terms or our Acceptable Use rules</li>
+      <li>Engaged in fraud, abuse, or illegal activity</li>
+      <li>Created risk or legal exposure for ClassMinds or other users</li>
+      <li>Been inactive for an extended period</li>
+    </ul>
+    <p>Sections that by nature survive termination — including ownership, license, disclaimers, liability limits, indemnity, and governing law — will continue to apply.</p>
+  </div>
+
+  <div class="policy-section" id="disclaimer">
+    <h2>12. Disclaimer of warranties</h2>
+    <p>THE SERVICE IS PROVIDED <strong>"AS IS" AND "AS AVAILABLE"</strong>, WITH ALL FAULTS, WITHOUT WARRANTIES OF ANY KIND — EITHER EXPRESS OR IMPLIED — TO THE FULLEST EXTENT PERMITTED BY LAW.</p>
+    <p>We expressly disclaim all implied warranties, including merchantability, fitness for a particular purpose, title, non-infringement, and any warranty arising from course of dealing or usage of trade. We make no warranty that the Service will:</p>
+    <ul>
+      <li>Be uninterrupted, secure, or error-free</li>
+      <li>Be compatible with your device or software configuration</li>
+      <li>Meet your academic or educational needs</li>
+      <li>Produce accurate, reliable, or complete AI output</li>
+      <li>Be free of viruses or other harmful components</li>
+    </ul>
+    <p>Some jurisdictions don't allow disclaimer of implied warranties, so some of the above may not apply to you.</p>
+  </div>
+
+  <div class="policy-section" id="liability">
+    <h2>13. Limitation of liability</h2>
+    <p>TO THE FULLEST EXTENT PERMITTED BY LAW:</p>
+    <ul>
+      <li>In no event will ClassMinds, its founder, officers, contractors, or service providers be liable for any <strong>indirect, incidental, special, consequential, exemplary, or punitive damages</strong>, including lost profits, lost data, loss of academic opportunity, or goodwill damage.</li>
+      <li>Our <strong>aggregate liability</strong> to you for any claim arising out of or relating to the Service is limited to the greater of <strong>(a) the amount you paid us in the twelve months preceding the claim, or (b) USD $20</strong>.</li>
+    </ul>
+    <p>These limits apply regardless of the theory of liability (contract, tort, negligence, strict liability, or otherwise), and even if we've been advised of the possibility of such damages.</p>
+    <p>Some jurisdictions don't allow exclusion or limitation of certain damages, so some of the above may not apply to you.</p>
+  </div>
+
+  <div class="policy-section" id="indemnity">
+    <h2>14. Indemnification</h2>
+    <p>You agree to indemnify and hold harmless ClassMinds, its founder, officers, contractors, and service providers from any claim, loss, or demand — including reasonable attorneys' fees — arising out of:</p>
+    <ul>
+      <li>Your use or misuse of the Service</li>
+      <li>Your violation of these Terms</li>
+      <li>Your violation of someone else's rights (intellectual property, privacy, etc.)</li>
+      <li>Content you upload or transmit through the Service</li>
+    </ul>
+    <p>We reserve the right to assume exclusive defense and control of any matter subject to indemnification by you; you agree to cooperate with our defense.</p>
+  </div>
+
+  <div class="policy-section" id="law">
+    <h2>15. Governing law &amp; disputes</h2>
+    <p>These Terms are governed by the laws of the <strong>United States</strong> and the state in which ClassMinds is headquartered, without regard to conflict-of-laws principles.</p>
+    <h3>Informal resolution first</h3>
+    <p>Before filing a formal claim, both parties agree to try to resolve disputes informally by contacting <a href="mailto:support@classminds.app">support@classminds.app</a>. Many disputes are faster to resolve this way.</p>
+    <h3>Venue</h3>
+    <p>If informal resolution doesn't work, any dispute will be resolved in the state or federal courts located in the state where ClassMinds is headquartered, and you consent to personal jurisdiction there. Exceptions apply where your local law entitles you to a specific forum (e.g., EU consumers).</p>
+    <h3>Time limit</h3>
+    <p>Any claim arising out of these Terms or the Service must be filed within <strong>one (1) year</strong> of the claim arising, or it's permanently barred.</p>
+    <h3>No class actions (where permitted)</h3>
+    <p>Where permitted by law, you and ClassMinds agree that disputes will be resolved on an <strong>individual basis</strong>, not as part of a class or representative action. This section does not apply where it is unenforceable under applicable law.</p>
+  </div>
+
+  <div class="policy-section" id="changes">
+    <h2>16. Changes to these terms</h2>
+    <p>We may update these Terms from time to time. When we make <strong>material</strong> changes (to billing, acceptable use, liability, or your rights), we will:</p>
+    <ul>
+      <li>Update the effective date and version number at the top of this page</li>
+      <li>Notify active users by email or in-app notice, at least 14 days before the change takes effect</li>
+    </ul>
+    <p>Your continued use of the Service after the change constitutes acceptance. If you don't accept, stop using the Service and cancel any active subscription before the change takes effect.</p>
+  </div>
+
+  <div class="policy-section" id="contact">
+    <h2>17. Contact</h2>
+    <p>Questions about these Terms? Email <a href="mailto:support@classminds.app">support@classminds.app</a>. For security issues, email <a href="mailto:security@classminds.app">security@classminds.app</a>.</p>
+  </div>
+
+</div>
+
+<footer>
+  <a href="index.html" class="footer-logo">Class<span>Minds</span></a>
+  <ul class="footer-links">
+    <li><a href="features.html">Features</a></li>
+    <li><a href="pricing.html">Pricing</a></li>
+    <li><a href="how.html">How It Works</a></li>
+    <li><a href="faq.html">FAQ</a></li>
+    <li><a href="security.html">Security</a></li>
+    <li><a href="about.html">About</a></li>
+    <li><a href="support.html">Support</a></li>
+    <li><a href="privacy.html">Privacy</a></li>
+    <li><a href="terms.html">Terms</a></li>
+  </ul>
+  <span class="footer-copy">© 2026 ClassMinds. All rights reserved.</span>
+</footer>
+
+<script>
+  const navToggle = document.querySelector('.nav-toggle');
+  const navLinks = document.querySelector('.nav-links');
+  if (navToggle && navLinks) {
+    const closeMenu = () => { navLinks.classList.remove('open'); navToggle.classList.remove('open'); navToggle.setAttribute('aria-expanded', 'false'); };
+    navToggle.addEventListener('click', (e) => { e.stopPropagation(); const open = navLinks.classList.toggle('open'); navToggle.classList.toggle('open', open); navToggle.setAttribute('aria-expanded', open); });
+    navLinks.querySelectorAll('a').forEach(a => a.addEventListener('click', closeMenu));
+    document.addEventListener('click', (e) => { if (!navLinks.contains(e.target) && !navToggle.contains(e.target)) closeMenu(); });
+  }
+</script>
+
+</body>
+</html>

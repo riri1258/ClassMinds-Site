@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<!-- Favicon & Icons -->
+<link rel="icon" type="image/png" href="/WebsiteLogo.png"/>
+<link rel="apple-touch-icon" href="/WebsiteLogo.png"/>
+<link rel="shortcut icon" href="/WebsiteLogo.png"/>
+<title>Web Console – ClassMinds Admin</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+<link rel="stylesheet" href="admin-styles.css"/>
+<style>
+.log-entry{display:flex;gap:10px;align-items:flex-start;padding:10px 14px;border-radius:0 8px 8px 0;margin-bottom:4px}
+.log-entry .tag{font-size:10px;font-weight:600;text-transform:uppercase;padding:1px 6px;border-radius:4px}
+.log-entry .ctx{font-size:11px;color:var(--blue-bright);font-weight:500}
+.log-entry .usr{font-size:10px;color:var(--muted)}
+.log-entry .ts{font-size:10px;color:var(--muted);margin-left:auto;white-space:nowrap}
+.log-entry .msg{font-size:12px;color:var(--white);margin-top:4px;line-height:1.5;word-break:break-word}
+.log-entry .meta-row{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.platform-badge{font-size:9px;font-weight:700;padding:2px 7px;border-radius:4px;text-transform:uppercase;letter-spacing:0.3px}
+.plat-web{background:rgba(6,182,212,0.12);color:#06b6d4;border:1px solid rgba(6,182,212,0.25)}
+.plat-admin{background:rgba(168,85,247,0.12);color:#a855f7;border:1px solid rgba(168,85,247,0.25)}
+.plat-ios{background:rgba(245,158,11,0.12);color:#f59e0b;border:1px solid rgba(245,158,11,0.25)}
+.page-badge{font-size:9px;padding:2px 7px;border-radius:4px;background:rgba(255,255,255,0.05);color:var(--muted);border:1px solid var(--navy-border)}
+.url-text{font-size:10px;color:rgba(180,200,255,0.25);margin-top:3px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:500px}
+.filter-row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.wc-filter{padding:6px 14px;border-radius:8px;font-size:11px;font-weight:600;cursor:pointer;border:1px solid var(--navy-border);background:none;color:var(--muted);font-family:var(--font-body);transition:all 0.2s}
+.wc-filter.active{background:rgba(26,107,255,0.15);color:var(--white);border-color:rgba(26,107,255,0.3)}
+.wc-filter.f-error.active{background:rgba(239,68,68,0.15);color:#ef4444;border-color:rgba(239,68,68,0.3)}
+.wc-filter.f-success.active{background:rgba(34,197,94,0.15);color:#22c55e;border-color:rgba(34,197,94,0.3)}
+.wc-filter.f-info.active{background:rgba(245,158,11,0.15);color:#f59e0b;border-color:rgba(245,158,11,0.3)}
+.wc-filter.f-web.active{background:rgba(6,182,212,0.15);color:#06b6d4;border-color:rgba(6,182,212,0.3)}
+.wc-filter.f-admin.active{background:rgba(168,85,247,0.15);color:#a855f7;border-color:rgba(168,85,247,0.3)}
+</style>
+</head>
+<body>
+<div class="admin-wrap" id="adminWrap">
+  <div class="sidebar" id="sidebarSlot"></div>
+  <div class="main">
+    <div class="page-header">
+      <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;width:100%">
+        <div>
+          <div class="page-title">Web Console</div>
+          <div class="page-desc">Logs from classminds.app web & admin pages</div>
+        </div>
+        <div style="display:flex;gap:8px">
+          <button class="btn btn-ghost" id="refreshBtn" style="font-size:11px">↻ Refresh</button>
+          <button class="btn btn-red" id="clearBtn" style="font-size:11px">Clear Web Logs</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Stats -->
+    <div class="stats-row" id="wcStats"></div>
+
+    <!-- Filters -->
+    <div style="display:flex;gap:16px;margin-bottom:20px;flex-wrap:wrap;align-items:flex-start">
+      <div>
+        <div style="font-size:10px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:6px">Level</div>
+        <div class="filter-row">
+          <button class="wc-filter active" data-level="all">All</button>
+          <button class="wc-filter f-success" data-level="success">✔ Success</button>
+          <button class="wc-filter f-error" data-level="error">✘ Errors</button>
+          <button class="wc-filter f-info" data-level="info">ℹ Info</button>
+        </div>
+      </div>
+      <div>
+        <div style="font-size:10px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:6px">Platform</div>
+        <div class="filter-row">
+          <button class="wc-filter active" data-plat="all">All Web</button>
+          <button class="wc-filter f-web" data-plat="web">🌐 User</button>
+          <button class="wc-filter f-admin" data-plat="admin-web">🛡 Admin</button>
+        </div>
+      </div>
+      <div>
+        <div style="font-size:10px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:6px">Search</div>
+        <input class="search-input" id="wcSearch" placeholder="Search logs..." style="width:220px"/>
+      </div>
+    </div>
+
+    <!-- Logs -->
+    <div id="wcLogs" style="font-family:monospace;font-size:12px">
+      <div class="empty-state"><div class="spinner"></div></div>
+    </div>
+
+    <!-- Pagination -->
+    <div style="display:flex;justify-content:center;gap:8px;margin-top:20px" id="wcPagination"></div>
+  </div>
+</div>
+<div class="toast" id="toast"></div>
+
+<script src="config.js"></script>
+<script type="module">
+import { requireAdmin, db, doc, deleteDoc, collection, getDocs, query, orderBy, limit, toast, escapeHtml, logInfo } from './admin-shared.js';
+import { renderSidebar } from './admin-sidebar.js';
+
+renderSidebar();
+
+requireAdmin().then(async () => {
+  let allLogs = [];
+  let levelFilter = 'all';
+  let platFilter = 'all';
+  let currentPage = 0;
+  const PAGE_SIZE = 50;
+
+  await loadLogs();
+
+  // Level filters
+  document.querySelectorAll('[data-level]').forEach(b => b.addEventListener('click', function() {
+    document.querySelectorAll('[data-level]').forEach(x => x.classList.remove('active'));
+    this.classList.add('active');
+    levelFilter = this.dataset.level;
+    currentPage = 0;
+    render();
+  }));
+
+  // Platform filters
+  document.querySelectorAll('[data-plat]').forEach(b => b.addEventListener('click', function() {
+    document.querySelectorAll('[data-plat]').forEach(x => x.classList.remove('active'));
+    this.classList.add('active');
+    platFilter = this.dataset.plat;
+    currentPage = 0;
+    render();
+  }));
+
+  // Search
+  document.getElementById('wcSearch').addEventListener('input', () => { currentPage = 0; render(); });
+
+  // Refresh
+  document.getElementById('refreshBtn').addEventListener('click', async () => {
+    document.getElementById('wcLogs').innerHTML = '<div class="empty-state"><div class="spinner"></div></div>';
+    await loadLogs();
+  });
+
+  // Clear
+  document.getElementById('clearBtn').addEventListener('click', async () => {
+    if (!confirm('Delete ALL web/admin-web logs? This cannot be undone.')) return;
+    try {
+      let count = 0;
+      for (const l of allLogs) {
+        await deleteDoc(doc(db, 'appLogs', l.id));
+        count++;
+      }
+      allLogs = [];
+      renderStats();
+      render();
+      toast('Cleared ' + count + ' web logs ✓');
+    } catch (e) { toast('Failed: ' + e.message, 'error'); }
+  });
+
+  async function loadLogs() {
+    try {
+      const snap = await getDocs(query(collection(db, 'appLogs'), orderBy('timestamp', 'desc'), limit(500)));
+      allLogs = snap.docs
+        .map(d => ({ id: d.id, ...d.data() }))
+        .filter(l => l.platform === 'web' || l.platform === 'admin-web');
+      renderStats();
+      render();
+    } catch (e) {
+      document.getElementById('wcLogs').innerHTML = '<div class="empty-state">Failed: ' + e.message + '</div>';
+    }
+  }
+
+  function renderStats() {
+    const errors = allLogs.filter(l => l.level === 'error').length;
+    const successes = allLogs.filter(l => l.level === 'success').length;
+    const infos = allLogs.filter(l => l.level === 'info').length;
+    const webCount = allLogs.filter(l => l.platform === 'web').length;
+    const adminCount = allLogs.filter(l => l.platform === 'admin-web').length;
+    document.getElementById('wcStats').innerHTML = `
+      <div class="stat-card" style="--stat-color:var(--blue)"><div class="stat-val">${allLogs.length}</div><div class="stat-lbl">Total Web Logs</div></div>
+      <div class="stat-card" style="--stat-color:var(--red)"><div class="stat-val">${errors}</div><div class="stat-lbl">Errors</div></div>
+      <div class="stat-card" style="--stat-color:var(--green)"><div class="stat-val">${successes}</div><div class="stat-lbl">Success</div></div>
+      <div class="stat-card" style="--stat-color:#06b6d4"><div class="stat-val">${webCount}</div><div class="stat-lbl">User Web</div></div>
+      <div class="stat-card" style="--stat-color:var(--purple)"><div class="stat-val">${adminCount}</div><div class="stat-lbl">Admin Web</div></div>
+    `;
+  }
+
+  function getFiltered() {
+    const q = (document.getElementById('wcSearch')?.value || '').toLowerCase();
+    return allLogs.filter(l => {
+      if (levelFilter !== 'all' && l.level !== levelFilter) return false;
+      if (platFilter !== 'all' && l.platform !== platFilter) return false;
+      if (q && !(l.message || '').toLowerCase().includes(q) && !(l.context || '').toLowerCase().includes(q) && !(l.userName || '').toLowerCase().includes(q) && !(l.url || '').toLowerCase().includes(q)) return false;
+      return true;
+    });
+  }
+
+  function render() {
+    const filtered = getFiltered();
+    const totalPages = Math.ceil(filtered.length / PAGE_SIZE);
+    const pageItems = filtered.slice(currentPage * PAGE_SIZE, (currentPage + 1) * PAGE_SIZE);
+
+    const el = document.getElementById('wcLogs');
+    if (!pageItems.length) {
+      el.innerHTML = '<div class="empty-state"><div style="font-size:32px;margin-bottom:10px">🌐</div>No web logs found</div>';
+      document.getElementById('wcPagination').innerHTML = '';
+      return;
+    }
+
+    el.innerHTML = pageItems.map(l => {
+      const level = l.level || 'info';
+      const icon = level === 'error' ? '✘' : level === 'success' ? '✔' : 'ℹ';
+      const color = level === 'error' ? 'var(--red)' : level === 'success' ? 'var(--green)' : 'var(--yellow)';
+      const bg = level === 'error' ? 'rgba(239,68,68,0.06)' : level === 'success' ? 'rgba(34,197,94,0.06)' : 'rgba(245,158,11,0.06)';
+      const ts = l.timestamp ? new Date(l.timestamp * 1000).toLocaleString('en-US', { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit', second: '2-digit' }) : '';
+      const userName = l.userName && l.userName.trim() !== 'unknown' ? l.userName.trim() : '';
+      const platClass = l.platform === 'admin-web' ? 'plat-admin' : 'plat-web';
+      const platLabel = l.platform === 'admin-web' ? 'Admin' : 'Web';
+
+      // Extract page name from URL
+      let pageName = '';
+      try { pageName = new URL(l.url || '').pathname.split('/').pop() || ''; } catch (e) { pageName = l.context || ''; }
+
+      return `<div class="log-entry" style="background:${bg};border-left:3px solid ${color}">
+        <span style="color:${color};font-size:14px;flex-shrink:0;width:16px;text-align:center">${icon}</span>
+        <div style="flex:1;min-width:0">
+          <div class="meta-row">
+            <span class="tag" style="color:${color};background:${color}22">${level}</span>
+            <span class="platform-badge ${platClass}">${platLabel}</span>
+            ${pageName ? '<span class="page-badge">' + escapeHtml(pageName) + '</span>' : ''}
+            <span class="ctx">${escapeHtml(l.context || '')}</span>
+            ${userName ? '<span class="usr">👤 ' + escapeHtml(userName) + '</span>' : ''}
+            <span class="ts">${ts}</span>
+          </div>
+          <div class="msg">${escapeHtml(l.message || '')}</div>
+          ${l.url ? '<div class="url-text">' + escapeHtml(l.url) + '</div>' : ''}
+        </div>
+      </div>`;
+    }).join('');
+
+    // Pagination
+    const pag = document.getElementById('wcPagination');
+    if (totalPages <= 1) { pag.innerHTML = ''; return; }
+    let pagHtml = '';
+    for (let i = 0; i < totalPages; i++) {
+      pagHtml += `<button class="btn ${i === currentPage ? 'btn-blue' : 'btn-ghost'}" style="font-size:11px;padding:4px 10px;min-width:32px" data-pg="${i}">${i + 1}</button>`;
+    }
+    pag.innerHTML = pagHtml;
+    pag.querySelectorAll('[data-pg]').forEach(b => b.addEventListener('click', function() {
+      currentPage = parseInt(this.dataset.pg);
+      render();
+      window.scrollTo(0, 0);
+    }));
+  }
+});
+
+document.getElementById('logoutBtn')?.addEventListener('click', () => {
+  import('./admin-shared.js').then(m => m.doLogout());
+});
+</script>
+</body>
+</html>

@@ -1,0 +1,345 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<!-- Favicon & Icons -->
+<link rel="icon" type="image/png" href="/WebsiteLogo.png"/>
+<link rel="apple-touch-icon" href="/WebsiteLogo.png"/>
+<link rel="shortcut icon" href="/WebsiteLogo.png"/>
+<title>Inbox – ClassMinds Admin</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+<link rel="stylesheet" href="admin-styles.css"/>
+<style>
+.inbox-tabs{display:flex;gap:2px;border-bottom:1px solid var(--navy-border);margin-bottom:20px;align-items:flex-end;flex-wrap:wrap}
+.inbox-tab{background:none;border:none;padding:10px 16px 12px;font-family:var(--font-body);font-size:13px;color:var(--muted);cursor:pointer;border-bottom:2px solid transparent;transition:all .15s}
+.inbox-tab:hover{color:var(--white)}
+.inbox-tab.active{color:#4d8fff;border-bottom-color:#1a6bff;font-weight:600}
+.tab-count{display:inline-block;background:rgba(26,107,255,.15);color:#4d8fff;font-size:10px;padding:1px 6px;border-radius:100px;margin-left:5px;font-weight:600}
+.inbox-search{width:240px;background:rgba(255,255,255,.04);border:1px solid var(--navy-border);border-radius:8px;color:var(--white);font-family:var(--font-body);font-size:13px;padding:8px 14px;outline:none;transition:border .2s}
+.inbox-search:focus{border-color:rgba(26,107,255,.4)}
+.email-card{background:var(--navy-card);border:1px solid var(--navy-border);border-radius:12px;overflow:hidden}
+.email-header-row{display:grid;grid-template-columns:200px 1fr 100px;gap:16px;padding:10px 20px;border-bottom:1px solid var(--navy-border)}
+.email-header-row span{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:rgba(180,200,255,.3)}
+.erow{display:grid;grid-template-columns:200px 1fr 100px;gap:16px;padding:14px 20px;border-bottom:1px solid rgba(26,107,255,.06);cursor:pointer;transition:background .12s}
+.erow:hover{background:rgba(26,107,255,.04)}
+.erow:last-child{border-bottom:none}
+.erow.unread{background:rgba(26,107,255,.03)}
+.erow.unread .erow-from,.erow.unread .erow-subject{font-weight:600;color:var(--white)}
+.erow-from{font-size:13px;color:rgba(180,200,255,.8);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.erow-email{font-size:11px;color:var(--muted);margin-top:2px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.erow-subject{font-size:13px;color:rgba(180,200,255,.7);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.erow-preview{font-size:12px;color:var(--muted);margin-top:3px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.erow-date{font-size:12px;color:var(--muted);text-align:right;white-space:nowrap}
+.erow-star{background:none;border:none;cursor:pointer;font-size:15px;color:var(--muted);margin-top:4px;float:right;transition:color .15s}
+.erow-star.starred{color:#f59e0b}
+.sent-badge{display:inline-block;font-size:9px;padding:1px 6px;border-radius:4px;font-weight:600;margin-left:6px;background:rgba(16,185,129,.12);color:#10b981;vertical-align:middle}
+.empty-state{padding:80px 40px;text-align:center;color:var(--muted)}
+.empty-state .empty-icon{font-size:40px;margin-bottom:16px;opacity:.5}
+.reader-overlay{position:fixed;inset:0;background:rgba(0,0,0,.6);backdrop-filter:blur(8px);z-index:100;display:none}
+.reader-overlay.open{display:flex}
+.reader-wrap{display:flex;width:100%;max-width:1200px;height:100vh;margin:0 auto}
+.reader-sidebar{width:240px;background:var(--navy-mid);border-right:1px solid rgba(26,107,255,.1);display:flex;flex-direction:column;flex-shrink:0}
+.reader-sidebar-header{padding:16px;border-bottom:1px solid rgba(26,107,255,.1)}
+.reader-sidebar-list{overflow-y:auto;flex:1}
+.reader-sidebar-item{padding:10px 14px;cursor:pointer;border-left:2px solid transparent;transition:all .12s}
+.reader-sidebar-item:hover{background:rgba(26,107,255,.05)}
+.reader-sidebar-item.active{border-left-color:#1a6bff;background:rgba(26,107,255,.1)}
+.reader-main{flex:1;display:flex;flex-direction:column;background:var(--navy-card);overflow:hidden}
+.reader-toolbar{padding:10px 20px;border-bottom:1px solid rgba(26,107,255,.1);display:flex;align-items:center;gap:8px;background:var(--navy-mid);flex-wrap:wrap;flex-shrink:0}
+.rbtn{padding:5px 12px;border-radius:6px;font-size:12px;cursor:pointer;font-family:var(--font-body);border:1px solid rgba(26,107,255,.15);background:rgba(255,255,255,.04);color:var(--muted);transition:all .12s}
+.rbtn:hover{background:rgba(26,107,255,.1);color:var(--white)}
+.rbtn.blue{border-color:rgba(26,107,255,.35);background:rgba(26,107,255,.15);color:#4d8fff}
+.rbtn.yellow{border-color:rgba(245,158,11,.2);background:rgba(245,158,11,.08);color:#f59e0b}
+.rbtn.red{border-color:rgba(239,68,68,.2);background:rgba(239,68,68,.08);color:#ef4444}
+.reader-content{flex:1;overflow-y:auto}
+.reader-body{padding:20px 28px;font-size:14px;color:rgba(180,200,255,.85);line-height:1.85;white-space:pre-wrap;border-top:1px solid rgba(26,107,255,.08)}
+.qr-chip{background:rgba(26,107,255,.08);border:1px solid rgba(26,107,255,.18);border-radius:100px;padding:5px 14px;font-size:11px;color:#4d8fff;cursor:pointer;font-weight:500;transition:all .12s}
+.qr-chip:hover{background:rgba(26,107,255,.18)}
+.reply-textarea{width:100%;background:rgba(255,255,255,.03);border:1px solid rgba(26,107,255,.18);border-radius:10px;color:#f0f4ff;font-family:var(--font-body);font-size:13px;padding:14px;outline:none;resize:vertical;min-height:80px;line-height:1.6;transition:border .2s}
+.reply-textarea:focus{border-color:rgba(26,107,255,.4)}
+.reply-send{background:#1a6bff;color:white;border:none;border-radius:8px;padding:9px 22px;font-size:13px;font-weight:700;font-family:var(--font-display);cursor:pointer}
+.reply-send:hover{background:#1558cc}
+</style>
+</head>
+<body>
+<div class="admin-wrap" id="adminWrap">
+  <div class="sidebar" id="sidebarSlot"></div>
+  <div class="main">
+    <div class="page-header">
+      <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px">
+        <div><div class="page-title">Inbox</div><div class="page-desc">support@classminds.app</div></div>
+        <div style="display:flex;gap:10px;align-items:center">
+          <span id="inboxSpinner" class="spinner" style="display:none"></span>
+          <button class="btn btn-ghost" id="refreshBtn">&#8635; Refresh</button>
+          <button class="btn btn-blue" id="composeBtn">&#9993; Compose</button>
+        </div>
+      </div>
+    </div>
+    <div class="inbox-tabs">
+      <button class="inbox-tab active" data-tab="received">Received <span class="tab-count" id="countReceived">0</span></button>
+      <button class="inbox-tab" data-tab="sent">Sent <span class="tab-count" id="countSent">0</span></button>
+      <button class="inbox-tab" data-tab="favorites">Starred</button>
+      <button class="inbox-tab" data-tab="spam">Spam</button>
+      <button class="inbox-tab" data-tab="bugreports">Bugs</button>
+      <div style="margin-left:auto;display:flex;align-items:center;gap:10px;padding-bottom:8px">
+        <input class="inbox-search" id="emailSearch" placeholder="Search emails..."/>
+        <div style="font-size:12px;color:var(--muted);white-space:nowrap" id="inboxCount"></div>
+      </div>
+    </div>
+    <div class="email-card" id="emailList">
+      <div class="empty-state"><div class="empty-icon">📬</div><div style="font-size:13px">Loading emails...</div></div>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="composeModal">
+  <div class="modal-box wide">
+    <div class="modal-title">New Email</div>
+    <label class="field-label">To</label><input type="email" class="field-input" id="composeTo" placeholder="recipient@example.com"/>
+    <label class="field-label">Subject</label><input type="text" class="field-input" id="composeSubject" placeholder="Subject"/>
+    <label class="field-label">Message</label><textarea class="field-input" id="composeBody" style="min-height:160px" placeholder="Write your message..."></textarea>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" onclick="closeModal('composeModal')">Cancel</button>
+      <button class="btn btn-blue" id="composeSendBtn">Send &#8594;</button>
+    </div>
+  </div>
+</div>
+
+<div class="reader-overlay" id="emailReader">
+  <div class="reader-wrap">
+    <div class="reader-sidebar">
+      <div class="reader-sidebar-header">
+        <div id="convName" style="font-family:var(--font-display);font-size:13px;font-weight:800;margin-bottom:2px"></div>
+        <div id="convEmail" style="font-size:10px;color:rgba(180,200,255,.35)"></div>
+      </div>
+      <div class="reader-sidebar-list" id="convList"></div>
+    </div>
+    <div class="reader-main">
+      <div class="reader-toolbar">
+        <button class="rbtn" id="backToInbox">← Inbox</button>
+        <button class="rbtn" id="prevEmail">↑</button>
+        <button class="rbtn" id="nextEmail">↓</button>
+        <span id="emailNavCount" style="font-size:11px;color:rgba(180,200,255,.3)"></span>
+        <div style="flex:1"></div>
+        <button class="rbtn yellow" id="starBtn">⭐ Star</button>
+        <button class="rbtn blue" id="replyBtn">↩ Reply</button>
+        <button class="rbtn" id="fwdBtn">→ Forward</button>
+        <button class="rbtn red" id="delEmailBtn">🗑 Delete</button>
+      </div>
+      <div class="reader-content">
+        <div id="readerSubject" style="font-family:var(--font-display);font-size:22px;font-weight:800;letter-spacing:-.5px;line-height:1.2;padding:24px 28px 14px"></div>
+        <div style="display:flex;align-items:center;gap:12px;padding:0 28px 20px">
+          <div id="readerAvatar" style="width:36px;height:36px;border-radius:50%;background:rgba(26,107,255,.2);border:1px solid rgba(26,107,255,.3);display:flex;align-items:center;justify-content:center;font-family:var(--font-display);font-size:12px;font-weight:800;color:#4d8fff;flex-shrink:0"></div>
+          <div style="flex:1"><div id="readerFromName" style="font-size:14px;font-weight:500"></div><div id="readerFromEmail" style="font-size:12px;color:rgba(180,200,255,.4);margin-top:1px"></div></div>
+          <div id="readerDate" style="font-size:12px;color:rgba(180,200,255,.35)"></div>
+        </div>
+        <div class="reader-body" id="readerBody"></div>
+        <div id="readerThread"></div>
+        <div style="padding:12px 28px;border-top:1px solid rgba(26,107,255,.08);background:rgba(26,107,255,.02)">
+          <div style="font-size:9px;text-transform:uppercase;letter-spacing:1px;font-weight:700;color:rgba(180,200,255,.25);margin-bottom:8px">Quick replies</div>
+          <div style="display:flex;gap:7px;flex-wrap:wrap">
+            <div class="qr-chip">Thanks for reaching out!</div>
+            <div class="qr-chip">App Store only</div>
+            <div class="qr-chip">classminds.app/beta.html</div>
+            <div class="qr-chip">Happy to help!</div>
+            <div class="qr-chip">We'll look into this!</div>
+          </div>
+        </div>
+      </div>
+      <div style="padding:16px 28px;border-top:1px solid rgba(26,107,255,.1);flex-shrink:0">
+        <div id="readerReplyTo" style="font-size:11px;color:rgba(180,200,255,.35);margin-bottom:8px"></div>
+        <textarea class="reply-textarea" id="readerReplyBody" placeholder="Write your reply..."></textarea>
+        <div style="display:flex;justify-content:flex-end;gap:8px;margin-top:10px">
+          <button class="btn btn-ghost" id="cancelReply">Cancel</button>
+          <button class="reply-send" id="readerSendBtn">Send Reply →</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script src="config.js"></script>
+<script type="module">
+import { requireAdmin, db, doc, setDoc, collection, getDocs, query, orderBy, limit, toast, escapeHtml, openModal, closeModal, sendSupportEmailFn, getEmailsFn, deleteEmailFn } from './admin-shared.js';
+import { renderSidebar } from './admin-sidebar.js';
+window.closeModal = closeModal;
+renderSidebar();
+
+requireAdmin().then(async () => {
+  let allEmails = [], currentEmail = null, currentEmailIndex = 0, currentTab = 'received';
+  let favorites = JSON.parse(localStorage.getItem('cm_favorites') || '[]');
+  let filteredEmails = [];
+
+  document.querySelectorAll('.inbox-tab').forEach(t => t.addEventListener('click', function () {
+    currentTab = this.dataset.tab;
+    document.querySelectorAll('.inbox-tab').forEach(t2 => t2.classList.remove('active'));
+    this.classList.add('active'); renderInbox();
+  }));
+  document.getElementById('emailSearch').addEventListener('input', renderInbox);
+  document.getElementById('refreshBtn').addEventListener('click', () => loadInbox(true));
+  document.getElementById('composeBtn').addEventListener('click', () => openModal('composeModal'));
+
+  document.getElementById('composeSendBtn').addEventListener('click', async function () {
+    const to = document.getElementById('composeTo').value.trim(), subject = document.getElementById('composeSubject').value.trim(), body = document.getElementById('composeBody').value.trim();
+    if (!to || !subject || !body) { toast('Fill in all fields', 'error'); return; }
+    this.disabled = true; this.innerHTML = '<span class="spinner"></span>';
+    try {
+      await sendSupportEmailFn({ to, subject, body });
+      allEmails.unshift({ id: 'sent-' + Date.now(), from: 'ClassMinds Support <support@classminds.app>', to, subject, text: body, date: new Date().toISOString(), _folder: 'sent', seen: true });
+      closeModal('composeModal'); toast('Email sent!'); renderInbox();
+      document.getElementById('composeTo').value = ''; document.getElementById('composeSubject').value = ''; document.getElementById('composeBody').value = '';
+    } catch (e) { toast('Failed: ' + e.message, 'error'); }
+    this.disabled = false; this.textContent = 'Send \u2192';
+  });
+
+  async function loadInbox(force) {
+    document.getElementById('inboxSpinner').style.display = 'inline-block';
+    if (!force) {
+      try { const cs = await getDocs(query(collection(db, 'emailCache'), orderBy('date', 'desc'), limit(100))); if (!cs.empty) { allEmails = cs.docs.map(d => d.data()); allEmails.sort((a, b) => new Date(b.date) - new Date(a.date)); renderInbox(); } } catch (e) {}
+    } else {
+      document.getElementById('emailList').innerHTML = '<div style="padding:60px;text-align:center;color:var(--muted)"><div class="spinner"></div><div style="margin-top:12px;font-size:13px">Fetching emails...</div></div>';
+    }
+    try {
+      const [inboxRes, sentRes] = await Promise.allSettled([getEmailsFn({ folder: 'INBOX', limit: 50 }), getEmailsFn({ folder: 'INBOX.Sent', limit: 30 })]);
+      const inboxEmails = inboxRes.status === 'fulfilled' ? (inboxRes.value.data.emails || []).map(e => ({ ...e, _folder: 'inbox' })) : [];
+      const sentEmails = sentRes.status === 'fulfilled' ? (sentRes.value.data.emails || []).map(e => ({ ...e, _folder: 'sent' })) : [];
+      console.log('Fetched ' + inboxEmails.length + ' inbox, ' + sentEmails.length + ' sent');
+      const merged = [...inboxEmails, ...sentEmails];
+      const seen = new Set(); allEmails = [];
+      for (const e of merged) { const k = (e._folder || 'x') + ':' + String(e.id); if (!seen.has(k)) { seen.add(k); allEmails.push(e); } }
+      allEmails.sort((a, b) => new Date(b.date) - new Date(a.date));
+      renderInbox();
+      const cp = allEmails.map(email => setDoc(doc(db, 'emailCache', (email._folder || 'x') + '_' + String(email.id)), { ...email, cachedAt: new Date() }).catch(() => {}));
+      await Promise.all(cp);
+    } catch (e) { if (!allEmails.length) document.getElementById('emailList').innerHTML = '<div style="padding:40px;text-align:center;color:var(--red);font-size:13px">' + escapeHtml(e.message) + '</div>'; }
+    document.getElementById('inboxSpinner').style.display = 'none';
+  }
+
+  function renderInbox() {
+    const q = (document.getElementById('emailSearch')?.value || '').toLowerCase();
+    let emails = [...allEmails];
+    if (currentTab === 'sent') emails = emails.filter(e => e._folder === 'sent' || (e.from || '').toLowerCase().includes('support@classminds.app'));
+    else if (currentTab === 'favorites') emails = emails.filter(e => favorites.includes(String(e.id)));
+    else if (currentTab === 'spam') emails = emails.filter(e => { const f = (e.from || '').toLowerCase(), s = (e.subject || '').toLowerCase(); return s.includes('spam') || s.includes('unsubscribe') || f.includes('noreply') || f.includes('no-reply'); });
+    else if (currentTab === 'bugreports') emails = emails.filter(e => { const s = (e.subject || '').toLowerCase(), b = (e.text || '').toLowerCase(); return s.includes('bug') || s.includes('crash') || s.includes('error') || b.includes('bug') || b.includes('crash'); });
+    else emails = emails.filter(e => e._folder !== 'sent' && !(e.from || '').toLowerCase().includes('support@classminds.app'));
+    if (q) emails = emails.filter(e => (e.from || '').toLowerCase().includes(q) || (e.subject || '').toLowerCase().includes(q) || (e.text || '').toLowerCase().includes(q));
+    emails.sort((a, b) => new Date(b.date) - new Date(a.date));
+    filteredEmails = emails;
+
+    const rc = allEmails.filter(e => e._folder !== 'sent' && !(e.from || '').toLowerCase().includes('support@classminds.app')).length;
+    const sc = allEmails.filter(e => e._folder === 'sent' || (e.from || '').toLowerCase().includes('support@classminds.app')).length;
+    document.getElementById('countReceived').textContent = rc;
+    document.getElementById('countSent').textContent = sc;
+    document.getElementById('inboxCount').textContent = emails.length + ' shown';
+
+    const el = document.getElementById('emailList');
+    if (!emails.length) { el.innerHTML = '<div class="empty-state"><div class="empty-icon">\uD83D\uDCED</div><div style="font-size:14px">No emails in this view</div></div>'; return; }
+    el.innerHTML = '<div class="email-header-row"><span>From</span><span>Subject</span><span>Date</span></div>';
+    emails.forEach(e => {
+      const isFav = favorites.includes(String(e.id));
+      const fromName = (e.from || '').replace(/<[^>]*>/g, '').trim() || e.from || '';
+      const fromAddr = (e.from || '').match(/<(.+)>/)?.[1] || e.from || '';
+      const dateStr = e.date ? new Date(e.date).toLocaleString('en-US', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' }) : '';
+      const preview = (e.text || '').replace(/\s+/g, ' ').slice(0, 100);
+      const row = document.createElement('div'); row.className = 'erow' + (!e.seen ? ' unread' : '');
+      row.innerHTML = '<div style="overflow:hidden"><div class="erow-from">' + escapeHtml(fromName) + '</div><div class="erow-email">' + escapeHtml(fromAddr) + '</div></div><div style="overflow:hidden"><div><span class="erow-subject">' + escapeHtml(e.subject || '(no subject)') + '</span>' + (e._folder === 'sent' ? '<span class="sent-badge">SENT</span>' : '') + '</div><div class="erow-preview">' + escapeHtml(preview) + '</div></div><div><div class="erow-date">' + dateStr + '</div><button class="erow-star' + (isFav ? ' starred' : '') + '" data-id="' + e.id + '">' + (isFav ? '\u2605' : '\u2606') + '</button></div>';
+      row.addEventListener('click', ev => { if (ev.target.closest('.erow-star')) return; openReader(e); });
+      el.appendChild(row);
+    });
+    el.querySelectorAll('.erow-star').forEach(b => b.addEventListener('click', function (ev) { ev.stopPropagation(); toggleFav(String(this.dataset.id)); }));
+  }
+
+  function toggleFav(id) { const i = favorites.indexOf(id); if (i === -1) favorites.push(id); else favorites.splice(i, 1); localStorage.setItem('cm_favorites', JSON.stringify(favorites)); renderInbox(); }
+
+  function openReader(email) {
+    if (!email) return; currentEmail = email;
+    currentEmailIndex = filteredEmails.findIndex(e => String(e.id) === String(email.id) && e._folder === email._folder);
+    if (currentEmailIndex === -1) currentEmailIndex = 0;
+    renderReader(); document.getElementById('emailReader').classList.add('open');
+  }
+
+  function renderReader() {
+    if (!currentEmail) return;
+    const fromRaw = currentEmail.from || '', fromName = fromRaw.replace(/<.*>/, '').trim() || fromRaw, fromEmail = fromRaw.match(/<(.+)>/)?.[1] || fromRaw;
+    const initials = fromName.split(' ').map(w => w[0]).filter(Boolean).slice(0, 2).join('').toUpperCase() || '?';
+    document.getElementById('readerSubject').textContent = currentEmail.subject || '(no subject)';
+    document.getElementById('readerAvatar').textContent = initials;
+    document.getElementById('readerFromName').textContent = fromName;
+    document.getElementById('readerFromEmail').textContent = fromEmail + ' \u2192 support@classminds.app';
+    document.getElementById('readerDate').textContent = currentEmail.date ? new Date(currentEmail.date).toLocaleString('en-US', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' }) : '';
+    document.getElementById('readerReplyBody').value = '';
+    document.getElementById('readerReplyTo').textContent = 'Replying to ' + fromEmail;
+    document.getElementById('emailNavCount').textContent = (currentEmailIndex + 1) + ' of ' + filteredEmails.length;
+    document.getElementById('starBtn').style.color = favorites.includes(String(currentEmail.id)) ? '#f59e0b' : 'rgba(180,200,255,.5)';
+    const raw = currentEmail.text || '(no content)', lines = raw.split('\n'), body = [], quoted = [];
+    let inQ = false; lines.forEach(l => { if (!inQ && (l.startsWith('>') || /^On .+ wrote:$/.test(l))) inQ = true; if (inQ) quoted.push(l); else body.push(l); });
+    document.getElementById('readerBody').textContent = body.join('\n').trim() || raw;
+    const threadEl = document.getElementById('readerThread'); threadEl.innerHTML = '';
+    if (quoted.length) {
+      const toggle = document.createElement('div'); toggle.style.cssText = 'padding:8px 28px;display:flex;align-items:center;gap:8px;cursor:pointer;border-top:1px solid rgba(26,107,255,.06)';
+      toggle.innerHTML = '<div style="display:flex;gap:3px"><div style="width:4px;height:4px;background:rgba(180,200,255,.3);border-radius:50%"></div><div style="width:4px;height:4px;background:rgba(180,200,255,.3);border-radius:50%"></div><div style="width:4px;height:4px;background:rgba(180,200,255,.3);border-radius:50%"></div></div><span style="font-size:10px;color:rgba(180,200,255,.35)">Earlier messages</span>';
+      const b2 = document.createElement('div'); b2.style.cssText = 'display:none;padding:12px 28px';
+      const qd = document.createElement('div'); qd.style.cssText = 'border-left:2px solid rgba(26,107,255,.2);padding:10px 14px;border-radius:0 8px 8px 0;background:rgba(26,107,255,.03);font-size:12px;color:rgba(180,200,255,.45);line-height:1.7;white-space:pre-wrap';
+      qd.textContent = quoted.join('\n').replace(/^>/gm, '').trim(); b2.appendChild(qd);
+      toggle.addEventListener('click', () => { b2.style.display = b2.style.display === 'none' ? 'block' : 'none'; });
+      threadEl.appendChild(toggle); threadEl.appendChild(b2);
+    }
+    document.getElementById('convName').textContent = fromName;
+    document.getElementById('convEmail').textContent = fromEmail;
+    const convList = document.getElementById('convList'); convList.innerHTML = '';
+    const senderEmails = allEmails.filter(e => { const ef = (e.from || '').match(/<(.+)>/)?.[1] || e.from || ''; return ef.toLowerCase() === fromEmail.toLowerCase(); }).sort((a, b) => new Date(b.date) - new Date(a.date));
+    if (senderEmails.length <= 1) { convList.innerHTML = '<div style="padding:20px;font-size:11px;color:rgba(180,200,255,.3);text-align:center">No other emails from this sender</div>'; return; }
+    senderEmails.forEach(e => {
+      const isActive = String(e.id) === String(currentEmail.id) && e._folder === currentEmail._folder;
+      const item = document.createElement('div'); item.className = 'reader-sidebar-item' + (isActive ? ' active' : '');
+      item.innerHTML = '<div style="display:flex;justify-content:space-between;margin-bottom:3px"><div style="font-size:11px;font-weight:' + (isActive ? '600' : '400') + ';color:' + (isActive ? '#f0f4ff' : 'rgba(180,200,255,.7)') + ';overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:150px">' + escapeHtml(e.subject || '(no subject)') + '</div><div style="font-size:9px;color:rgba(180,200,255,.3);white-space:nowrap;margin-left:6px">' + (e.date ? new Date(e.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) : '') + '</div></div><div style="font-size:10px;color:rgba(180,200,255,.35);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">' + escapeHtml((e.text || '').slice(0, 60)) + '</div>';
+      item.addEventListener('click', () => openReader(e)); convList.appendChild(item);
+    });
+  }
+
+  function closeReader() { document.getElementById('emailReader').classList.remove('open'); }
+
+  document.getElementById('backToInbox').addEventListener('click', closeReader);
+  document.getElementById('cancelReply').addEventListener('click', closeReader);
+  document.getElementById('prevEmail').addEventListener('click', () => { if (currentEmailIndex > 0) { currentEmailIndex--; currentEmail = filteredEmails[currentEmailIndex]; renderReader(); } });
+  document.getElementById('nextEmail').addEventListener('click', () => { if (currentEmailIndex < filteredEmails.length - 1) { currentEmailIndex++; currentEmail = filteredEmails[currentEmailIndex]; renderReader(); } });
+  document.getElementById('starBtn').addEventListener('click', () => { if (!currentEmail) return; toggleFav(String(currentEmail.id)); document.getElementById('starBtn').style.color = favorites.includes(String(currentEmail.id)) ? '#f59e0b' : 'rgba(180,200,255,.5)'; });
+  document.getElementById('replyBtn').addEventListener('click', () => { document.getElementById('readerReplyBody').focus(); });
+  document.querySelectorAll('.qr-chip').forEach(c => c.addEventListener('click', function () { const ta = document.getElementById('readerReplyBody'); ta.value = this.textContent + ' '; ta.focus(); }));
+  document.getElementById('fwdBtn').addEventListener('click', () => { if (!currentEmail) return; document.getElementById('composeTo').value = ''; document.getElementById('composeSubject').value = 'Fwd: ' + (currentEmail.subject || ''); document.getElementById('composeBody').value = '\n\n--- Forwarded message ---\nFrom: ' + (currentEmail.from || '') + '\n\n' + (currentEmail.text || ''); closeReader(); openModal('composeModal'); });
+  document.getElementById('readerSendBtn').addEventListener('click', async function () {
+    if (!currentEmail) return; const body = document.getElementById('readerReplyBody').value.trim(); if (!body) return;
+    const fromEmail = (currentEmail.from || '').match(/<(.+)>/)?.[1] || currentEmail.from || '';
+    this.disabled = true; this.innerHTML = '<span class="spinner"></span> Sending...';
+    try { await sendSupportEmailFn({ to: fromEmail, subject: 'Re: ' + (currentEmail.subject || ''), body, inReplyTo: currentEmail.messageId });
+      allEmails.unshift({ id: 'sent-' + Date.now(), from: 'ClassMinds Support <support@classminds.app>', to: fromEmail, subject: 'Re: ' + (currentEmail.subject || ''), text: body, date: new Date().toISOString(), _folder: 'sent', seen: true });
+      document.getElementById('readerReplyBody').value = ''; toast('Reply sent!');
+    } catch (e) { toast('Failed: ' + e.message, 'error'); }
+    this.disabled = false; this.textContent = 'Send Reply \u2192';
+  });
+  document.getElementById('delEmailBtn').addEventListener('click', async () => {
+    if (!currentEmail || !confirm('Delete this email?')) return;
+    try { await deleteEmailFn({ uid: currentEmail.id }); allEmails = allEmails.filter(e => !(e.id === currentEmail.id && e._folder === currentEmail._folder)); renderInbox();
+      if (filteredEmails.length > 0) { currentEmailIndex = Math.min(currentEmailIndex, filteredEmails.length - 1); currentEmail = filteredEmails[currentEmailIndex]; renderReader(); } else closeReader();
+      toast('Deleted');
+    } catch (e) { toast('Failed', 'error'); }
+  });
+
+  document.addEventListener('keydown', e => {
+    if (!document.getElementById('emailReader').classList.contains('open')) return;
+    if (e.target.tagName === 'TEXTAREA' || e.target.tagName === 'INPUT') return;
+    if (e.key === 'Escape') closeReader();
+    if (e.key === 'r' || e.key === 'R') document.getElementById('readerReplyBody').focus();
+    if (e.key === 'j' || e.key === 'ArrowDown') { e.preventDefault(); document.getElementById('nextEmail').click(); }
+    if (e.key === 'k' || e.key === 'ArrowUp') { e.preventDefault(); document.getElementById('prevEmail').click(); }
+  });
+
+  loadInbox();
+});
+document.getElementById('logoutBtn')?.addEventListener('click', () => { import('./admin-shared.js').then(m => m.doLogout()); });
+</script>
+</body>
+</html>

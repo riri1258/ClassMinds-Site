@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<link rel="icon" type="image/png" href="/WebsiteLogo.png"/>
+<link rel="apple-touch-icon" href="/WebsiteLogo.png"/>
+<link rel="shortcut icon" href="/WebsiteLogo.png"/>
+<title>Class – ClassMinds</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=DM+Sans:ital,wght@0,400;0,500;0,600;0,700;1,400&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet"/>
+<link rel="stylesheet" href="app-styles.css"/>
+</head>
+<body>
+<div id="sidebarSlot"></div>
+<div class="page-glow"></div>
+<div class="main">
+  <!-- Crumb -->
+  <div style="display:flex; align-items:center; gap:12px; font-size:12px; color:var(--muted);">
+    <a href="classes.html" style="color:var(--muted); text-decoration:none;">← classes</a>
+    <span style="color:rgba(180,200,255,0.2);">/</span>
+    <span id="cdCrumb" style="color:var(--white); font-weight:500;">Loading…</span>
+  </div>
+
+  <!-- Header -->
+  <div style="display:flex; align-items:flex-start; justify-content:space-between; gap:24px;">
+    <div>
+      <div style="display:flex; align-items:center; gap:14px;">
+        <div id="cdBar" style="width:6px; height:44px; border-radius:var(--r-full); background:var(--blue); box-shadow:0 0 14px rgba(26,107,255,0.45);"></div>
+        <div>
+          <div id="cdCode" style="font-family:var(--font-display); font-size:32px; font-weight:800; letter-spacing:-0.8px; line-height:1; color:var(--white);">Loading…</div>
+          <div id="cdName" style="font-size:14px; color:var(--muted); margin-top:4px;"></div>
+        </div>
+      </div>
+      <div id="cdInfo" style="display:flex; gap:20px; font-size:12px; color:var(--muted); margin-top:18px; flex-wrap:wrap;"></div>
+    </div>
+    <div style="display:flex; gap:10px;">
+      <a class="btn primary" href="record.html">+ New note</a>
+    </div>
+  </div>
+
+  <!-- Tabs -->
+  <div class="tabs" id="cdTabs" style="align-self:flex-start;">
+    <span class="tab active" data-tab="notes">notes <span id="cdTabCountNotes" style="font-family:var(--font-mono); font-size:10px; margin-left:4px; opacity:0.7;">—</span></span>
+    <span class="tab" data-tab="assignments">assignments <span id="cdTabCountAss" style="font-family:var(--font-mono); font-size:10px; margin-left:4px; opacity:0.5;">—</span></span>
+    <span class="tab" data-tab="info">info</span>
+  </div>
+
+  <!-- Body -->
+  <div id="cdBody" style="display:flex; flex-direction:column; gap:10px; flex:1; overflow:hidden;">
+    <div style="text-align:center;padding:32px;color:var(--muted);"><div class="spinner"></div></div>
+  </div>
+</div>
+
+<script type="module">
+import{requireUser,db,doc,getDoc,setDoc,addDoc,updateDoc,collection,getDocs,query,orderBy,increment,loadClasses,loadAssignments,loadTests,esc,COLORS,logError,logSuccess,logInfo}from'./app-shared.js';
+import{deleteDoc}from'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
+const classId=new URLSearchParams(window.location.search).get('id');
+if(!classId)window.location.href='classes.html';
+
+requireUser().then(async({uid})=>{
+  // Mark Classes nav active in sidebar (this is a detail page)
+  setTimeout(()=>{document.querySelector('.sidebar nav .ni[href="classes.html"]')?.classList.add('active');},0);
+
+  try{
+  const{classes:allClasses,colorMap:ccMap}=await loadClasses(uid);
+  const cls=allClasses.find(c=>(c.classId||c.id)===classId);
+  if(!cls){document.getElementById('cdCode').textContent='Class not found';document.getElementById('cdCrumb').textContent='Not found';return;}
+  const color=ccMap[classId]||COLORS[0];
+
+  document.title=cls.courseCode+' – ClassMinds';
+  document.getElementById('cdCrumb').textContent=cls.courseCode;
+  document.getElementById('cdCode').textContent=cls.courseCode;
+  document.getElementById('cdName').textContent=cls.courseName||'';
+  document.getElementById('cdBar').style.background=color;
+  document.getElementById('cdBar').style.boxShadow='0 0 14px '+color+'73';
+
+  const info=document.getElementById('cdInfo');
+  const parts=[];
+  if(cls.instructor)parts.push(`<span>${esc(cls.instructor)}</span>`);
+  if(cls.location)parts.push(`<span>${esc(cls.location)}</span>`);
+  if(cls.startTime)parts.push(`<span>${esc(cls.startTime)} — ${esc(cls.endTime||'')}</span>`);
+  if((cls.daysOfWeek||[]).length)parts.push(`<span>${esc(cls.daysOfWeek.join(' '))}</span>`);
+  info.innerHTML=parts.join('<span style="color:rgba(180,200,255,0.25);">·</span>');
+
+  const allAssignments=await loadAssignments(uid);
+  const allTests=await loadTests(uid);
+  const classItems=[...allAssignments,...allTests].filter(a=>a.classId===classId||a.courseCode===cls.courseCode);
+  document.getElementById('cdTabCountAss').textContent=classItems.length;
+
+  document.getElementById('cdTabs').addEventListener('click',function(e){
+    const tab=e.target.closest('.tab');if(!tab)return;
+    document.querySelectorAll('#cdTabs .tab').forEach(t=>t.classList.remove('active'));
+    tab.classList.add('active');loadTab(tab.dataset.tab);
+  });
+
+  // Auto-merge same-day notes (load-bearing — preserve verbatim)
+  async function autoMergeDuplicates(notes){
+    const dayGroups={};
+    notes.forEach(n=>{
+      if(!n.createdAt)return;
+      const day=new Date(n.createdAt*1000).toLocaleDateString('en-US',{year:'numeric',month:'2-digit',day:'2-digit'});
+      if(!dayGroups[day])dayGroups[day]=[];
+      dayGroups[day].push(n);
+    });
+    const dupeGroups=Object.entries(dayGroups).filter(([,g])=>g.length>1);
+    if(!dupeGroups.length)return notes;
+    let merged=0;const deletedIds=new Set();
+    for(const[day,group]of dupeGroups){
+      const sorted=[...group].sort((a,b)=>(a.createdAt||0)-(b.createdAt||0));
+      const primary=sorted[0];const dupes=sorted.slice(1);
+      for(const dupe of dupes){
+        try{
+          await addDoc(collection(db,'classes',classId,'notes',primary.id,'alternates'),{
+            title:dupe.title||'',transcript:dupe.transcript||'',
+            summary:dupe.summary||'',keyPoints:dupe.keyPoints||[],
+            rawJSON:dupe.rawJSON||'',sourceType:dupe.sourceType||'audio',
+            createdAt:dupe.createdAt||0,createdBy:dupe.createdBy||''
+          });
+          try{
+            const altSnap=await getDocs(collection(db,'classes',classId,'notes',dupe.id,'alternates'));
+            for(const alt of altSnap.docs){
+              await addDoc(collection(db,'classes',classId,'notes',primary.id,'alternates'),alt.data());
+              await deleteDoc(doc(db,'classes',classId,'notes',dupe.id,'alternates',alt.id));
+            }
+          }catch(e){}
+          await deleteDoc(doc(db,'classes',classId,'notes',dupe.id));
+          deletedIds.add(dupe.id);merged++;
+        }catch(e){logError('Auto-merge failed for '+dupe.id+': '+e.message,'class/automerge');}
+      }
+      const newCount=(primary.alternateCount||0)+dupes.length;
+      await updateDoc(doc(db,'classes',classId,'notes',primary.id),{alternateCount:newCount});
+      primary.alternateCount=newCount;
+    }
+    if(merged>0)logSuccess('Auto-merged '+merged+' same-day duplicate(s) in '+cls.courseCode,'class/automerge');
+    return notes.filter(n=>!deletedIds.has(n.id));
+  }
+
+  async function loadTab(tab){
+    const body=document.getElementById('cdBody');
+    body.innerHTML='<div style="text-align:center;padding:32px;color:var(--muted);"><div class="spinner"></div></div>';
+    try{
+    if(tab==='notes'){
+      const s=await getDocs(query(collection(db,'classes',classId,'notes'),orderBy('createdAt','desc')));
+      let notes=s.docs.map(d=>({id:d.id,...d.data()}));
+      if(!notes.length){body.innerHTML='<div style="text-align:center;padding:48px;color:var(--muted);">📝 No notes yet. Record a lecture from <a href="record.html" style="color:var(--blue-bright);">Record</a>.</div>';document.getElementById('cdTabCountNotes').textContent='0';return;}
+      notes=await autoMergeDuplicates(notes);
+      document.getElementById('cdTabCountNotes').textContent=notes.length;
+      body.innerHTML=notes.map(n=>{
+        const date=n.createdAt?new Date(n.createdAt*1000).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'}).toLowerCase():'';
+        const words=(n.transcript||'').split(' ').filter(Boolean).length;
+        const has=n.summary&&n.summary.length>50;
+        const altCount=n.alternateCount||0;
+        const kpCount=n.keyPoints?.length||0;
+        return`<a class="card" href="note.html?classId=${classId}&noteId=${n.id}" style="display:flex; align-items:center; gap:16px; padding:16px 20px; text-decoration:none; color:inherit;">
+          <span style="width:3px; height:36px; border-radius:var(--r-full); background:${color};"></span>
+          <span style="font-size:18px;">${has?'✨':'📄'}</span>
+          <div style="flex:1; min-width:0;">
+            <div style="font-family:var(--font-body); font-weight:600; font-size:14px; color:var(--white);">${esc(n.title||'Untitled')}</div>
+            <div style="font-size:12px; color:var(--muted); margin-top:3px;">${date} · ${words} words${has?' · <span style="color:var(--blue-bright);">AI summary</span>':''}</div>
+          </div>
+          ${altCount>0?`<span class="chip orange"><span class="d"></span>${altCount+1} versions</span>`:''}
+          <div style="display:flex; gap:6px;">
+            ${kpCount>0?`<span class="chip blue">${kpCount} key points</span>`:''}
+            ${has?'<span class="chip muted">summary</span>':'<span class="chip muted">raw</span>'}
+          </div>
+          <span style="color:var(--muted); font-size:14px;">›</span>
+        </a>`;
+      }).join('');
+      logSuccess('Loaded '+notes.length+' notes for '+cls.courseCode,'class/notes');
+
+    }else if(tab==='assignments'){
+      if(!classItems.length){body.innerHTML='<div style="text-align:center;padding:48px;color:var(--muted);">📋 No assignments for this class</div>';return;}
+      const now=Date.now()/1000;
+      body.innerHTML=classItems.sort((a,b)=>(a.dueDate||0)-(b.dueDate||0)).map(a=>{
+        const od=a.status!=='done'&&a.dueDate>0&&a.dueDate<now;
+        const ef=od?'overdue':a.status;
+        const ds=a.dueDate?new Date(a.dueDate*1000).toLocaleDateString('en-US',{month:'short',day:'numeric'}).toLowerCase():'no date';
+        let chip='';
+        if(ef==='overdue')chip='<span class="chip red"><span class="d"></span>overdue</span>';
+        else if(ef==='done')chip='<span class="chip green"><span class="d"></span>done</span>';
+        else if(a.isExam)chip='<span class="chip purple"><span class="d"></span>exam</span>';
+        else if(ef==='started')chip='<span class="chip yellow"><span class="d"></span>started</span>';
+        return`<div class="card" style="padding:14px 18px; display:flex; align-items:center; gap:14px;">
+          <div style="width:3px; height:34px; border-radius:var(--r-full); background:${color};"></div>
+          <span class="cb ${ef}"></span>
+          <div style="flex:1; min-width:0;">
+            <div style="font-size:14px; font-weight:600; color:var(--white); ${ef==='done'?'text-decoration:line-through;opacity:0.5;':''}">${esc(a.title)}</div>
+            <div style="font-size:12px; color:var(--muted); margin-top:2px;">${ds}${a.isExam?' · exam':''}</div>
+          </div>
+          ${chip}
+        </div>`;
+      }).join('');
+
+    }else if(tab==='info'){
+      const rows=[['Course',cls.courseCode],['Name',cls.courseName],['Section',cls.section],['Instructor',cls.instructor],['Location',cls.location],['Days',(cls.daysOfWeek||[]).join(' ')],['Time',(cls.startTime||'')+(cls.endTime?' – '+cls.endTime:'')],['Term',cls.term],['School',cls.schoolName]];
+      body.innerHTML=`<div class="card" style="padding:24px;">
+        <div style="display:grid; grid-template-columns:140px 1fr; gap:14px; font-size:13px;">
+          ${rows.map(([l,v])=>`<div class="label">${l}</div><div style="color:var(--white);">${esc(v||'—')}</div>`).join('')}
+        </div>
+      </div>`;
+    }
+    }catch(e){body.innerHTML='<div style="text-align:center;padding:32px;color:var(--red);">Failed to load</div>';logError('Tab "'+tab+'" failed: '+e.message,'class/'+tab);}
+  }
+  loadTab('notes');
+  }catch(e){logError('Class page crash: '+e.message,'class');}
+});
+</script>
+</body>
+</html>

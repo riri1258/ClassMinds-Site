@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<!-- Favicon & Icons -->
+<link rel="icon" type="image/png" href="/WebsiteLogo.png"/>
+<link rel="apple-touch-icon" href="/WebsiteLogo.png"/>
+<link rel="shortcut icon" href="/WebsiteLogo.png"/>
+<title>Resummarize – ClassMinds Admin</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+<link rel="stylesheet" href="admin-styles.css"/>
+</head>
+<body>
+<div class="admin-wrap" id="adminWrap">
+  <div class="sidebar" id="sidebarSlot"></div>
+  <div class="main">
+    <div class="page-header"><div class="page-title">Resummarize Notes</div><div class="page-desc">Re-generate note summaries with the latest AI prompt. ~$0.03–0.05 per note.</div></div>
+
+    <!-- Step 1: Pick class -->
+    <div class="notify-form" style="margin-bottom:20px">
+      <label class="field-label">Search Class</label>
+      <div style="position:relative">
+        <input class="field-input" id="resum-class-search" placeholder="Type course code, name, or school..." autocomplete="off" style="margin-bottom:0"/>
+        <div id="resum-dropdown" style="display:none;position:absolute;top:100%;left:0;right:0;max-height:260px;overflow-y:auto;background:var(--navy-card);border:1px solid var(--navy-border);border-top:none;border-radius:0 0 10px 10px;z-index:20"></div>
+      </div>
+      <div id="resum-selected-class" style="display:none;margin-top:12px;padding:12px 16px;background:rgba(26,107,255,0.08);border:1px solid rgba(26,107,255,0.25);border-radius:10px">
+        <div style="display:flex;align-items:center;justify-content:space-between">
+          <div><div style="font-weight:600;font-size:14px" id="resum-selected-name"></div><div style="font-size:12px;color:var(--muted)" id="resum-selected-meta"></div></div>
+          <button class="btn btn-ghost" style="font-size:11px;padding:4px 10px" id="clearClassBtn">✕ Clear</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Step 2: Notes -->
+    <div id="resum-notes-wrap" style="display:none">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;flex-wrap:wrap;gap:10px">
+        <div style="display:flex;align-items:center;gap:12px">
+          <label class="field-label" style="margin:0">Notes</label>
+          <span style="font-size:12px;color:var(--muted)" id="resum-count">0 notes</span>
+        </div>
+        <div style="display:flex;gap:8px">
+          <button class="btn btn-ghost" id="selectAllBtn">Select All</button>
+          <button class="btn btn-ghost" id="deselectAllBtn">Deselect All</button>
+          <button class="btn btn-blue" id="resum-go-btn" disabled>✨ Resummarize Selected (<span id="resum-selected-count">0</span>)</button>
+        </div>
+      </div>
+      <div id="resum-notes-list"></div>
+    </div>
+
+    <!-- Progress -->
+    <div id="resum-progress" style="display:none;margin-top:20px">
+      <div class="notify-form">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
+          <div style="font-family:var(--font-display);font-size:16px;font-weight:700">Processing...</div>
+          <span style="font-size:13px;color:var(--muted)" id="resum-prog-text">0 / 0</span>
+        </div>
+        <div style="width:100%;height:8px;background:rgba(255,255,255,0.06);border-radius:8px;overflow:hidden">
+          <div id="resum-prog-bar" style="width:0%;height:100%;background:var(--blue);border-radius:8px;transition:width 0.3s"></div>
+        </div>
+        <div id="resum-log" style="margin-top:16px;max-height:300px;overflow-y:auto;font-size:12px;font-family:monospace;color:var(--muted);line-height:2"></div>
+      </div>
+    </div>
+  </div>
+</div>
+<div class="toast" id="toast"></div>
+<script src="config.js"></script>
+<script type="module">
+import { requireAdmin, db, doc, getDoc, updateDoc, collection, getDocs, query, orderBy, toast, escapeHtml, aiSummaryFn } from './admin-shared.js';
+import { renderSidebar } from './admin-sidebar.js';
+renderSidebar();
+
+requireAdmin().then(async () => {
+  // Load classes
+  const classesSnap = await getDocs(collection(db,'classes'));
+  const allClasses = [];
+  for(const d of classesSnap.docs){
+    const n = await getDocs(collection(db,'classes',d.id,'notes'));
+    allClasses.push({id:d.id,...d.data(),noteCount:n.size});
+  }
+
+  // API key is handled server-side by the aiSummary Cloud Function
+
+  let resumNotes=[], resumClassId='';
+
+  // Search
+  const searchInput = document.getElementById('resum-class-search');
+  const dropdown = document.getElementById('resum-dropdown');
+  searchInput.addEventListener('input',function(){
+    const q=this.value.toLowerCase().trim();
+    if(!q){dropdown.style.display='none';return;}
+    const matches=allClasses.filter(c=>(c.courseCode||'').toLowerCase().includes(q)||(c.courseName||'').toLowerCase().includes(q)||(c.schoolName||'').toLowerCase().includes(q)).slice(0,15);
+    if(!matches.length){dropdown.innerHTML='<div style="padding:14px 16px;font-size:13px;color:var(--muted)">No classes found</div>';dropdown.style.display='block';return;}
+    dropdown.innerHTML=matches.map(c=>`<div class="resum-class-option" data-id="${c.id}" style="padding:10px 16px;cursor:pointer;font-size:13px;border-bottom:1px solid var(--navy-border)"><div style="font-weight:600">${escapeHtml(c.courseCode||'Untitled')}</div><div style="font-size:11px;color:var(--muted);margin-top:2px">${escapeHtml(c.courseName||'')} · ${escapeHtml(c.schoolName||'')} · ${c.noteCount||0} notes</div></div>`).join('');
+    dropdown.style.display='block';
+    dropdown.querySelectorAll('.resum-class-option').forEach(o=>o.addEventListener('click',function(){selectClass(this.dataset.id);}));
+  });
+  searchInput.addEventListener('focus',()=>{if(searchInput.value.trim())searchInput.dispatchEvent(new Event('input'));});
+  document.addEventListener('click',(e)=>{if(!dropdown.contains(e.target)&&e.target!==searchInput)dropdown.style.display='none';});
+
+  function selectClass(classId){
+    const c=allClasses.find(x=>x.id===classId);if(!c)return;
+    dropdown.style.display='none';searchInput.value='';
+    document.getElementById('resum-selected-name').textContent=c.courseCode||'Untitled';
+    document.getElementById('resum-selected-meta').textContent=`${c.courseName||''} · ${c.schoolName||''} · ${c.noteCount||0} notes`;
+    document.getElementById('resum-selected-class').style.display='block';
+    resumClassId=classId;loadNotes();
+  }
+
+  document.getElementById('clearClassBtn').addEventListener('click',()=>{
+    document.getElementById('resum-selected-class').style.display='none';
+    document.getElementById('resum-notes-wrap').style.display='none';
+    searchInput.value='';resumClassId='';
+  });
+
+  async function loadNotes(){
+    const snap=await getDocs(query(collection(db,'classes',resumClassId,'notes'),orderBy('createdAt','desc')));
+    resumNotes=snap.docs.map(d=>({id:d.id,...d.data()}));
+    document.getElementById('resum-count').textContent=resumNotes.length+' notes';
+    const list=document.getElementById('resum-notes-list');
+    if(!resumNotes.length){list.innerHTML='<div class="empty-state"><div class="empty-icon">📝</div>No notes</div>';document.getElementById('resum-notes-wrap').style.display='block';return;}
+    list.innerHTML=resumNotes.map(n=>{
+      const date=n.createdAt?new Date(n.createdAt*1000).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'}):'—';
+      const words=(n.transcript||'').split(' ').length;
+      const has=!!(n.summary&&n.summary.length>50);
+      return `<div class="table-card" style="padding:14px 18px;margin-bottom:8px;display:flex;align-items:center;gap:14px"><input type="checkbox" class="resum-check" data-id="${n.id}" style="width:18px;height:18px;accent-color:var(--blue);cursor:pointer"/><div style="flex:1;min-width:0"><div style="font-weight:600;font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${escapeHtml(n.title||'Untitled')}</div><div style="font-size:12px;color:var(--muted);margin-top:2px">${date} · ${words} words${has?' · ✅ Has summary':' · ⚠️ No summary'}</div></div></div>`;
+    }).join('');
+    document.getElementById('resum-notes-wrap').style.display='block';
+    updateCount();
+  }
+
+  function updateCount(){
+    const checked=document.querySelectorAll('.resum-check:checked').length;
+    document.getElementById('resum-selected-count').textContent=checked;
+    document.getElementById('resum-go-btn').disabled=checked===0;
+  }
+  document.getElementById('resum-notes-wrap').addEventListener('change',updateCount);
+  document.getElementById('selectAllBtn').addEventListener('click',()=>{document.querySelectorAll('.resum-check').forEach(c=>c.checked=true);updateCount();});
+  document.getElementById('deselectAllBtn').addEventListener('click',()=>{document.querySelectorAll('.resum-check').forEach(c=>c.checked=false);updateCount();});
+
+  // Resummarize
+  document.getElementById('resum-go-btn').addEventListener('click',async function(){
+    const selected=[...document.querySelectorAll('.resum-check:checked')].map(c=>c.dataset.id);
+    if(!selected.length)return;
+    const prog=document.getElementById('resum-progress'),bar=document.getElementById('resum-prog-bar'),text=document.getElementById('resum-prog-text'),log=document.getElementById('resum-log');
+    prog.style.display='block';log.innerHTML='';this.disabled=true;
+    const todayISO=new Date().toISOString().split('T')[0],todayDisplay=new Date().toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'});
+    let done=0;
+    for(const noteId of selected){
+      const note=resumNotes.find(n=>n.id===noteId);if(!note)continue;
+      const title=note.title||'Untitled';
+      text.textContent=`${done} / ${selected.length}`;bar.style.width=`${Math.round(done/selected.length*100)}%`;
+      log.innerHTML+=`<div style="color:var(--blue)">⏳ Processing: ${escapeHtml(title)}...</div>`;log.scrollTop=log.scrollHeight;
+      try{
+        const transcript=note.transcript||'';
+        if(transcript.split(' ').length<20){log.innerHTML+=`<div style="color:var(--yellow)">⚠️ Skipped: ${escapeHtml(title)} (too short)</div>`;done++;continue;}
+        const prompt=buildPrompt(transcript,todayISO,todayDisplay);
+        const result=await aiSummaryFn({prompt,max_output_tokens:4096});
+        const raw=result.data.content||'';if(!raw)throw new Error('Empty response');
+        let cleaned=raw.trim();
+        const fenceMatch=cleaned.match(/```(?:json)?\s*\n?([\s\S]*?)\n?\s*```/i);
+        if(fenceMatch)cleaned=fenceMatch[1].trim();
+        if(!cleaned.startsWith('{')){const fb=cleaned.indexOf('{'),lb=cleaned.lastIndexOf('}');if(fb!==-1&&lb>fb)cleaned=cleaned.slice(fb,lb+1);}
+        // Sanitize invalid backslash escapes (e.g. `\s`, `\T`) that the AI
+        // sometimes returns and that would otherwise break JSON.parse. Double
+        // any backslash not followed by one of the nine legal JSON escape
+        // characters ("\/bfnrtu).
+        const sanitized=cleaned.replace(/\\(?!["\\/bfnrtu])/g,'\\\\');
+        let parsed;
+        try{parsed=JSON.parse(sanitized);}catch(pe){throw new Error('Parse failed: '+pe.message+' | preview: '+raw.slice(0,120).replace(/\s+/g,' '));}
+        if(!parsed.summary||typeof parsed.summary!=='string'||parsed.summary.length<20){throw new Error('Parsed JSON has no usable summary field');}
+        await updateDoc(doc(db,'classes',resumClassId,'notes',noteId),{summary:parsed.summary,keyPoints:parsed.keyPoints||[],title:parsed.title||note.title,rawJSON:cleaned});
+        log.innerHTML+=`<div style="color:var(--green)">✅ Done: ${escapeHtml(parsed.title||title)}</div>`;
+      }catch(e){log.innerHTML+=`<div style="color:var(--red)">❌ Failed: ${escapeHtml(title)} — ${e.message}</div>`;}
+      done++;text.textContent=`${done} / ${selected.length}`;bar.style.width=`${Math.round(done/selected.length*100)}%`;log.scrollTop=log.scrollHeight;
+    }
+    log.innerHTML+=`<div style="color:var(--green);font-weight:600;margin-top:8px">🎉 Complete! ${done} notes processed.</div>`;
+    this.disabled=false;
+  });
+
+  function buildPrompt(transcript, todayISO, todayDisplay){
+    return `You are an expert note-taker reading a transcript from a college class lecture recording.
+
+Today's date is ${todayISO} (display as ${todayDisplay}).
+
+Your job is to produce comprehensive, detailed, study-ready notes a student could use to fully review the lecture without re-listening.
+
+RULES:
+- Only include actual lecture content from the instructor. Ignore side chatter, jokes, greetings, and off-topic talk.
+- Only extract assignments, exams, and schedule changes if they clearly came from the instructor.
+- Convert any spoken or relative date into a real YYYY-MM-DD calendar date. If you truly cannot determine the date, use an empty string.
+
+TITLE:
+- Write a specific, descriptive title (5-10 words) for what was taught.
+- Format: "Topic Name — MMM d" e.g. "Linked Lists and Pointer Arithmetic — Apr 7"
+
+SUMMARY FORMAT — THIS IS THE MOST IMPORTANT FIELD:
+Write the summary using this exact markdown-like syntax. The app parses these markers to render rich UI.
+The summary should be LONG and DETAILED — aim for 800-1500 words.
+
+SECTION HEADERS — use ## followed by a space. Use MANY headers (8-15 total).
+TABLES — use for ANY set of terms, definitions, comparisons. ALWAYS include separator row.
+BULLET POINTS — use - for top-level, four spaces then - for sub-bullets.
+PARAGRAPHS — plain text for explanations.
+
+STRUCTURE RULES:
+1. Start with ## Overview (3-5 bullet points).
+2. Then 6-12 content sections.
+3. EVERY section with definitions MUST use a table.
+4. EVERY comparison MUST use a table.
+5. ALWAYS include | --- | separator row after table headers.
+6. Include ## Key Terms And Definitions section.
+7. Include ## Common Mistakes To Avoid if relevant.
+8. End with ## Examples And Classroom Questions if applicable.
+9. Do NOT use emoji anywhere.
+
+KEY POINTS: Extract 6-12 specific facts/concepts, 1-2 sentences each.
+
+Return strict JSON (no markdown backticks):
+{
+  "title": "...",
+  "summary": "...",
+  "keyPoints": ["...", "..."],
+  "assignments": [{"title":"...","dueDate":"YYYY-MM-DD"}],
+  "exams": [{"title":"...","date":"YYYY-MM-DD","type":"exam|quiz|test"}],
+  "scheduleChanges": [{"title":"...","date":"YYYY-MM-DD"}]
+}
+
+Transcript:
+${transcript}`;
+  }
+});
+document.getElementById('logoutBtn')?.addEventListener('click',()=>{import('./admin-shared.js').then(m=>m.doLogout());});
+</script>
+</body>
+</html>

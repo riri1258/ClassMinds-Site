@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<link rel="icon" type="image/png" href="/WebsiteLogo.png"/>
+<link rel="apple-touch-icon" href="/WebsiteLogo.png"/>
+<link rel="shortcut icon" href="/WebsiteLogo.png"/>
+<title>Settings – ClassMinds</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=DM+Sans:ital,wght@0,400;0,500;0,600;0,700;1,400&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet"/>
+<link rel="stylesheet" href="app-styles.css"/>
+<style>
+.toggle { width:38px; height:22px; border-radius:var(--r-full); background:var(--surface-04); border:0.5px solid var(--border); position:relative; cursor:pointer; transition:background 0.15s, border-color 0.15s; flex-shrink:0; }
+.toggle .knob { position:absolute; top:2px; left:2px; width:16px; height:16px; border-radius:50%; background:var(--muted-soft); transition:left 0.15s, right 0.15s, background 0.15s; }
+.toggle.on { background:var(--blue); border-color:var(--border-active); box-shadow:0 0 12px rgba(26,107,255,0.3); }
+.toggle.on .knob { left:auto; right:2px; background:var(--white); }
+.rail-link { padding:10px 14px; border-radius:var(--r-lg); font-size:13px; font-weight:500; color:var(--muted); background:transparent; border-left:3px solid transparent; padding-left:11px; cursor:pointer; transition:color 0.15s, background 0.15s; }
+.rail-link:hover { color:var(--white); }
+.rail-link.active { color:var(--blue-bright); font-weight:600; background:var(--blue-tint-12); border-left-color:var(--blue-bright); }
+</style>
+</head>
+<body>
+<div id="sidebarSlot"></div>
+<div class="page-glow"></div>
+<div class="main">
+  <div class="page-head">
+    <div>
+      <h1 class="page-title">Settings</h1>
+      <p class="page-sub">account &amp; preferences</p>
+    </div>
+  </div>
+
+  <div style="display:grid; grid-template-columns: 220px 1fr; gap:32px; flex:1; min-height:0;">
+    <div style="display:flex; flex-direction:column; gap:2px;" id="rail">
+      <div class="rail-link active" data-section="profile">Profile</div>
+      <div class="rail-link" data-section="notifications">Notifications</div>
+      <div class="rail-link" data-section="account">Account</div>
+      <div class="rail-link" data-section="data">Data &amp; privacy</div>
+    </div>
+
+    <div style="display:flex; flex-direction:column; gap:20px; overflow-y:auto;">
+      <!-- Profile -->
+      <div class="card section" id="sec-profile" style="padding:22px 24px;">
+        <div style="font-family:var(--font-display); font-size:18px; font-weight:700; color:var(--white); letter-spacing:-0.2px; margin-bottom:20px;">Profile</div>
+        <div style="display:flex; align-items:center; gap:16px; margin-bottom:22px;">
+          <div id="profAvatar" style="width:72px; height:72px; border-radius:50%; background: linear-gradient(135deg, var(--blue), var(--purple)); display:flex; align-items:center; justify-content:center; font-family:var(--font-display); font-weight:800; font-size:26px; color:var(--white);">—</div>
+          <div style="display:flex; flex-direction:column; gap:4px;">
+            <button class="btn ghost sm" disabled>Change photo</button>
+            <span style="font-size:11px; color:var(--muted);">PNG or JPG · up to 2MB · coming soon</span>
+          </div>
+        </div>
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:14px; margin-bottom:14px;">
+          <div>
+            <div class="label" style="margin-bottom:6px;">first name</div>
+            <input id="ef-first" class="input" placeholder="First"/>
+          </div>
+          <div>
+            <div class="label" style="margin-bottom:6px;">last name</div>
+            <input id="ef-last" class="input" placeholder="Last"/>
+          </div>
+        </div>
+        <div style="margin-bottom:14px;">
+          <div class="label" style="margin-bottom:6px;">email</div>
+          <div class="input" style="opacity:0.55; cursor:not-allowed; display:flex; align-items:center; gap:10px; background:var(--surface-02);">
+            <span style="flex:1;" id="ef-email">—</span>
+            <span style="font-size:13px;">🔒</span>
+          </div>
+        </div>
+        <div style="margin-bottom:20px;">
+          <div class="label" style="margin-bottom:6px;">school</div>
+          <div class="input" style="opacity:0.55; cursor:not-allowed; display:flex; align-items:center; gap:10px; background:var(--surface-02);">
+            <span style="flex:1;" id="ef-school">—</span>
+            <span style="font-size:13px;">🔒</span>
+          </div>
+        </div>
+        <div style="display:flex; justify-content:flex-end; gap:10px;">
+          <button class="btn primary sm" id="profSave" type="button">Save</button>
+        </div>
+      </div>
+
+      <!-- Notifications -->
+      <div class="card section" id="sec-notifications" style="padding:22px 24px; display:none;">
+        <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:16px;">
+          <div style="font-family:var(--font-display); font-size:18px; font-weight:700; color:var(--white); letter-spacing:-0.2px;">Notifications</div>
+        </div>
+        <div id="notifList"></div>
+      </div>
+
+      <!-- Account -->
+      <div class="card section" id="sec-account" style="padding:22px 24px; display:none;">
+        <div style="font-family:var(--font-display); font-size:18px; font-weight:700; color:var(--white); letter-spacing:-0.2px; margin-bottom:16px;">Account</div>
+        <div style="display:flex; flex-direction:column; gap:10px;">
+          <button class="btn ghost" id="resetPwBtn" type="button">Send password reset email</button>
+          <button class="btn ghost" id="signOutBtn" type="button">Sign out</button>
+          <button class="btn ghost" type="button" disabled title="Contact support@classminds.app to delete your account" style="color:var(--red); opacity:0.6;">Delete account</button>
+          <div style="font-size:11px; color:var(--muted); margin-top:4px;">Account deletion isn't self-serve yet — email <a href="mailto:support@classminds.app" style="color:var(--blue-bright);">support@classminds.app</a>.</div>
+        </div>
+      </div>
+
+      <!-- Data & privacy -->
+      <div class="card section" id="sec-data" style="padding:22px 24px; display:none;">
+        <div style="font-family:var(--font-display); font-size:18px; font-weight:700; color:var(--white); letter-spacing:-0.2px; margin-bottom:16px;">Data &amp; privacy</div>
+        <p style="font-size:13px; color:var(--muted); line-height:1.6; margin-bottom:14px;">
+          Read our <a href="privacy.html" style="color:var(--blue-bright);">privacy policy</a> for full details on what we collect and how it's used.
+        </p>
+        <button class="btn ghost" id="exportBtn" type="button">Export my data</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="toast" class="toast"></div>
+
+<script type="module">
+import{requireUser,db,auth,doc,getDoc,setDoc,updateDoc,logError,logSuccess,logInfo,signOut}from'./app-shared.js';
+import{sendPasswordResetEmail}from'https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js';
+
+const NOTIF_DEFAULTS={assignmentReminders:true,classReminders:true,ticketReplies:true,weeklyDigest:true,marketing:false};
+const NOTIF_ROWS=[
+  ['assignmentReminders','Assignment reminders','24h before the due date'],
+  ['classReminders','Class reminders','15 min before your next class'],
+  ['ticketReplies','Ticket replies','when support responds to your ticket'],
+  ['weeklyDigest','Weekly study digest','sunday recap of your study activity'],
+  ['marketing','Marketing &amp; product updates','occasional emails about new features']
+];
+
+let uid='',user=null,profile={},notifPrefs={...NOTIF_DEFAULTS};
+
+function toast(msg,kind){
+  const el=document.getElementById('toast');
+  el.textContent=msg;el.className='toast show '+(kind||'');
+  setTimeout(()=>el.className='toast',2500);
+}
+
+requireUser().then(async(ctx)=>{
+  uid=ctx.uid;user=ctx.user;profile=ctx.profile||{};
+  try{
+    document.getElementById('profAvatar').textContent=(profile.firstName||user.email||'?').charAt(0).toUpperCase();
+    document.getElementById('ef-first').value=profile.firstName||'';
+    document.getElementById('ef-last').value=profile.lastName||'';
+    document.getElementById('ef-email').textContent=user.email||'—';
+    document.getElementById('ef-school').textContent=profile.schoolName||'—';
+
+    // Load notification prefs
+    try{
+      const s=await getDoc(doc(db,'users',uid,'preferences','notifications'));
+      if(s.exists())notifPrefs={...NOTIF_DEFAULTS,...s.data()};
+    }catch(e){logError('Notif prefs load failed: '+e.message,'settings');}
+    renderNotifList();
+
+    logSuccess('Settings page loaded','settings');
+  }catch(e){logError('Settings init failed: '+e.message,'settings');}
+});
+
+function renderNotifList(){
+  const list=document.getElementById('notifList');
+  list.innerHTML=NOTIF_ROWS.map(([k,t,d])=>`
+    <div style="display:flex; align-items:center; justify-content:space-between; padding:12px 0; border-top:0.5px solid var(--border);">
+      <div>
+        <div style="font-size:13px; font-weight:600; color:var(--white);">${t}</div>
+        <div style="font-size:12px; color:var(--muted); margin-top:2px;">${d}</div>
+      </div>
+      <div class="toggle ${notifPrefs[k]?'on':''}" data-k="${k}"><div class="knob"></div></div>
+    </div>`).join('');
+  list.querySelectorAll('.toggle').forEach(t=>t.addEventListener('click',async function(){
+    const k=this.dataset.k;
+    notifPrefs[k]=!notifPrefs[k];
+    this.classList.toggle('on',notifPrefs[k]);
+    try{
+      await setDoc(doc(db,'users',uid,'preferences','notifications'),notifPrefs,{merge:true});
+      logInfo('Notif pref '+k+' = '+notifPrefs[k],'settings/notif');
+    }catch(e){logError('Notif save failed: '+e.message,'settings/notif');toast('Failed to save','error');}
+  }));
+}
+
+// Rail navigation
+document.getElementById('rail').addEventListener('click',e=>{
+  const r=e.target.closest('.rail-link');if(!r)return;
+  document.querySelectorAll('.rail-link').forEach(x=>x.classList.remove('active'));
+  r.classList.add('active');
+  const sec=r.dataset.section;
+  ['profile','notifications','account','data'].forEach(s=>{
+    document.getElementById('sec-'+s).style.display=(s===sec)?'block':'none';
+  });
+});
+
+// Save profile
+document.getElementById('profSave').addEventListener('click',async()=>{
+  try{
+    const firstName=document.getElementById('ef-first').value.trim();
+    const lastName=document.getElementById('ef-last').value.trim();
+    await updateDoc(doc(db,'users',uid),{firstName,lastName});
+    profile.firstName=firstName;profile.lastName=lastName;
+    document.getElementById('profAvatar').textContent=(firstName||user.email||'?').charAt(0).toUpperCase();
+    toast('Saved','success');
+    logSuccess('Profile saved','settings/profile');
+  }catch(e){logError('Profile save failed: '+e.message,'settings/profile');toast('Save failed','error');}
+});
+
+// Account actions
+document.getElementById('resetPwBtn').addEventListener('click',async()=>{
+  try{
+    await sendPasswordResetEmail(auth,user.email);
+    toast('Reset email sent','success');
+    logInfo('Password reset email sent','settings/account');
+  }catch(e){logError('Password reset failed: '+e.message,'settings/account');toast('Failed: '+e.message,'error');}
+});
+
+document.getElementById('signOutBtn').addEventListener('click',async()=>{
+  if(!confirm('Sign out?'))return;
+  try{await signOut(auth);window.location.href='login.html';}
+  catch(e){logError('Sign out failed: '+e.message,'settings/account');toast('Sign out failed','error');}
+});
+
+document.getElementById('exportBtn').addEventListener('click',()=>{
+  toast('Coming soon — email support@classminds.app','success');
+});
+</script>
+</body>
+</html>

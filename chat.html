@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<link rel="icon" type="image/png" href="/WebsiteLogo.png"/>
+<link rel="apple-touch-icon" href="/WebsiteLogo.png"/>
+<link rel="shortcut icon" href="/WebsiteLogo.png"/>
+<title>Class Chat – ClassMinds</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=DM+Sans:ital,wght@0,400;0,500;0,600;0,700;1,400&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet"/>
+<link rel="stylesheet" href="app-styles.css"/>
+</head>
+<body>
+<div id="sidebarSlot"></div>
+<div class="page-glow"></div>
+<div class="main tight" style="padding:0; display:flex; flex-direction:row; gap:0; min-height:100vh;">
+  <!-- Left: class list -->
+  <div style="width:280px; border-right:1px solid var(--border); display:flex; flex-direction:column; padding:20px 16px; gap:14px; flex-shrink:0;">
+    <div style="display:flex; align-items:center; justify-content:space-between;">
+      <div style="font-family:var(--font-display); font-size:18px; font-weight:800; color:var(--white); letter-spacing:-0.3px;">Chats</div>
+      <span class="chip muted" style="font-family:var(--font-mono);">v1</span>
+    </div>
+    <div class="search"><span class="si">⌕</span><input class="input" placeholder="Search classes" id="chatSearch"/></div>
+    <div id="chatList" style="display:flex; flex-direction:column; gap:4px; overflow-y:auto;">
+      <div style="text-align:center;padding:24px;color:var(--muted);"><div class="spinner"></div></div>
+    </div>
+  </div>
+
+  <!-- Right: empty/coming-soon panel -->
+  <div style="flex:1; display:flex; flex-direction:column; min-width:0;">
+    <div id="chatHeader" style="padding:18px 24px; border-bottom:1px solid var(--border); display:flex; align-items:center; gap:12px;">
+      <div id="chatBar" style="width:4px; height:34px; border-radius:var(--r-full); background:var(--blue); box-shadow:0 0 10px rgba(26,107,255,0.4);"></div>
+      <div>
+        <div id="chatHdrTitle" style="font-family:var(--font-display); font-size:18px; font-weight:800; letter-spacing:-0.3px; color:var(--white);">Select a class</div>
+        <div id="chatHdrSub" style="font-size:11px; color:var(--muted); margin-top:2px;">left rail</div>
+      </div>
+    </div>
+
+    <div style="flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center; padding:48px; text-align:center;">
+      <div style="font-size:48px; margin-bottom:16px;">💬</div>
+      <div style="font-family:var(--font-display); font-size:22px; font-weight:800; color:var(--white); margin-bottom:10px; letter-spacing:-0.3px;">Class chat — coming soon</div>
+      <p style="font-size:14px; color:var(--muted); line-height:1.6; max-width:480px; margin:0;">
+        We're building classmate-to-classmate chat scoped to each of your enrolled classes. You'll be able to share notes, ask questions, and organize study sessions.
+      </p>
+      <div style="margin-top:14px;"><span class="chip blue"><span class="d"></span>available in the next update</span></div>
+    </div>
+
+    <div style="padding:14px 24px; border-top:1px solid var(--border); opacity:0.5; pointer-events:none;">
+      <div style="background:var(--navy-card); border:0.5px solid var(--border); border-radius:var(--r-full); padding:6px 6px 6px 18px; display:flex; align-items:center; gap:10px;">
+        <input class="input" placeholder="message the class…" disabled style="background:transparent; border:none; padding:10px 0; flex:1;"/>
+        <span style="color:var(--muted); font-size:14px;">📎</span>
+        <button style="width:32px; height:32px; border-radius:50%; background:var(--blue); border:none; color:var(--white); font-size:13px;" disabled>↑</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script type="module">
+import{requireUser,loadClasses,esc,COLORS,logError,logSuccess}from'./app-shared.js';
+
+requireUser().then(async({uid})=>{
+  try{
+    const{classes:allClasses,colorMap:ccMap}=await loadClasses(uid);
+    const list=document.getElementById('chatList');
+    if(!allClasses.length){list.innerHTML='<div style="text-align:center;padding:24px;color:var(--muted);">📚 No classes yet</div>';return;}
+    let selected=allClasses[0];
+    function renderList(){
+      const q=(document.getElementById('chatSearch').value||'').toLowerCase();
+      const items=allClasses.filter(c=>!q||(c.courseCode||'').toLowerCase().includes(q)||(c.courseName||'').toLowerCase().includes(q));
+      list.innerHTML=items.map(c=>{
+        const cid=c.classId||c.id;const color=ccMap[cid]||COLORS[0];
+        const sel=selected&&((selected.classId||selected.id)===cid);
+        return`<div class="chat-item" data-cid="${cid}" style="padding:10px; border-radius:var(--r-lg); background:${sel?'var(--blue-tint-12)':'transparent'}; border:0.5px solid ${sel?'var(--border-active)':'transparent'}; display:flex; gap:10px; align-items:center; cursor:pointer;">
+          <div style="width:3px; height:28px; border-radius:var(--r-full); background:${color};"></div>
+          <div style="flex:1; min-width:0;">
+            <div style="font-family:var(--font-display); font-size:13px; font-weight:700; color:var(--white); letter-spacing:-0.1px;">${esc(c.courseCode||'')}</div>
+            <div style="font-size:11px; color:var(--muted); white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${esc(c.courseName||'')}</div>
+          </div>
+        </div>`;
+      }).join('');
+      list.querySelectorAll('.chat-item').forEach(el=>el.addEventListener('click',()=>{
+        selected=allClasses.find(c=>(c.classId||c.id)===el.dataset.cid)||selected;
+        renderList();renderHeader();
+      }));
+    }
+    function renderHeader(){
+      if(!selected)return;
+      const cid=selected.classId||selected.id;
+      const color=ccMap[cid]||COLORS[0];
+      document.getElementById('chatBar').style.background=color;
+      document.getElementById('chatBar').style.boxShadow='0 0 10px '+color+'66';
+      document.getElementById('chatHdrTitle').textContent=(selected.courseCode||'')+' · '+(selected.courseName||'');
+      const parts=[];
+      if(selected.instructor)parts.push(esc(selected.instructor));
+      if((selected.daysOfWeek||[]).length)parts.push(esc(selected.daysOfWeek.join(' '))+(selected.startTime?' '+esc(selected.startTime):''));
+      document.getElementById('chatHdrSub').textContent=parts.join(' · ')||'class details';
+    }
+    document.getElementById('chatSearch').addEventListener('input',renderList);
+    renderList();renderHeader();
+    logSuccess('Chat shell loaded','chat');
+  }catch(e){logError('Chat init failed: '+e.message,'chat');}
+});
+</script>
+</body>
+</html>

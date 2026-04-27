@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<link rel="icon" type="image/png" href="/WebsiteLogo.png"/>
+<link rel="apple-touch-icon" href="/WebsiteLogo.png"/>
+<link rel="shortcut icon" href="/WebsiteLogo.png"/>
+<title>Trim Savings – ClassMinds Admin</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+<link rel="stylesheet" href="admin-styles.css"/>
+<script src="/vendor/chart.umd.min.js"></script>
+</head>
+<body>
+<div class="admin-wrap" id="adminWrap">
+  <div class="sidebar" id="sidebarSlot"></div>
+  <div class="main">
+    <div class="page-header">
+      <div class="page-title">Trim Savings</div>
+      <div class="page-desc">Client-side silence trim before Deepgram — last 30 days</div>
+    </div>
+
+    <div class="stats-row" style="grid-template-columns:repeat(4,1fr)">
+      <div class="stat-card" style="--stat-color:var(--blue)"><div class="stat-val" id="ts-count">—</div><div class="stat-lbl">Recordings trimmed</div></div>
+      <div class="stat-card" style="--stat-color:var(--green)"><div class="stat-val" id="ts-saved">—</div><div class="stat-lbl">Total saved</div></div>
+      <div class="stat-card" style="--stat-color:#06b6d4"><div class="stat-val" id="ts-avg">—</div><div class="stat-lbl">Avg % saved</div></div>
+      <div class="stat-card" style="--stat-color:var(--yellow)"><div class="stat-val" id="ts-dollars">—</div><div class="stat-lbl">Est. saved (Deepgram)</div></div>
+    </div>
+
+    <div class="chart-card" style="margin-top:24px">
+      <div class="chart-title">Daily minutes saved — last 30 days</div>
+      <div class="chart-wrap"><canvas id="dailyChart"></canvas></div>
+    </div>
+
+    <div class="table-card" style="margin-top:24px">
+      <div class="table-header">
+        <div class="table-title" id="pathCount">Export path</div>
+      </div>
+      <div style="overflow-x:auto">
+        <table>
+          <thead>
+            <tr><th>Path</th><th style="text-align:right">Share</th><th style="text-align:right">Count</th></tr>
+          </thead>
+          <tbody id="pathTable">
+            <tr><td colspan="3"><div class="empty-state"><div class="spinner"></div></div></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="table-card" style="margin-top:24px">
+      <div class="table-header">
+        <div class="table-title" id="recentCount">Recent trims</div>
+      </div>
+      <div style="overflow-x:auto">
+        <table>
+          <thead>
+            <tr><th>Date</th><th>Orig</th><th>Trimmed</th><th>Saved</th><th>Status</th></tr>
+          </thead>
+          <tbody id="recentTable">
+            <tr><td colspan="5"><div class="empty-state"><div class="spinner"></div></div></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script src="config.js"></script>
+<script type="module">
+import {
+  requireAdmin, db, collection, getDocs, query, orderBy, limit, where, Timestamp,
+  toast, fmtDate, escapeHtml, chartCfg, logError
+} from './admin-shared.js';
+import { renderSidebar } from './admin-sidebar.js';
+
+// Deepgram Nova-3 prerecorded rate — https://deepgram.com/pricing
+// Update here when pricing moves; only place it's defined on web.
+const DEEPGRAM_PER_MIN = 0.0043;
+
+renderSidebar();
+requireAdmin().then(async () => {
+  try {
+    const cutoff = new Date(Date.now() - 30 * 24 * 3600 * 1000);
+    // limit 500 supports ~16 trims/day across the 30-day window.
+    const snap = await getDocs(query(
+      collection(db, 'trimStats'),
+      where('createdAt', '>', Timestamp.fromDate(cutoff)),
+      orderBy('createdAt', 'desc'),
+      limit(500)
+    ));
+    const docs = snap.docs.map(d => {
+      const x = d.data();
+      return {
+        id: d.id,
+        originalSeconds: Number(x.originalSeconds || 0),
+        trimmedSeconds: Number(x.trimmedSeconds || 0),
+        savedSeconds: Number(x.savedSeconds || 0),
+        savedPct: Number(x.savedPct || 0),
+        trimSucceeded: !!x.trimSucceeded,
+        trimPath: typeof x.trimPath === 'string' && x.trimPath ? x.trimPath : null,
+        createdAt: x.createdAt?.toDate ? x.createdAt.toDate() : new Date()
+      };
+    });
+
+    renderStats(docs);
+    renderChart(docs);
+    renderPathBreakdown(docs);
+    renderTable(docs);
+  } catch (e) {
+    logError(e.message || String(e), 'admin-trim-stats.load');
+    toast('Couldn\'t load trim stats: ' + (e.message || 'unknown error'));
+    document.getElementById('recentTable').innerHTML =
+      '<tr><td colspan="5"><div class="empty-state">Couldn\'t load. Check console.</div></td></tr>';
+  }
+});
+
+function renderStats(docs) {
+  const successful = docs.filter(d => d.trimSucceeded);
+  const totalSavedSec = docs.reduce((s, d) => s + d.savedSeconds, 0);
+  const avgPct = successful.length
+    ? successful.reduce((s, d) => s + d.savedPct, 0) / successful.length
+    : 0;
+  const totalSavedMin = totalSavedSec / 60;
+  const dollars = totalSavedMin * DEEPGRAM_PER_MIN;
+
+  document.getElementById('ts-count').textContent = successful.length.toLocaleString();
+  document.getElementById('ts-saved').textContent = formatMinutes(totalSavedSec);
+  document.getElementById('ts-avg').textContent = (avgPct * 100).toFixed(1) + '%';
+  document.getElementById('ts-dollars').textContent = '$' + dollars.toFixed(2);
+}
+
+function renderChart(docs) {
+  // Group by local-tz date so an admin in PDT doesn't see shifted day boundaries.
+  const buckets = {};
+  const labels = [];
+  for (let i = 29; i >= 0; i--) {
+    const d = new Date();
+    d.setDate(d.getDate() - i);
+    const key = localDateKey(d);
+    buckets[key] = 0;
+    labels.push(key.slice(5)); // MM-DD
+  }
+  for (const doc of docs) {
+    const key = localDateKey(doc.createdAt);
+    if (key in buckets) buckets[key] += doc.savedSeconds / 60;
+  }
+  const data = Object.keys(buckets).sort().map(k => Number(buckets[k].toFixed(2)));
+
+  new Chart(document.getElementById('dailyChart'), {
+    type: 'line',
+    data: {
+      labels,
+      datasets: [{
+        label: 'Minutes saved',
+        data,
+        borderColor: '#1a6bff',
+        backgroundColor: 'rgba(26,107,255,0.1)',
+        fill: true,
+        tension: 0.4,
+        pointRadius: 3
+      }]
+    },
+    options: { ...chartCfg(), plugins: { legend: { display: false } } }
+  });
+}
+
+function renderPathBreakdown(docs) {
+  // Only docs where an actual export ran (trimPath present) are counted.
+  // Used to decide whether SilenceTrimmer's passthrough tier ever wins.
+  const order = ['passthrough', 'appleM4A', 'readerWriter'];
+  const counts = Object.fromEntries(order.map(k => [k, 0]));
+  for (const d of docs) {
+    if (!d.trimPath) continue;
+    if (d.trimPath in counts) counts[d.trimPath] += 1;
+    else counts[d.trimPath] = (counts[d.trimPath] || 0) + 1;
+  }
+  const total = Object.values(counts).reduce((s, n) => s + n, 0);
+  document.getElementById('pathCount').textContent =
+    total === 0 ? 'Export path — no exports yet' : 'Export path — ' + total + ' exports';
+
+  const tbody = document.getElementById('pathTable');
+  if (total === 0) {
+    tbody.innerHTML = '<tr><td colspan="3"><div class="empty-state">No export-path data yet. Wait ~7 days of real usage.</div></td></tr>';
+    return;
+  }
+  const keys = [...order, ...Object.keys(counts).filter(k => !order.includes(k))];
+  tbody.innerHTML = keys.map(k => {
+    const c = counts[k] || 0;
+    const pct = total > 0 ? (c / total * 100).toFixed(0) + '%' : '—';
+    return '<tr>'
+      + '<td>' + escapeHtml(k) + '</td>'
+      + '<td style="text-align:right">' + pct + '</td>'
+      + '<td style="text-align:right">' + c + '</td>'
+      + '</tr>';
+  }).join('');
+}
+
+function renderTable(docs) {
+  const tbody = document.getElementById('recentTable');
+  document.getElementById('recentCount').textContent = 'Recent trims (' + docs.length + ')';
+
+  if (docs.length === 0) {
+    tbody.innerHTML = '<tr><td colspan="5"><div class="empty-state">No trim data in the last 30 days yet.</div></td></tr>';
+    return;
+  }
+
+  tbody.innerHTML = docs.slice(0, 20).map(d => {
+    const statusCell = d.trimSucceeded
+      ? '<span style="color:#22c55e">ok</span>'
+      : '<span style="color:#f59e0b">fallback</span>';
+    const savedCell = d.trimSucceeded
+      ? Math.round(d.savedPct * 100) + '%'
+      : '—';
+    return '<tr>'
+      + '<td>' + escapeHtml(fmtDate(d.createdAt)) + '</td>'
+      + '<td>' + formatClock(d.originalSeconds) + '</td>'
+      + '<td>' + formatClock(d.trimmedSeconds) + '</td>'
+      + '<td>' + savedCell + '</td>'
+      + '<td>' + statusCell + '</td>'
+      + '</tr>';
+  }).join('');
+}
+
+function formatClock(seconds) {
+  const s = Math.round(seconds);
+  return Math.floor(s / 60) + ':' + String(s % 60).padStart(2, '0');
+}
+
+function formatMinutes(seconds) {
+  const m = seconds / 60;
+  if (m >= 60) return (m / 60).toFixed(1) + ' hr';
+  return Math.round(m) + ' min';
+}
+
+function localDateKey(d) {
+  // YYYY-MM-DD in local tz (avoids UTC slicing gotcha).
+  return d.toLocaleDateString('en-CA');
+}
+</script>
+</body>
+</html>

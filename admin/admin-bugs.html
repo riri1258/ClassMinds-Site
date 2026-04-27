@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<!-- Favicon & Icons -->
+<link rel="icon" type="image/png" href="/WebsiteLogo.png"/>
+<link rel="apple-touch-icon" href="/WebsiteLogo.png"/>
+<link rel="shortcut icon" href="/WebsiteLogo.png"/>
+<title>Bug Tracker – ClassMinds Admin</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+<link rel="stylesheet" href="admin-styles.css"/>
+</head>
+<body>
+<div class="admin-wrap" id="adminWrap">
+  <div class="sidebar" id="sidebarSlot"></div>
+  <div class="main">
+    <div class="page-header">
+      <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px">
+        <div><div class="page-title">Bug Tracker</div><div class="page-desc">Track issues and feature requests</div></div>
+        <button class="btn btn-blue" id="newBugBtn">+ New Bug</button>
+      </div>
+    </div>
+    <div class="stats-row" id="bugStats"></div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:20px;align-items:center">
+      <button class="bug-filter-btn active" data-filter="all">All</button>
+      <button class="bug-filter-btn" data-filter="open">🔴 Open</button>
+      <button class="bug-filter-btn" data-filter="in-progress">🟡 In Progress</button>
+      <button class="bug-filter-btn" data-filter="done">🟢 Done</button>
+      <button class="bug-filter-btn" data-filter="wont-fix">⚪ Won't Fix</button>
+      <button class="bug-filter-btn" data-filter="needs-info">🟣 Needs Info</button>
+      <div style="margin-left:auto"><input class="search-input" id="bugSearch" placeholder="Search bugs..." style="width:200px"/></div>
+    </div>
+    <div id="bugList"><div class="empty-state"><div class="spinner"></div></div></div>
+  </div>
+</div>
+
+<!-- BUG MODAL -->
+<div class="modal-overlay" id="bugModal">
+  <div class="modal-box wide">
+    <div class="modal-title" id="bugModalTitle">New Bug</div>
+    <input type="hidden" id="bugEditId"/>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:4px">
+      <div><label class="field-label">Priority</label><select class="field-input" id="bugPriority" style="margin-bottom:0"><option value="critical">🔴 Critical</option><option value="high">🟠 High</option><option value="medium" selected>🔵 Medium</option><option value="low">⚪ Low</option></select></div>
+      <div><label class="field-label">Status</label><select class="field-input" id="bugStatus" style="margin-bottom:0"><option value="open">Open</option><option value="in-progress">In Progress</option><option value="done">Done</option><option value="wont-fix">Won't Fix</option><option value="needs-info">Needs Info</option></select></div>
+    </div>
+    <label class="field-label" style="margin-top:12px">Title</label><input type="text" class="field-input" id="bugTitle" placeholder="Short description"/>
+    <label class="field-label">Details</label><textarea class="field-input" id="bugDetails" style="min-height:100px" placeholder="Steps to reproduce..."></textarea>
+    <label class="field-label">Screenshot</label>
+    <div style="border:1px dashed rgba(26,107,255,0.3);border-radius:10px;padding:16px;text-align:center;cursor:pointer;margin-bottom:16px" id="bugImageDrop">
+      <div id="bugImagePreview" style="color:rgba(180,200,255,0.4);font-size:13px">📎 Click to attach image</div>
+      <input type="file" id="bugImageInput" accept="image/*" style="display:none"/>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" onclick="closeModal('bugModal')">Cancel</button>
+      <button class="btn btn-blue" id="bugSaveBtn">Save Bug &#8594;</button>
+    </div>
+  </div>
+</div>
+
+<!-- TICKET CHAT MODAL -->
+<div class="modal-overlay" id="ticketChatModal">
+  <div class="modal-box" style="max-width:560px;height:80vh;display:flex;flex-direction:column;padding:0;overflow:hidden">
+    <div style="padding:16px 20px;border-bottom:1px solid var(--navy-border);display:flex;align-items:center;gap:12px;flex-shrink:0">
+      <div style="width:36px;height:36px;border-radius:50%;background:rgba(26,107,255,0.15);display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0">🎫</div>
+      <div style="flex:1;min-width:0">
+        <div style="font-family:var(--font-display);font-size:15px;font-weight:700" id="tchatTitle"></div>
+        <div style="font-size:11px;color:var(--muted)" id="tchatMeta"></div>
+      </div>
+      <button class="btn btn-ghost" style="font-size:12px;padding:6px 12px" onclick="closeModal('ticketChatModal')">✕ Close</button>
+    </div>
+    <div id="tchatMessages" style="flex:1;overflow-y:auto;padding:16px 20px;display:flex;flex-direction:column;gap:8px"></div>
+    <div style="padding:12px 16px;border-top:1px solid var(--navy-border);display:flex;gap:10px;flex-shrink:0;align-items:flex-end">
+      <textarea class="field-input" id="tchatReply" placeholder="Reply as admin..." style="margin-bottom:0;min-height:40px;max-height:100px;resize:none;flex:1;font-size:14px" rows="1"></textarea>
+      <button class="btn btn-blue" style="padding:10px 16px;flex-shrink:0" id="tchatSendBtn">Send ↗</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script src="config.js"></script>
+<script type="module">
+import { requireAdmin, db, auth, doc, getDoc, setDoc, updateDoc, deleteDoc, collection, getDocs, query, orderBy, toast, escapeHtml, safeImageEl, openModal, closeModal } from './admin-shared.js';
+import { renderSidebar } from './admin-sidebar.js';
+window.closeModal = closeModal;
+renderSidebar();
+
+requireAdmin().then(async () => {
+  let allBugs=[], currentFilter='all', bugImageBase64=null;
+
+  const snap = await getDocs(query(collection(db,'bugs'),orderBy('createdAt','desc')));
+  allBugs = snap.docs.map(d=>({id:d.id,...d.data()}));
+
+  function renderStats(){
+    const c={open:0,'in-progress':0,done:0,'wont-fix':0,'needs-info':0};allBugs.forEach(b=>{if(c[b.status]!==undefined)c[b.status]++;});
+    document.getElementById('bugStats').innerHTML=`<div class="stat-card" style="--stat-color:var(--red)"><div class="stat-val">${allBugs.length}</div><div class="stat-lbl">Total</div></div><div class="stat-card" style="--stat-color:var(--red)"><div class="stat-val">${c.open}</div><div class="stat-lbl">Open</div></div><div class="stat-card" style="--stat-color:var(--yellow)"><div class="stat-val">${c['in-progress']}</div><div class="stat-lbl">In Progress</div></div><div class="stat-card" style="--stat-color:var(--green)"><div class="stat-val">${c.done}</div><div class="stat-lbl">Done</div></div><div class="stat-card" style="--stat-color:var(--purple)"><div class="stat-val">${c['needs-info']}</div><div class="stat-lbl">Needs Info</div></div>`;
+  }
+
+  function filter(f){
+    currentFilter=f||currentFilter;
+    document.querySelectorAll('.bug-filter-btn').forEach(b=>b.classList.toggle('active',b.dataset.filter===currentFilter));
+    const q=(document.getElementById('bugSearch')?.value||'').toLowerCase();
+    let bugs=allBugs;
+    if(currentFilter!=='all')bugs=bugs.filter(b=>b.status===currentFilter);
+    if(q)bugs=bugs.filter(b=>(b.title||'').toLowerCase().includes(q)||(b.details||'').toLowerCase().includes(q));
+    renderBugs(bugs);
+  }
+
+  function renderBugs(bugs){
+    const el=document.getElementById('bugList');
+    if(!bugs.length){el.innerHTML='<div class="empty-state"><div class="empty-icon">🐛</div>No bugs here!</div>';return;}
+    el.innerHTML='';
+    bugs.forEach(b=>{
+      const date=b.createdAt?new Date(b.createdAt.toDate?b.createdAt.toDate():b.createdAt).toLocaleDateString('en-US',{month:'short',day:'numeric'}):'';
+      const card=document.createElement('div');card.className='bug-card';
+      // HIGH-3: render the imageUrl via safeImageEl (host allowlist + DOM API),
+      // not by string-concat into innerHTML.
+      card.innerHTML=`<div class="bug-priority-bar priority-${b.priority||'medium'}"></div><div style="flex:1;min-width:0"><div style="display:flex;align-items:center;gap:10px;margin-bottom:8px;flex-wrap:wrap"><span class="bug-status-badge status-${(b.status||'open')}">${(b.status||'open').replace('-',' ')}</span><span style="font-size:10px;font-weight:700;text-transform:uppercase;color:rgba(180,200,255,0.4)">${b.priority||'medium'}</span><span style="font-size:11px;color:rgba(180,200,255,0.3);margin-left:auto">${date}</span></div><div style="font-size:15px;font-weight:600;margin-bottom:6px">${escapeHtml(b.title||'Untitled')}</div><div style="font-size:13px;color:rgba(180,200,255,0.6);line-height:1.5;white-space:pre-wrap">${escapeHtml(b.details||'')}</div><div class="bug-actions" style="display:flex;gap:8px;margin-top:12px"><select class="status-select bug-status-sel" data-id="${b.id}" style="background:rgba(255,255,255,0.04);border:1px solid var(--navy-border);border-radius:6px;color:var(--white);font-family:var(--font-body);font-size:11px;padding:4px 8px;cursor:pointer;outline:none"><option value="open" ${b.status==='open'?'selected':''}>Open</option><option value="in-progress" ${b.status==='in-progress'?'selected':''}>In Progress</option><option value="done" ${b.status==='done'?'selected':''}>Done</option><option value="wont-fix" ${b.status==='wont-fix'?'selected':''}>Won't Fix</option><option value="needs-info" ${b.status==='needs-info'?'selected':''}>Needs Info</option></select><button class="btn btn-ghost edit-bug" data-id="${b.id}" style="font-size:11px;padding:4px 10px">Edit</button><button class="btn btn-red del-bug" data-id="${b.id}" style="font-size:11px;padding:4px 10px">Delete</button>${b.source==='ticket'&&b.ticketId?'<button class="btn btn-blue chat-bug" data-ticket="'+escapeHtml(b.ticketId)+'" data-title="'+escapeHtml(b.title||'')+'" style="font-size:11px;padding:5px 12px">Reply to User</button>':''}</div></div>`;
+      const imgUrl = b.imageUrls && b.imageUrls.length ? b.imageUrls[0] : b.imageUrl;
+      if (imgUrl) {
+        const img = safeImageEl(imgUrl, {
+          maxWidth: '80px', maxHeight: '60px', borderRadius: '8px', openInNewTab: true,
+        });
+        if (img) {
+          img.style.width = '80px';
+          img.style.height = '60px';
+          img.style.objectFit = 'cover';
+          img.style.border = '1px solid var(--navy-border)';
+          const wrap = document.createElement('div');
+          wrap.style.flexShrink = '0';
+          wrap.appendChild(img);
+          card.appendChild(wrap);
+        }
+      }
+      el.appendChild(card);
+    });
+
+    el.querySelectorAll('.bug-status-sel').forEach(sel=>sel.addEventListener('change',async function(){const id=this.dataset.id;await updateDoc(doc(db,'bugs',id),{status:this.value,updatedAt:new Date()});const b=allBugs.find(b=>b.id===id);if(b)b.status=this.value;renderStats();filter();}));
+    el.querySelectorAll('.edit-bug').forEach(btn=>btn.addEventListener('click',function(){openBugModal(this.dataset.id);}));
+    el.querySelectorAll('.del-bug').forEach(btn=>btn.addEventListener('click',async function(){
+      if(!confirm('Delete this bug?'))return;const id=this.dataset.id;
+      const bug=allBugs.find(b=>b.id===id);
+      if(bug&&bug.ticketId){try{const ms=await getDocs(collection(db,'tickets',bug.ticketId,'messages'));for(const m of ms.docs)await deleteDoc(doc(db,'tickets',bug.ticketId,'messages',m.id));await deleteDoc(doc(db,'tickets',bug.ticketId));}catch(e){}}
+      await deleteDoc(doc(db,'bugs',id));allBugs=allBugs.filter(b=>b.id!==id);renderStats();filter();toast('Deleted ✓');
+    }));
+    el.querySelectorAll('.chat-bug').forEach(btn=>btn.addEventListener('click',function(){openTicketChat(this.dataset.ticket,this.dataset.title);}));
+  }
+
+  // Bug modal
+  function openBugModal(bugId){
+    bugImageBase64=null;
+    document.getElementById('bugEditId').value=bugId||'';
+    document.getElementById('bugModalTitle').textContent=bugId?'Edit Bug':'New Bug';
+    document.getElementById('bugTitle').value='';document.getElementById('bugDetails').value='';
+    document.getElementById('bugPriority').value='medium';document.getElementById('bugStatus').value='open';
+    document.getElementById('bugImagePreview').innerHTML='📎 Click to attach image';
+    document.getElementById('bugImageInput').value='';
+    if(bugId){
+      const b=allBugs.find(b=>b.id===bugId);
+      if(b){
+        document.getElementById('bugTitle').value=b.title||'';
+        document.getElementById('bugDetails').value=b.details||'';
+        document.getElementById('bugPriority').value=b.priority||'medium';
+        document.getElementById('bugStatus').value=b.status||'open';
+        const img=b.imageUrl||(b.imageUrls&&b.imageUrls[0]);
+        // NEW-CRIT-1: stored bug imageUrl is user-submitted. Build the preview
+        // via DOM API + host allowlist instead of innerHTML concat — the old
+        // path was a stored XSS that ran in the admin's origin.
+        const preview = document.getElementById('bugImagePreview');
+        preview.innerHTML = '';
+        if (img) {
+          const safe = safeImageEl(img, { maxHeight: '120px', borderRadius: '6px' });
+          if (safe) {
+            safe.style.maxWidth = '100%';
+            preview.appendChild(safe);
+          } else {
+            preview.textContent = '(image hidden — off-allowlist host)';
+          }
+        }
+      }
+    }
+    openModal('bugModal');
+  }
+
+  document.getElementById('newBugBtn').addEventListener('click',()=>openBugModal());
+  document.getElementById('bugImageDrop').addEventListener('click',()=>document.getElementById('bugImageInput').click());
+  document.getElementById('bugImageInput').addEventListener('change',function(){
+    if(!this.files?.[0])return;
+    const r=new FileReader();
+    r.onload=e=>{
+      bugImageBase64=e.target.result;
+      // Local file → data: URI, admin-controlled. Still use DOM API to avoid
+      // ever string-concatenating a URL into innerHTML.
+      const preview = document.getElementById('bugImagePreview');
+      preview.innerHTML = '';
+      const img = document.createElement('img');
+      img.src = bugImageBase64;
+      img.style.maxWidth = '100%';
+      img.style.maxHeight = '120px';
+      img.style.borderRadius = '6px';
+      preview.appendChild(img);
+    };
+    r.readAsDataURL(this.files[0]);
+  });
+  document.getElementById('bugSaveBtn').addEventListener('click',async function(){
+    const title=document.getElementById('bugTitle').value.trim();if(!title){toast('Add a title','error');return;}
+    this.disabled=true;this.innerHTML='<span class="spinner"></span>';
+    const editId=document.getElementById('bugEditId').value;
+    const data={title,details:document.getElementById('bugDetails').value.trim(),priority:document.getElementById('bugPriority').value,status:document.getElementById('bugStatus').value,updatedAt:new Date()};
+    if(bugImageBase64)data.imageUrl=bugImageBase64;
+    try{if(editId){await updateDoc(doc(db,'bugs',editId),data);const idx=allBugs.findIndex(b=>b.id===editId);if(idx!==-1)allBugs[idx]={...allBugs[idx],...data};toast('Bug updated ✓');}else{data.createdAt=new Date();const ref=doc(collection(db,'bugs'));await setDoc(ref,data);allBugs.unshift({id:ref.id,...data});toast('Bug added ✓');}closeModal('bugModal');renderStats();filter();}catch(e){toast('Failed','error');}
+    this.disabled=false;this.textContent='Save Bug →';
+  });
+
+  document.querySelectorAll('.bug-filter-btn').forEach(b=>b.addEventListener('click',function(){filter(this.dataset.filter);}));
+  document.getElementById('bugSearch').addEventListener('input',()=>filter());
+
+  // Ticket chat
+  let ticketListener=null;
+  async function openTicketChat(ticketId,title){
+    document.getElementById('tchatTitle').textContent=title||'Support Ticket';
+    document.getElementById('tchatReply').value='';
+    document.getElementById('tchatMessages').innerHTML='<div style="text-align:center;color:var(--muted);padding:40px 0">Loading...</div>';
+    try{const t=await getDoc(doc(db,'tickets',ticketId));if(t.exists()){const td=t.data();document.getElementById('tchatMeta').textContent=`${td.userName||'User'} · ${td.userEmail||''} · #${td.ticketNumber||''}`;}}catch(e){}
+    openModal('ticketChatModal');
+    const{onSnapshot}=await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js');
+    if(ticketListener)ticketListener();
+    ticketListener=onSnapshot(query(collection(db,'tickets',ticketId,'messages'),orderBy('createdAt','asc')),(snap)=>{
+      const msgs=snap.docs.map(d=>({id:d.id,...d.data()}));
+      const container=document.getElementById('tchatMessages');
+      if(!msgs.length){container.innerHTML='<div style="text-align:center;color:var(--muted);padding:40px 0">No messages</div>';return;}
+      container.innerHTML=msgs.map(m=>{const isAdmin=m.senderType==='admin';const time=m.createdAt?new Date((m.createdAt.toDate?m.createdAt.toDate():new Date(m.createdAt*1000))).toLocaleString('en-US',{month:'short',day:'numeric',hour:'numeric',minute:'2-digit'}):'';return`<div style="display:flex;${isAdmin?'flex-direction:row-reverse':''};gap:8px;align-items:flex-end">${!isAdmin?'<div style="width:28px;height:28px;border-radius:50%;background:rgba(255,255,255,0.06);display:flex;align-items:center;justify-content:center;font-size:12px;flex-shrink:0">👤</div>':''}<div style="max-width:75%"><div style="font-size:10px;color:var(--muted);margin-bottom:3px;${isAdmin?'text-align:right':''}">${isAdmin?'You':escapeHtml(m.senderName||'User')} · ${time}</div><div style="padding:10px 14px;border-radius:16px;font-size:13px;line-height:1.5;${isAdmin?'background:var(--blue);color:white;border-bottom-right-radius:4px':'background:rgba(255,255,255,0.06);color:var(--white);border-bottom-left-radius:4px'}">${escapeHtml(m.message)}</div></div>${isAdmin?'<div style="width:28px;height:28px;border-radius:50%;background:rgba(26,107,255,0.2);display:flex;align-items:center;justify-content:center;font-size:12px;flex-shrink:0;color:var(--blue-bright)">🛡</div>':''}</div>`;}).join('');
+      container.scrollTop=container.scrollHeight;
+    });
+    document.getElementById('tchatSendBtn').onclick=async function(){
+      const msg=document.getElementById('tchatReply').value.trim();if(!msg)return;
+      this.disabled=true;
+      try{const now=Date.now()/1000;await setDoc(doc(collection(db,'tickets',ticketId,'messages')),{ticketId,senderId:auth.currentUser.uid,senderName:'Support Team',senderType:'admin',message:msg,createdAt:now});await updateDoc(doc(db,'tickets',ticketId),{updatedAt:now,lastReplyAt:now,lastReplyBy:'admin',status:'open'});document.getElementById('tchatReply').value='';}catch(e){toast('Failed','error');}
+      this.disabled=false;
+    };
+  }
+
+  renderStats();filter('all');
+});
+document.getElementById('logoutBtn')?.addEventListener('click',()=>{import('./admin-shared.js').then(m=>m.doLogout());});
+</script>
+</body>
+</html>

@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>Admin MFA Enrollment — ClassMinds</title>
+  <link rel="icon" type="image/png" href="/WebsiteLogo.png"/>
+  <link rel="stylesheet" href="admin-styles.css"/>
+  <style>
+    .mfa-card { max-width: 480px; margin: 80px auto; background: rgba(10, 28, 58, 0.7); border: 1px solid rgba(26,107,255,0.18); border-radius: 16px; padding: 32px; color: #f0f4ff; font-family: 'DM Sans', sans-serif; }
+    .mfa-card h1 { font-family: 'Syne', sans-serif; font-size: 22px; font-weight: 800; margin: 0 0 8px; }
+    .mfa-card p { color: rgba(180,200,255,0.7); line-height: 1.5; font-size: 14px; }
+    .mfa-secret { font-family: monospace; padding: 14px; background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08); border-radius: 8px; margin: 16px 0; word-break: break-all; cursor: pointer; }
+    .mfa-input { width: 100%; padding: 14px; font-size: 18px; font-family: monospace; background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08); border-radius: 8px; color: #fff; margin: 8px 0; box-sizing: border-box; }
+    .mfa-btn { width: 100%; padding: 14px; font-family: 'Syne', sans-serif; font-weight: 600; font-size: 15px; background: #1a6bff; color: #fff; border: none; border-radius: 10px; cursor: pointer; margin-top: 8px; }
+    .mfa-btn[disabled] { opacity: 0.5; cursor: not-allowed; }
+    .mfa-btn.secondary { background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.12); }
+    .mfa-status { font-size: 12px; margin-top: 12px; }
+    .mfa-status.ok { color: #22c55e; }
+    .mfa-status.err { color: #ef4444; }
+  </style>
+  <script src="config.js"></script>
+</head>
+<body>
+  <div class="mfa-card">
+    <h1>Set up admin MFA</h1>
+    <p>Admin accounts require a second factor. Scan the key below in your authenticator app (Google Authenticator, 1Password, Authy), then enter the 6-digit code to enroll.</p>
+
+    <div id="step1">
+      <button class="mfa-btn" id="genBtn">Generate TOTP key</button>
+    </div>
+    <div id="step2" style="display:none">
+      <div class="mfa-secret" id="secretDisplay" title="Tap to copy"></div>
+      <p style="font-size:12px">Tap the key to copy. Add it as a new entry in your authenticator app, then enter the current 6-digit code below.</p>
+      <input class="mfa-input" id="codeInput" maxlength="6" placeholder="123456" inputmode="numeric"/>
+      <button class="mfa-btn" id="enrollBtn">Verify &amp; enroll</button>
+    </div>
+
+    <div class="mfa-status" id="status"></div>
+
+    <button class="mfa-btn secondary" id="signOutBtn" style="margin-top: 24px">Sign out</button>
+  </div>
+
+  <script type="module">
+    import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
+    import {
+      getAuth, onAuthStateChanged, signOut, multiFactor, TotpMultiFactorGenerator
+    } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js';
+
+    const app = initializeApp({
+      apiKey: "AIzaSyD7BVxbfGskF10IcifVxyvWwAaAYPb-frw",
+      authDomain: "classmind-9a22a.firebaseapp.com",
+      projectId: "classmind-9a22a",
+      storageBucket: "classmind-9a22a.firebasestorage.app",
+      messagingSenderId: "893980768351",
+      appId: "1:893980768351:web:972e20a662054f29c483ea"
+    });
+    const auth = getAuth(app);
+
+    let currentSecret = null;
+    const $ = (id) => document.getElementById(id);
+
+    function setStatus(msg, isErr) {
+      const el = $('status');
+      el.textContent = msg;
+      el.className = 'mfa-status ' + (isErr ? 'err' : 'ok');
+    }
+
+    onAuthStateChanged(auth, (user) => {
+      if (!user) { window.location.href = 'admin-login.html'; }
+    });
+
+    $('genBtn').addEventListener('click', async () => {
+      const user = auth.currentUser;
+      if (!user) return;
+      $('genBtn').disabled = true;
+      setStatus('Generating key...', false);
+      try {
+        const session = await multiFactor(user).getSession();
+        currentSecret = await TotpMultiFactorGenerator.generateSecret(session);
+        $('secretDisplay').textContent = currentSecret.secretKey;
+        $('step1').style.display = 'none';
+        $('step2').style.display = 'block';
+        setStatus('Key generated — add it to your authenticator app.', false);
+      } catch (e) {
+        console.error(e);
+        setStatus('Could not start TOTP enrollment: ' + (e?.message || e), true);
+        $('genBtn').disabled = false;
+      }
+    });
+
+    $('secretDisplay').addEventListener('click', () => {
+      if (!currentSecret) return;
+      navigator.clipboard.writeText(currentSecret.secretKey || '').then(() => {
+        setStatus('Secret copied to clipboard.', false);
+      }).catch(() => {});
+    });
+
+    $('enrollBtn').addEventListener('click', async () => {
+      const user = auth.currentUser;
+      if (!user || !currentSecret) return;
+      const code = $('codeInput').value.trim();
+      if (code.length !== 6) {
+        setStatus('Enter the 6-digit code from your authenticator app.', true);
+        return;
+      }
+      $('enrollBtn').disabled = true;
+      setStatus('Enrolling...', false);
+      try {
+        const assertion = TotpMultiFactorGenerator.assertionForEnrollment(currentSecret, code);
+        await multiFactor(user).enroll(assertion, 'ClassMinds Admin TOTP');
+        setStatus('Enrolled. Signing out — sign back in to complete MFA.', false);
+        setTimeout(async () => {
+          try { await signOut(auth); } catch (_) {}
+          window.location.href = 'admin-login.html?mfa=1';
+        }, 1200);
+      } catch (e) {
+        console.error(e);
+        setStatus('Enrollment failed: ' + (e?.message || e), true);
+        $('enrollBtn').disabled = false;
+      }
+    });
+
+    $('signOutBtn').addEventListener('click', async () => {
+      try { await signOut(auth); } catch (_) {}
+      window.location.href = 'admin-login.html';
+    });
+  </script>
+</body>
+</html>

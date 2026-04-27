@@ -1,0 +1,522 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<!-- Favicon & Icons -->
+<link rel="icon" type="image/png" href="/WebsiteLogo.png"/>
+<link rel="apple-touch-icon" href="/WebsiteLogo.png"/>
+<link rel="shortcut icon" href="/WebsiteLogo.png"/>
+<title>Summaries – ClassMinds Admin</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+<link rel="stylesheet" href="admin-styles.css"/>
+</head>
+<body>
+<div class="admin-wrap" id="adminWrap">
+  <div class="sidebar" id="sidebarSlot"></div>
+  <div class="main">
+    <div class="page-header">
+      <div class="page-title">Summaries</div>
+      <div class="page-desc">Every AI-generated note across all classes. View, grade, rename, or delete. Admin grades override the auto score and win per-day dedup on iOS.</div>
+    </div>
+
+    <!-- Stats row -->
+    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:18px">
+      <div class="table-card" style="padding:14px 18px">
+        <div style="font-size:10px;color:var(--muted);letter-spacing:0.8px">TOTAL NOTES</div>
+        <div style="font-size:24px;font-weight:700;color:var(--blue-bright)" id="statTotal">—</div>
+      </div>
+      <div class="table-card" style="padding:14px 18px">
+        <div style="font-size:10px;color:var(--muted);letter-spacing:0.8px">HAS SUMMARY</div>
+        <div style="font-size:24px;font-weight:700;color:var(--green)" id="statWithSummary">—</div>
+      </div>
+      <div class="table-card" style="padding:14px 18px">
+        <div style="font-size:10px;color:var(--muted);letter-spacing:0.8px">ADMIN GRADED</div>
+        <div style="font-size:24px;font-weight:700;color:var(--yellow)" id="statGraded">—</div>
+      </div>
+      <div class="table-card" style="padding:14px 18px">
+        <div style="font-size:10px;color:var(--muted);letter-spacing:0.8px">AVG SCORE</div>
+        <div style="font-size:24px;font-weight:700;color:var(--purple)" id="statAvgScore">—</div>
+      </div>
+    </div>
+
+    <!-- Filters -->
+    <div class="table-card" style="padding:12px 16px;margin-bottom:14px;display:flex;gap:10px;flex-wrap:wrap;align-items:center">
+      <input class="field-input" id="searchInput" placeholder="Search title, class, student..." style="flex:1;min-width:240px;margin:0"/>
+      <select class="field-input" id="classFilter" style="flex:0 1 220px;margin:0">
+        <option value="">All classes</option>
+      </select>
+      <select class="field-input" id="sortSelect" style="flex:0 1 180px;margin:0">
+        <option value="date-desc">Newest first</option>
+        <option value="date-asc">Oldest first</option>
+        <option value="score-desc">Highest score</option>
+        <option value="score-asc">Lowest score</option>
+      </select>
+      <button class="btn btn-ghost" id="refreshBtn">↻ Refresh</button>
+    </div>
+
+    <!-- Table -->
+    <div class="table-card">
+      <div class="table-header">
+        <div class="table-title" id="summariesCount">Summaries</div>
+      </div>
+      <div style="overflow-x:auto">
+        <table>
+          <thead>
+            <tr>
+              <th>Title</th>
+              <th>Class</th>
+              <th>Student</th>
+              <th>Date</th>
+              <th>Words</th>
+              <th>Score</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody id="summariesTable">
+            <tr><td colspan="7"><div class="empty-state"><div class="spinner"></div></div></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- DETAIL MODAL -->
+<div class="modal-overlay" id="detailModal">
+  <div class="modal-box" style="max-width:900px;max-height:90vh;width:92vw;display:flex;flex-direction:column;padding:0;overflow:hidden">
+    <div style="padding:18px 22px;border-bottom:1px solid var(--navy-border);flex-shrink:0">
+      <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:12px">
+        <div style="flex:1;min-width:0">
+          <div id="dmTitle" style="font-family:var(--font-display);font-size:18px;font-weight:700"></div>
+          <div id="dmMeta" style="font-size:12px;color:var(--muted);margin-top:4px"></div>
+        </div>
+        <button class="btn btn-ghost" style="font-size:14px;padding:6px 12px" onclick="closeModal('detailModal')">✕</button>
+      </div>
+    </div>
+    <div style="display:flex;border-bottom:1px solid var(--navy-border);padding:0 22px;gap:4px;flex-shrink:0">
+      <button class="dm-tab" data-tab="summary" style="font-size:12px;padding:10px 14px;background:none;border:none;border-bottom:2px solid var(--blue);color:var(--white);cursor:pointer">Summary</button>
+      <button class="dm-tab" data-tab="transcript" style="font-size:12px;padding:10px 14px;background:none;border:none;border-bottom:2px solid transparent;color:var(--muted);cursor:pointer">Transcript</button>
+      <button class="dm-tab" data-tab="meta" style="font-size:12px;padding:10px 14px;background:none;border:none;border-bottom:2px solid transparent;color:var(--muted);cursor:pointer">Key points & extracted</button>
+    </div>
+    <div id="dmContent" style="flex:1;overflow-y:auto;padding:18px 22px;font-size:13px;line-height:1.6;white-space:pre-wrap;color:var(--white)"></div>
+    <div style="padding:12px 22px;border-top:1px solid var(--navy-border);flex-shrink:0;display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+      <button class="btn btn-ghost" id="dmGradeBtn">⚖ Edit grade</button>
+      <button class="btn btn-ghost" id="dmTitleBtn">✎ Edit title</button>
+      <div style="flex:1"></div>
+      <button class="btn btn-red" id="dmDeleteBtn">🗑 Delete</button>
+    </div>
+  </div>
+</div>
+
+<!-- GRADE MODAL -->
+<div class="modal-overlay" id="gradeModal">
+  <div class="modal-box" style="max-width:440px">
+    <h3 style="font-family:var(--font-display);font-size:18px;font-weight:700;margin:0 0 6px">Edit grade</h3>
+    <p style="font-size:12px;color:var(--muted);margin:0 0 14px;line-height:1.5">Override the auto-computed score. Higher grades beat lower ones when iOS dedups multiple notes from the same UTC day. Clear the override to fall back to the auto score.</p>
+    <div style="display:flex;gap:10px;align-items:center;margin-bottom:10px;padding:10px 12px;background:rgba(255,255,255,0.03);border:1px solid var(--navy-border);border-radius:8px">
+      <span style="font-size:11px;color:var(--muted);flex:0 0 80px">Auto score</span>
+      <span id="gmAuto" style="font-size:14px;color:var(--blue-bright);font-weight:600;font-family:monospace"></span>
+    </div>
+    <label class="field-label">Admin grade</label>
+    <input class="field-input" id="gmInput" type="number" step="0.1" placeholder="e.g. 50"/>
+    <div style="display:flex;gap:8px;margin-top:14px;align-items:center">
+      <button class="btn btn-ghost" onclick="closeModal('gradeModal')">Cancel</button>
+      <div style="flex:1"></div>
+      <button class="btn btn-red" id="gmClearBtn">Clear override</button>
+      <button class="btn btn-blue" id="gmSaveBtn">Save</button>
+    </div>
+  </div>
+</div>
+
+<!-- TITLE MODAL -->
+<div class="modal-overlay" id="titleModal">
+  <div class="modal-box" style="max-width:480px">
+    <h3 style="font-family:var(--font-display);font-size:18px;font-weight:700;margin:0 0 14px">Edit title</h3>
+    <label class="field-label">Title</label>
+    <input class="field-input" id="tmInput" type="text"/>
+    <div style="display:flex;gap:8px;margin-top:14px;align-items:center">
+      <button class="btn btn-ghost" onclick="closeModal('titleModal')">Cancel</button>
+      <div style="flex:1"></div>
+      <button class="btn btn-blue" id="tmSaveBtn">Save</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script src="config.js"></script>
+<script type="module">
+import { requireAdmin, db, doc, getDoc, updateDoc, deleteDoc, collection, getDocs, toast, escapeHtml, openModal, closeModal, logError, logSuccess } from './admin-shared.js';
+import { renderSidebar } from './admin-sidebar.js';
+window.closeModal = closeModal;
+renderSidebar();
+
+requireAdmin().then(async () => {
+  let allNotes = [];
+  let allClasses = {};
+  let allUsers = {};
+  let currentNote = null;
+
+  // Load users (for createdBy → name lookup)
+  try {
+    const us = await getDocs(collection(db, 'users'));
+    us.docs.forEach(d => { allUsers[d.id] = d.data(); });
+  } catch (e) { logError(e.message, 'summaries:load-users'); }
+
+  // Load classes
+  try {
+    const cs = await getDocs(collection(db, 'classes'));
+    cs.docs.forEach(d => { allClasses[d.id] = d.data(); });
+  } catch (e) { logError(e.message, 'summaries:load-classes'); }
+
+  // Populate class filter dropdown
+  const classFilter = document.getElementById('classFilter');
+  Object.entries(allClasses)
+    .sort((a, b) => (a[1].courseCode || '').localeCompare(b[1].courseCode || ''))
+    .forEach(([id, c]) => {
+      const opt = document.createElement('option');
+      opt.value = id;
+      opt.textContent = (c.courseCode || 'Untitled') + ' — ' + (c.courseName || '');
+      classFilter.appendChild(opt);
+    });
+
+  // Load every note from every class
+  for (const [classId, c] of Object.entries(allClasses)) {
+    try {
+      const snap = await getDocs(collection(db, 'classes', classId, 'notes'));
+      snap.docs.forEach(d => {
+        const n = d.data();
+        const user = allUsers[n.createdBy] || {};
+        const fullName = ((user.firstName || '') + ' ' + (user.lastName || '')).trim() || user.email || '—';
+        allNotes.push({
+          id: d.id,
+          classId,
+          classCode: c.courseCode || 'Untitled',
+          className: c.courseName || '',
+          createdByName: fullName,
+          ...n
+        });
+      });
+    } catch (e) { logError(e.message, 'summaries:load-notes:' + classId); }
+  }
+
+  // Pre-parse rawJSON so score can count assignments/exams, and cache it
+  allNotes.forEach(n => {
+    n._parsedPayload = tryParsePayload(n);
+    n._score = computeScore(n);
+  });
+
+  render();
+
+  // ---- score helpers (mirrors iOS ClassNote.score) ----
+
+  function computeAutoScore(n) {
+    const transcriptPoints = Math.min((n.transcript || '').length, 20000) * 0.001;
+    const keyPointsPoints = (n.keyPoints?.length || 0) * 2;
+    const summaryPoints = Math.min((n.summary || '').length, 5000) * 0.0005;
+    let payloadPoints = 0;
+    const p = n._parsedPayload || {};
+    payloadPoints = ((p.assignments?.length || 0) + (p.exams?.length || 0) + (p.scheduleChanges?.length || 0)) * 1.5;
+    return transcriptPoints + keyPointsPoints + summaryPoints + payloadPoints;
+  }
+
+  function computeScore(n) {
+    if (typeof n.adminGrade === 'number') return n.adminGrade;
+    return computeAutoScore(n);
+  }
+
+  function tryParsePayload(n) {
+    const src = n.rawJSON || n.summary || '';
+    if (!src) return {};
+    try {
+      let cleaned = String(src).trim();
+      const fence = cleaned.match(/```(?:json)?\s*\n?([\s\S]*?)\n?\s*```/i);
+      if (fence) cleaned = fence[1].trim();
+      if (!cleaned.startsWith('{')) {
+        const fb = cleaned.indexOf('{'), lb = cleaned.lastIndexOf('}');
+        if (fb !== -1 && lb > fb) cleaned = cleaned.slice(fb, lb + 1);
+      }
+      cleaned = cleaned.replace(/\\(?!["\\/bfnrtu])/g, '\\\\');
+      if (!cleaned.startsWith('{')) return {};
+      return JSON.parse(cleaned) || {};
+    } catch (e) { return {}; }
+  }
+
+  function getDisplaySummary(n) {
+    const s = (n.summary || '').trim();
+    if (s && !s.startsWith('{') && !s.startsWith('```')) return n.summary;
+    const p = n._parsedPayload || tryParsePayload(n);
+    if (p && p.summary) return p.summary;
+    return '';
+  }
+
+  // ---- render ----
+
+  function render() {
+    const qStr = document.getElementById('searchInput').value.toLowerCase().trim();
+    const cf = classFilter.value;
+    const sort = document.getElementById('sortSelect').value;
+
+    let list = allNotes.slice();
+    if (qStr) list = list.filter(n =>
+      (n.title || '').toLowerCase().includes(qStr) ||
+      (n.classCode || '').toLowerCase().includes(qStr) ||
+      (n.className || '').toLowerCase().includes(qStr) ||
+      (n.createdByName || '').toLowerCase().includes(qStr)
+    );
+    if (cf) list = list.filter(n => n.classId === cf);
+
+    list.sort((a, b) => {
+      if (sort === 'date-desc') return (b.createdAt || 0) - (a.createdAt || 0);
+      if (sort === 'date-asc') return (a.createdAt || 0) - (b.createdAt || 0);
+      if (sort === 'score-desc') return (b._score || 0) - (a._score || 0);
+      if (sort === 'score-asc') return (a._score || 0) - (b._score || 0);
+      return 0;
+    });
+
+    // Stats (across ALL notes, not filtered — so admin has a global view)
+    document.getElementById('statTotal').textContent = allNotes.length;
+    document.getElementById('statWithSummary').textContent = allNotes.filter(n => (n.summary || '').length > 50 || getDisplaySummary(n).length > 20).length;
+    document.getElementById('statGraded').textContent = allNotes.filter(n => typeof n.adminGrade === 'number').length;
+    const avg = allNotes.length ? allNotes.reduce((s, n) => s + (n._score || 0), 0) / allNotes.length : 0;
+    document.getElementById('statAvgScore').textContent = avg.toFixed(1);
+    document.getElementById('summariesCount').textContent = list.length + ' Summaries';
+
+    const tbody = document.getElementById('summariesTable');
+    if (!list.length) {
+      tbody.innerHTML = '<tr><td colspan="7"><div class="empty-state"><div class="empty-icon">📄</div>No summaries match these filters</div></td></tr>';
+      return;
+    }
+
+    tbody.innerHTML = list.map(n => {
+      const date = n.createdAt ? new Date(n.createdAt * 1000).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : '—';
+      const trimmed = (n.transcript || '').trim();
+      const words = trimmed ? trimmed.split(/\s+/).length : 0;
+      const scoreVal = n._score || 0;
+      const isOverride = typeof n.adminGrade === 'number';
+      const scoreColor = isOverride ? 'var(--yellow)' : 'var(--blue-bright)';
+      const scoreLabel = isOverride ? 'admin' : 'auto';
+      const hasSummary = getDisplaySummary(n).length > 20;
+      return `<tr data-note="${n.id}" data-class="${n.classId}">
+        <td class="sum-title-cell" style="cursor:pointer;max-width:280px">
+          <div style="display:flex;align-items:center;gap:6px;min-width:0">
+            <span style="color:var(--blue-bright);text-decoration:underline;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:240px">${escapeHtml(n.title || 'Untitled')}</span>
+            ${hasSummary ? '' : '<span style="font-size:9px;color:var(--yellow);background:rgba(245,158,11,0.1);padding:1px 6px;border-radius:100px;white-space:nowrap">no summary</span>'}
+          </div>
+        </td>
+        <td style="font-size:12px">${escapeHtml(n.classCode)}</td>
+        <td style="font-size:12px;color:var(--muted)">${escapeHtml(n.createdByName)}</td>
+        <td style="font-size:11px;color:var(--muted)">${date}</td>
+        <td style="font-size:11px;color:var(--muted)">${words}</td>
+        <td style="font-size:12px"><span style="color:${scoreColor};font-weight:600;font-family:monospace">${scoreVal.toFixed(1)}</span> <span style="font-size:9px;color:var(--muted)">${scoreLabel}</span></td>
+        <td>
+          <div style="display:flex;gap:6px">
+            <button class="btn btn-ghost sum-grade-btn" style="font-size:11px">Grade</button>
+            <button class="btn btn-red sum-del-btn" style="font-size:11px;padding:4px 10px">🗑</button>
+          </div>
+        </td>
+      </tr>`;
+    }).join('');
+
+    tbody.querySelectorAll('.sum-title-cell').forEach(el => el.addEventListener('click', function () {
+      const row = this.closest('tr');
+      openDetail(row.dataset.class, row.dataset.note);
+    }));
+    tbody.querySelectorAll('.sum-grade-btn').forEach(el => el.addEventListener('click', function (e) {
+      e.stopPropagation();
+      const row = this.closest('tr');
+      openGrade(row.dataset.class, row.dataset.note);
+    }));
+    tbody.querySelectorAll('.sum-del-btn').forEach(el => el.addEventListener('click', async function (e) {
+      e.stopPropagation();
+      const row = this.closest('tr');
+      await deleteNote(row.dataset.class, row.dataset.note);
+    }));
+  }
+
+  document.getElementById('searchInput').addEventListener('input', render);
+  document.getElementById('classFilter').addEventListener('change', render);
+  document.getElementById('sortSelect').addEventListener('change', render);
+  document.getElementById('refreshBtn').addEventListener('click', () => location.reload());
+
+  // ---- helpers ----
+
+  function findNote(classId, noteId) {
+    return allNotes.find(n => n.classId === classId && n.id === noteId);
+  }
+
+  // ---- detail modal ----
+
+  async function openDetail(classId, noteId) {
+    const n = findNote(classId, noteId);
+    if (!n) return;
+    currentNote = n;
+    document.getElementById('dmTitle').textContent = n.title || 'Untitled';
+    const date = n.createdAt ? new Date(n.createdAt * 1000).toLocaleString('en-US', { dateStyle: 'medium', timeStyle: 'short' }) : '';
+    const scoreLabel = typeof n.adminGrade === 'number' ? ' (admin)' : '';
+    document.getElementById('dmMeta').textContent =
+      `${n.classCode} · ${n.className} · ${n.createdByName} · ${date} · score ${(n._score || 0).toFixed(1)}${scoreLabel}`;
+    // reset tabs to summary
+    document.querySelectorAll('.dm-tab').forEach((t, i) => {
+      t.style.borderBottom = i === 0 ? '2px solid var(--blue)' : '2px solid transparent';
+      t.style.color = i === 0 ? 'var(--white)' : 'var(--muted)';
+    });
+    loadDetailTab('summary');
+    openModal('detailModal');
+  }
+
+  function loadDetailTab(tab) {
+    const n = currentNote;
+    const el = document.getElementById('dmContent');
+    if (!n) { el.textContent = ''; return; }
+    if (tab === 'summary') {
+      el.textContent = getDisplaySummary(n) || '(no summary)';
+    } else if (tab === 'transcript') {
+      el.textContent = n.transcript || '(no transcript)';
+    } else {
+      const p = n._parsedPayload || {};
+      const parts = [];
+      parts.push('KEY POINTS:\n' + ((n.keyPoints || []).map(k => '• ' + k).join('\n') || '(none)'));
+      parts.push('\n\nASSIGNMENTS:\n' + ((p.assignments || []).map(a => '• ' + (a.title || '(untitled)') + (a.dueDate ? ' (due ' + a.dueDate + ')' : '')).join('\n') || '(none)'));
+      parts.push('\n\nEXAMS:\n' + ((p.exams || []).map(a => '• ' + (a.title || '(untitled)') + (a.date ? ' (' + a.date + ')' : '') + (a.type ? ' [' + a.type + ']' : '')).join('\n') || '(none)'));
+      parts.push('\n\nSCHEDULE CHANGES:\n' + ((p.scheduleChanges || []).map(a => '• ' + (a.title || '(untitled)') + (a.date ? ' (' + a.date + ')' : '')).join('\n') || '(none)'));
+      parts.push('\n\nIDs:\nnote: ' + n.id + '\nclass: ' + n.classId);
+      el.textContent = parts.join('');
+    }
+  }
+
+  document.querySelectorAll('.dm-tab').forEach(t => t.addEventListener('click', function () {
+    document.querySelectorAll('.dm-tab').forEach(t2 => {
+      t2.style.borderBottom = '2px solid transparent';
+      t2.style.color = 'var(--muted)';
+    });
+    this.style.borderBottom = '2px solid var(--blue)';
+    this.style.color = 'var(--white)';
+    loadDetailTab(this.dataset.tab);
+  }));
+
+  // ---- grade modal ----
+
+  function openGrade(classId, noteId) {
+    const n = findNote(classId, noteId);
+    if (!n) return;
+    currentNote = n;
+    document.getElementById('gmAuto').textContent = computeAutoScore(n).toFixed(2);
+    document.getElementById('gmInput').value = typeof n.adminGrade === 'number' ? n.adminGrade : '';
+    openModal('gradeModal');
+  }
+
+  document.getElementById('dmGradeBtn').addEventListener('click', () => {
+    if (!currentNote) return;
+    closeModal('detailModal');
+    openGrade(currentNote.classId, currentNote.id);
+  });
+
+  document.getElementById('gmSaveBtn').addEventListener('click', async function () {
+    const n = currentNote; if (!n) return;
+    const raw = document.getElementById('gmInput').value.trim();
+    if (raw === '') { toast('Enter a number or use Clear override', 'error'); return; }
+    const val = Number(raw);
+    if (!Number.isFinite(val)) { toast('Invalid number', 'error'); return; }
+    this.disabled = true; this.textContent = 'Saving...';
+    try {
+      await updateDoc(doc(db, 'classes', n.classId, 'notes', n.id), { adminGrade: val });
+      n.adminGrade = val;
+      n._score = computeScore(n);
+      closeModal('gradeModal');
+      render();
+      toast('Grade saved ✓');
+      logSuccess('Admin graded note ' + n.id + ' → ' + val, 'summaries:grade');
+    } catch (e) {
+      toast('Failed: ' + e.message, 'error');
+      logError(e.message, 'summaries:grade-save');
+    }
+    this.disabled = false; this.textContent = 'Save';
+  });
+
+  document.getElementById('gmClearBtn').addEventListener('click', async function () {
+    const n = currentNote; if (!n) return;
+    this.disabled = true; this.textContent = 'Clearing...';
+    try {
+      // null is equivalent to "no override" for our score reader on iOS (as? Double → nil)
+      await updateDoc(doc(db, 'classes', n.classId, 'notes', n.id), { adminGrade: null });
+      delete n.adminGrade;
+      n._score = computeScore(n);
+      closeModal('gradeModal');
+      render();
+      toast('Override cleared ✓');
+      logSuccess('Admin cleared grade ' + n.id, 'summaries:grade-clear');
+    } catch (e) {
+      toast('Failed: ' + e.message, 'error');
+      logError(e.message, 'summaries:grade-clear');
+    }
+    this.disabled = false; this.textContent = 'Clear override';
+  });
+
+  // ---- title modal ----
+
+  document.getElementById('dmTitleBtn').addEventListener('click', () => {
+    if (!currentNote) return;
+    document.getElementById('tmInput').value = currentNote.title || '';
+    openModal('titleModal');
+  });
+
+  document.getElementById('tmSaveBtn').addEventListener('click', async function () {
+    const n = currentNote; if (!n) return;
+    const val = document.getElementById('tmInput').value.trim();
+    if (!val) { toast('Title cannot be empty', 'error'); return; }
+    this.disabled = true; this.textContent = 'Saving...';
+    try {
+      await updateDoc(doc(db, 'classes', n.classId, 'notes', n.id), { title: val });
+      n.title = val;
+      closeModal('titleModal');
+      document.getElementById('dmTitle').textContent = val;
+      render();
+      toast('Title saved ✓');
+      logSuccess('Admin renamed note ' + n.id, 'summaries:title-save');
+    } catch (e) {
+      toast('Failed: ' + e.message, 'error');
+      logError(e.message, 'summaries:title-save');
+    }
+    this.disabled = false; this.textContent = 'Save';
+  });
+
+  // ---- delete ----
+
+  async function deleteNote(classId, noteId) {
+    const n = findNote(classId, noteId);
+    if (!n) return;
+    if (!confirm('Delete "' + (n.title || 'Untitled') + '"?\n\nThis also deletes any alternate versions in the subcollection. Cannot be undone.')) return;
+    try {
+      // Delete the alternates subcollection first so no orphans are left behind.
+      try {
+        const alts = await getDocs(collection(db, 'classes', classId, 'notes', noteId, 'alternates'));
+        for (const a of alts.docs) {
+          await deleteDoc(doc(db, 'classes', classId, 'notes', noteId, 'alternates', a.id));
+        }
+      } catch (e) { /* no alternates subcollection — ignore */ }
+      await deleteDoc(doc(db, 'classes', classId, 'notes', noteId));
+      allNotes = allNotes.filter(x => !(x.classId === classId && x.id === noteId));
+      render();
+      toast('Deleted ✓');
+      logSuccess('Admin deleted note ' + noteId, 'summaries:delete');
+    } catch (e) {
+      toast('Failed: ' + e.message, 'error');
+      logError(e.message, 'summaries:delete');
+    }
+  }
+
+  document.getElementById('dmDeleteBtn').addEventListener('click', async () => {
+    if (!currentNote) return;
+    const n = currentNote;
+    await deleteNote(n.classId, n.id);
+    closeModal('detailModal');
+  });
+});
+
+document.getElementById('logoutBtn')?.addEventListener('click', () => {
+  import('./admin-shared.js').then(m => m.doLogout());
+});
+</script>
+</body>
+</html>

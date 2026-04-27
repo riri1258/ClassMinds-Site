@@ -1,0 +1,1507 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+    <!-- Favicon & Icons -->
+  <link rel="icon" type="image/png" href="/WebsiteLogo.png"/>
+  <link rel="apple-touch-icon" href="/WebsiteLogo.png"/>
+  <link rel="shortcut icon" href="/WebsiteLogo.png"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <!-- SEO Meta Tags -->
+  <meta name="description" content="ClassMinds helps college students manage classes, chat with classmates, and get help from an AI tutor that knows your actual notes. Free during beta."/>
+  <meta name="keywords" content="student app, college app, AI tutor, class notes, homework tracker, study app, classmates chat, iOS student app, college productivity"/>
+  <meta name="author" content="ClassMinds"/>
+  <meta name="robots" content="index, follow"/>
+  <link rel="canonical" href="https://classminds.app/"/>
+
+  <!-- Open Graph (Social Sharing) -->
+  <meta property="og:type" content="website"/>
+  <meta property="og:url" content="https://classminds.app/"/>
+  <meta property="og:title" content="ClassMinds – Study Smarter, Not Harder"/>
+  <meta property="og:description" content="ClassMinds helps college students manage classes, chat with classmates, and get help from an AI tutor that knows your actual notes. Free during beta."/>
+  <meta property="og:site_name" content="ClassMinds"/>
+  <meta property="og:image" content="https://classminds.app/WebsiteLogo.png"/>
+
+  <!-- Twitter Card -->
+  <meta name="twitter:card" content="summary_large_image"/>
+  <meta name="twitter:title" content="ClassMinds – Study Smarter, Not Harder"/>
+  <meta name="twitter:description" content="ClassMinds helps college students manage classes, chat with classmates, and get help from an AI tutor that knows your actual notes. Free during beta."/>
+  <meta name="twitter:image" content="https://classminds.app/WebsiteLogo.png"/>
+
+  <!-- App Meta -->
+  <meta name="application-name" content="ClassMinds"/>
+  <meta name="apple-mobile-web-app-title" content="ClassMinds"/>
+  <meta name="theme-color" content="#040d1f"/>
+  <title>ClassMinds – The AI-Powered Student App</title>
+
+  <!-- Trybe Attribution Pixel (Custom Domain) -->
+  <script>
+  (function(w,d,p,s,u,pl,at) {
+    w._trybe = w._trybe || { pixelCode: p, storeId: s, platform: pl, autoTracking: at, customDomain: 'track.classminds.app', serviceUrl: 'https://prod-trybe-platform-6mi3j.ondigitalocean.app/attribution' };
+    var script = d.createElement('script');
+    script.src = u + '/pixel.js';
+    script.async = true;
+    script.setAttribute('data-pixel-code', p);
+    script.setAttribute('data-store-id', s);
+    script.setAttribute('data-platform', pl);
+    script.setAttribute('data-auto-tracking', at);
+    d.head.appendChild(script);
+  })(window, document, 'px_a92401615f7e', '9fd35bc0-fa99-4b9e-a84a-b6dbef0847d1', 'https://track.classminds.app', 'CUSTOM', 'false');
+  </script>
+  <!-- End Trybe Attribution Pixel -->
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;1,9..40,300&display=swap" rel="stylesheet"/>
+  <style>
+    :root {
+      --blue: #1a6bff;
+      --blue-bright: #4d8fff;
+      --blue-dim: #0d3a99;
+      --navy: #040d1f;
+      --navy-mid: #071428;
+      --navy-card: #0a1c3a;
+      --navy-border: rgba(26,107,255,0.18);
+      --white: #f0f4ff;
+      --muted: rgba(180,200,255,0.5);
+      --font-display: 'Syne', sans-serif;
+      --font-body: 'DM Sans', sans-serif;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      background: var(--navy);
+      color: var(--white);
+      font-family: var(--font-body);
+      overflow-x: hidden;
+    }
+
+    /* ── NOISE OVERLAY ── */
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='1'/%3E%3C/svg%3E");
+      opacity: 0.03;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    /* ── NAV ── */
+    nav {
+      position: fixed;
+      top: 0; left: 0; right: 0;
+      z-index: 100;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 20px 48px;
+      background: rgba(4,13,31,0.7);
+      backdrop-filter: blur(20px);
+      border-bottom: 1px solid var(--navy-border);
+    }
+
+    .nav-logo {
+      font-family: var(--font-display);
+      font-weight: 800;
+      font-size: 22px;
+      color: var(--white);
+      text-decoration: none;
+      letter-spacing: -0.5px;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .nav-logo-img {
+      height: 32px;
+      width: 32px;
+      display: block;
+    }
+
+    .nav-logo-text span { color: var(--blue-bright); }
+
+    .nav-links {
+      display: flex;
+      gap: 36px;
+      list-style: none;
+    }
+
+    .nav-links a {
+      color: var(--muted);
+      text-decoration: none;
+      font-size: 14px;
+      font-weight: 500;
+      letter-spacing: 0.3px;
+      transition: color 0.2s;
+    }
+
+    .nav-links a:hover { color: var(--white); }
+
+    .nav-cta {
+      background: var(--blue);
+      color: white !important;
+      padding: 9px 22px;
+      border-radius: 8px;
+      font-weight: 600 !important;
+      transition: background 0.2s, transform 0.15s !important;
+    }
+
+    .nav-cta:hover {
+      background: var(--blue-bright) !important;
+      transform: translateY(-1px);
+    }
+
+    /* ── HERO ── */
+    .hero {
+      position: relative;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      padding: 140px 24px 80px;
+      overflow: hidden;
+    }
+
+    .hero-glow {
+      position: absolute;
+      top: -100px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 900px;
+      height: 600px;
+      background: radial-gradient(ellipse, rgba(26,107,255,0.25) 0%, transparent 70%);
+      pointer-events: none;
+    }
+
+    .hero-glow-2 {
+      position: absolute;
+      bottom: -200px;
+      left: 20%;
+      width: 500px;
+      height: 500px;
+      background: radial-gradient(ellipse, rgba(26,107,255,0.1) 0%, transparent 70%);
+      pointer-events: none;
+    }
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: rgba(26,107,255,0.12);
+      border: 1px solid rgba(26,107,255,0.3);
+      border-radius: 100px;
+      padding: 6px 16px;
+      font-size: 12px;
+      font-weight: 500;
+      color: var(--blue-bright);
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
+      margin-bottom: 28px;
+      animation: fadeUp 0.6s ease both;
+    }
+
+    .badge-dot {
+      width: 6px; height: 6px;
+      background: var(--blue-bright);
+      border-radius: 50%;
+      animation: pulse 2s infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.5; transform: scale(0.8); }
+    }
+
+    h1 {
+      font-family: var(--font-display);
+      font-size: clamp(48px, 7vw, 88px);
+      font-weight: 800;
+      line-height: 1.0;
+      letter-spacing: -2px;
+      max-width: 900px;
+      animation: fadeUp 0.7s 0.1s ease both;
+    }
+
+    h1 .accent {
+      background: linear-gradient(135deg, var(--blue-bright), #7eb3ff);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .hero-sub {
+      margin-top: 24px;
+      font-size: clamp(16px, 2vw, 20px);
+      color: var(--muted);
+      max-width: 520px;
+      line-height: 1.6;
+      font-weight: 300;
+      animation: fadeUp 0.7s 0.2s ease both;
+    }
+
+    .hero-actions {
+      display: flex;
+      gap: 14px;
+      margin-top: 44px;
+      flex-wrap: wrap;
+      justify-content: center;
+      animation: fadeUp 0.7s 0.3s ease both;
+    }
+
+    .btn-primary {
+      background: var(--blue);
+      color: white;
+      padding: 16px 36px;
+      border-radius: 10px;
+      font-size: 15px;
+      font-weight: 600;
+      text-decoration: none;
+      font-family: var(--font-body);
+      transition: background 0.2s, transform 0.15s, box-shadow 0.2s;
+      box-shadow: 0 0 40px rgba(26,107,255,0.35);
+    }
+
+    .btn-primary:hover {
+      background: var(--blue-bright);
+      transform: translateY(-2px);
+      box-shadow: 0 0 60px rgba(26,107,255,0.5);
+    }
+
+    .btn-ghost {
+      background: transparent;
+      color: var(--white);
+      padding: 16px 36px;
+      border-radius: 10px;
+      font-size: 15px;
+      font-weight: 500;
+      text-decoration: none;
+      border: 1px solid var(--navy-border);
+      font-family: var(--font-body);
+      transition: border-color 0.2s, background 0.2s, transform 0.15s;
+    }
+
+    .btn-ghost:hover {
+      border-color: rgba(26,107,255,0.5);
+      background: rgba(26,107,255,0.07);
+      transform: translateY(-2px);
+    }
+
+    /* ── PHONE MOCKUP ── */
+    .hero-visual {
+      margin-top: 72px;
+      position: relative;
+      animation: fadeUp 0.8s 0.4s ease both;
+    }
+
+    .phone-wrap {
+      display: flex;
+      gap: 24px;
+      align-items: flex-end;
+      justify-content: center;
+    }
+
+    .phone {
+      width: 230px;
+      height: 480px;
+      background: #040b18;
+      border-radius: 36px;
+      border: 1.5px solid var(--navy-border);
+      overflow: hidden;
+      box-shadow: 0 40px 80px rgba(0,0,0,0.5), 0 0 0 1px rgba(26,107,255,0.08);
+      position: relative;
+      flex-shrink: 0;
+    }
+
+    .phone.center {
+      width: 250px;
+      height: 520px;
+      transform: translateY(-20px);
+      border-color: rgba(26,107,255,0.35);
+      box-shadow: 0 40px 100px rgba(0,0,0,0.6), 0 0 60px rgba(26,107,255,0.15);
+    }
+
+    .phone-notch {
+      width: 80px; height: 22px;
+      background: #000;
+      border-radius: 0 0 14px 14px;
+      margin: 0 auto;
+      position: relative;
+      z-index: 2;
+    }
+
+    .phone-screen {
+      padding: 14px 12px 48px;
+      height: calc(100% - 22px);
+      display: flex;
+      flex-direction: column;
+      gap: 9px;
+      overflow: hidden;
+    }
+
+    .screen-header {
+      font-family: var(--font-display);
+      font-weight: 800;
+      color: var(--white);
+      letter-spacing: -0.3px;
+      line-height: 1.1;
+    }
+    .screen-header .subtle {
+      display: block;
+      font-family: var(--font-body);
+      font-weight: 400;
+      font-size: 9px;
+      color: rgba(180,200,255,0.55);
+      margin-top: 3px;
+      letter-spacing: 0;
+    }
+
+    .screen-search {
+      display: flex; align-items: center; gap: 6px;
+      background: rgba(255,255,255,0.04);
+      border: 1px solid rgba(255,255,255,0.06);
+      border-radius: 10px;
+      padding: 7px 10px;
+      font-size: 9px;
+      color: rgba(180,200,255,0.5);
+    }
+    .screen-search::before { content: '⌕'; font-size: 11px; color: rgba(180,200,255,0.5); }
+
+    /* Classes list cards */
+    .class-card {
+      display: flex;
+      background: rgba(255,255,255,0.04);
+      border: 1px solid rgba(255,255,255,0.06);
+      border-radius: 10px;
+      overflow: hidden;
+    }
+    .class-bar { width: 4px; flex-shrink: 0; }
+    .class-body { padding: 8px 10px; flex: 1; min-width: 0; }
+    .class-head { display: flex; align-items: center; gap: 6px; }
+    .class-code { font-family: var(--font-display); font-weight: 700; font-size: 11px; color: var(--white); }
+    .class-badge {
+      font-size: 7px;
+      font-weight: 600;
+      padding: 2px 6px;
+      background: rgba(26,107,255,0.22);
+      color: var(--blue-bright);
+      border-radius: 100px;
+    }
+    .class-name { font-size: 9px; color: #94a3b8; margin-top: 2px; }
+    .class-meta { font-size: 8px; color: #64748b; margin-top: 3px; }
+
+    /* Home: day strip */
+    .day-strip {
+      display: flex;
+      gap: 3px;
+      justify-content: space-between;
+    }
+    .day-pill {
+      flex: 1;
+      background: rgba(255,255,255,0.03);
+      border: 1px solid rgba(255,255,255,0.06);
+      border-radius: 8px;
+      padding: 6px 0 5px;
+      text-align: center;
+    }
+    .day-pill.active {
+      background: var(--blue);
+      border-color: var(--blue);
+      box-shadow: 0 0 16px rgba(26,107,255,0.35);
+    }
+    .day-pill .d {
+      font-size: 7px;
+      color: rgba(180,200,255,0.55);
+      font-weight: 600;
+      letter-spacing: 0.3px;
+    }
+    .day-pill.active .d { color: rgba(255,255,255,0.9); }
+    .day-pill .n {
+      font-family: var(--font-display);
+      font-weight: 700;
+      font-size: 11px;
+      color: var(--white);
+      margin-top: 1px;
+    }
+    .day-pill .dot {
+      width: 3px; height: 3px;
+      background: var(--blue-bright);
+      border-radius: 50%;
+      margin: 2px auto 0;
+    }
+    .day-pill.active .dot { background: rgba(255,255,255,0.95); }
+
+    .sect-label {
+      font-size: 8px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.9px;
+      color: rgba(180,200,255,0.5);
+      margin-top: 2px;
+    }
+
+    /* Home: schedule row */
+    .sched-row {
+      display: flex;
+      gap: 8px;
+      background: rgba(255,255,255,0.04);
+      border: 1px solid rgba(255,255,255,0.06);
+      border-radius: 10px;
+      padding: 8px 10px;
+    }
+    .sched-bar { width: 3px; border-radius: 2px; flex-shrink: 0; }
+    .sched-time {
+      font-size: 8px;
+      color: rgba(180,200,255,0.55);
+      font-family: var(--font-body);
+      line-height: 1.3;
+      min-width: 28px;
+    }
+    .sched-time span {
+      display: block;
+      color: var(--white);
+      font-weight: 600;
+      font-size: 9px;
+    }
+    .sched-body { flex: 1; min-width: 0; }
+    .sched-code {
+      font-family: var(--font-display);
+      font-weight: 700;
+      font-size: 10px;
+      color: var(--white);
+    }
+    .sched-loc { font-size: 8px; color: #94a3b8; margin-top: 2px; }
+
+    /* Home: due row */
+    .due-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      background: rgba(255,255,255,0.04);
+      border: 1px solid rgba(255,255,255,0.06);
+      border-radius: 10px;
+      padding: 7px 9px;
+    }
+    .due-date {
+      width: 32px; height: 32px;
+      background: rgba(26,107,255,0.15);
+      border: 1px solid rgba(26,107,255,0.25);
+      border-radius: 8px;
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      flex-shrink: 0;
+    }
+    .due-date .dow {
+      font-size: 6.5px;
+      font-weight: 700;
+      color: var(--blue-bright);
+      letter-spacing: 0.4px;
+    }
+    .due-date .day {
+      font-family: var(--font-display);
+      font-weight: 800;
+      font-size: 11px;
+      color: var(--white);
+      line-height: 1;
+    }
+    .due-body { flex: 1; min-width: 0; }
+    .due-title { font-size: 9px; font-weight: 600; color: var(--white); }
+    .due-meta {
+      font-size: 7.5px;
+      color: #94a3b8;
+      margin-top: 2px;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+    .due-meta .cdot {
+      width: 4px; height: 4px;
+      border-radius: 50%;
+      flex-shrink: 0;
+    }
+    .due-status {
+      font-size: 7px;
+      font-weight: 600;
+      padding: 2px 6px;
+      border-radius: 100px;
+      flex-shrink: 0;
+    }
+    .due-status.todo { background: rgba(148,163,184,0.18); color: #94a3b8; }
+    .due-status.prog { background: rgba(245,158,11,0.18); color: #f59e0b; }
+
+    /* AI Tutor */
+    .ai-header {
+      display: flex; align-items: center; gap: 8px;
+      padding-bottom: 8px;
+      border-bottom: 1px solid rgba(255,255,255,0.05);
+    }
+    .ai-avatar {
+      width: 28px; height: 28px;
+      background: linear-gradient(135deg, var(--blue), #7eb3ff);
+      border-radius: 8px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 14px;
+      flex-shrink: 0;
+      box-shadow: 0 0 14px rgba(26,107,255,0.3);
+    }
+    .ai-title-wrap { flex: 1; min-width: 0; }
+    .ai-title-name {
+      font-family: var(--font-display);
+      font-weight: 700;
+      font-size: 11px;
+      color: var(--white);
+    }
+    .ai-title-sub {
+      font-size: 8px;
+      color: rgba(180,200,255,0.55);
+      margin-top: 1px;
+    }
+
+    .date-pill {
+      align-self: center;
+      font-size: 7px;
+      font-weight: 600;
+      color: rgba(180,200,255,0.5);
+      background: rgba(255,255,255,0.04);
+      border: 1px solid rgba(255,255,255,0.06);
+      padding: 3px 9px;
+      border-radius: 100px;
+      letter-spacing: 0.3px;
+      text-transform: uppercase;
+    }
+
+    .chat-msgs {
+      display: flex; flex-direction: column; gap: 7px;
+      flex: 1; min-height: 0;
+    }
+
+    .ai-msg {
+      display: flex; gap: 5px;
+      align-items: flex-end;
+      max-width: 90%;
+    }
+    .ai-msg .ai-avatar {
+      width: 18px; height: 18px;
+      border-radius: 6px;
+      font-size: 10px;
+      box-shadow: none;
+    }
+    .ai-bubble {
+      background: rgba(255,255,255,0.05);
+      color: rgba(240,244,255,0.92);
+      font-size: 9px;
+      line-height: 1.45;
+      padding: 7px 9px;
+      border-radius: 12px;
+      border-bottom-left-radius: 3px;
+      flex: 1;
+    }
+
+    .note-ref {
+      background: rgba(26,107,255,0.08);
+      border: 1px solid rgba(26,107,255,0.18);
+      border-radius: 10px;
+      border-left: 2px solid var(--blue-bright);
+      padding: 6px 9px;
+      margin-left: 23px;
+      max-width: 85%;
+    }
+    .note-ref .t {
+      font-size: 8.5px;
+      font-weight: 700;
+      color: var(--blue-bright);
+    }
+    .note-ref .p {
+      font-size: 8px;
+      color: rgba(240,244,255,0.65);
+      margin-top: 2px;
+      line-height: 1.4;
+    }
+
+    .me-msg {
+      align-self: flex-end;
+      background: var(--blue);
+      color: white;
+      font-size: 9px;
+      line-height: 1.45;
+      padding: 7px 10px;
+      border-radius: 12px;
+      border-bottom-right-radius: 3px;
+      max-width: 78%;
+      box-shadow: 0 2px 10px rgba(26,107,255,0.25);
+    }
+
+    .chat-input {
+      margin-top: auto;
+      display: flex; align-items: center; gap: 6px;
+      padding-top: 4px;
+    }
+    .chat-input .field {
+      flex: 1;
+      background: rgba(255,255,255,0.04);
+      border: 1px solid rgba(255,255,255,0.06);
+      border-radius: 100px;
+      padding: 7px 11px;
+      font-size: 9px;
+      color: rgba(180,200,255,0.5);
+    }
+    .chat-input .send {
+      width: 26px; height: 26px;
+      background: var(--blue);
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      color: white;
+      font-size: 12px;
+      font-weight: 700;
+      flex-shrink: 0;
+      box-shadow: 0 0 12px rgba(26,107,255,0.4);
+    }
+
+    /* tabbar */
+    .phone-tabs {
+      position: absolute;
+      bottom: 0; left: 0; right: 0;
+      background: rgba(4,11,24,0.92);
+      backdrop-filter: blur(10px);
+      border-top: 1px solid var(--navy-border);
+      display: flex;
+      padding: 8px 0 12px;
+    }
+
+    .tab-item {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 3px;
+    }
+
+    .tab-icon {
+      width: 19px; height: 19px;
+      color: rgba(180,200,255,0.55);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .tab-icon svg {
+      width: 100%;
+      height: 100%;
+    }
+
+    .tab-icon.active {
+      color: var(--blue-bright);
+      filter: drop-shadow(0 0 6px rgba(26,107,255,0.55));
+    }
+
+    .tab-label {
+      font-size: 7px;
+      color: var(--muted);
+      font-weight: 500;
+    }
+
+    .tab-label.active { color: var(--blue-bright); font-weight: 600; }
+
+    /* ── STATS ── */
+    .stats {
+      display: flex;
+      justify-content: center;
+      gap: 60px;
+      padding: 60px 24px;
+      border-top: 1px solid var(--navy-border);
+      border-bottom: 1px solid var(--navy-border);
+      flex-wrap: wrap;
+    }
+
+    .stat { text-align: center; }
+
+    .stat-num {
+      font-family: var(--font-display);
+      font-size: 40px;
+      font-weight: 800;
+      color: var(--white);
+      letter-spacing: -1px;
+    }
+
+    .stat-num span { color: var(--blue-bright); }
+
+    .stat-label {
+      font-size: 13px;
+      color: var(--muted);
+      margin-top: 4px;
+    }
+
+    /* ── FEATURES ── */
+    .section {
+      padding: 100px 24px;
+      max-width: 1100px;
+      margin: 0 auto;
+    }
+
+    .section-tag {
+      font-size: 11px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 1.5px;
+      color: var(--blue-bright);
+      margin-bottom: 16px;
+    }
+
+    .section-title {
+      font-family: var(--font-display);
+      font-size: clamp(32px, 4vw, 52px);
+      font-weight: 800;
+      letter-spacing: -1.5px;
+      line-height: 1.05;
+      margin-bottom: 16px;
+    }
+
+    .section-sub {
+      font-size: 17px;
+      color: var(--muted);
+      max-width: 480px;
+      line-height: 1.6;
+      font-weight: 300;
+    }
+
+    .features-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 20px;
+      margin-top: 60px;
+    }
+
+    .feature-card {
+      background: var(--navy-card);
+      border: 1px solid var(--navy-border);
+      border-radius: 20px;
+      padding: 32px;
+      transition: border-color 0.3s, transform 0.3s, box-shadow 0.3s;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .feature-card::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 1px;
+      background: linear-gradient(90deg, transparent, rgba(26,107,255,0.4), transparent);
+      opacity: 0;
+      transition: opacity 0.3s;
+    }
+
+    .feature-card:hover {
+      border-color: rgba(26,107,255,0.4);
+      transform: translateY(-4px);
+      box-shadow: 0 20px 60px rgba(0,0,0,0.3), 0 0 40px rgba(26,107,255,0.08);
+    }
+
+    .feature-card:hover::before { opacity: 1; }
+
+    .feature-icon {
+      width: 48px; height: 48px;
+      background: rgba(26,107,255,0.12);
+      border: 1px solid rgba(26,107,255,0.2);
+      border-radius: 14px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 22px;
+      margin-bottom: 20px;
+    }
+
+    .feature-title {
+      font-family: var(--font-display);
+      font-size: 19px;
+      font-weight: 700;
+      margin-bottom: 10px;
+      letter-spacing: -0.3px;
+    }
+
+    .feature-desc {
+      font-size: 14px;
+      color: var(--muted);
+      line-height: 1.65;
+      font-weight: 300;
+    }
+
+    /* ── HOW IT WORKS ── */
+    .steps {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 0;
+      margin-top: 60px;
+      position: relative;
+    }
+
+    .steps::before {
+      content: '';
+      position: absolute;
+      top: 32px;
+      left: 10%;
+      right: 10%;
+      height: 1px;
+      background: linear-gradient(90deg, transparent, var(--navy-border), var(--navy-border), transparent);
+    }
+
+    .step {
+      text-align: center;
+      padding: 0 24px;
+      position: relative;
+    }
+
+    .step-num {
+      width: 64px; height: 64px;
+      background: var(--navy-card);
+      border: 1.5px solid var(--navy-border);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: var(--font-display);
+      font-size: 22px;
+      font-weight: 800;
+      color: var(--blue-bright);
+      margin: 0 auto 24px;
+      position: relative;
+      z-index: 1;
+    }
+
+    .step-title {
+      font-family: var(--font-display);
+      font-size: 17px;
+      font-weight: 700;
+      margin-bottom: 10px;
+    }
+
+    .step-desc {
+      font-size: 13px;
+      color: var(--muted);
+      line-height: 1.6;
+    }
+
+    /* ── CTA BAND ── */
+    .cta-band {
+      margin: 0 24px 100px;
+      background: linear-gradient(135deg, var(--navy-card) 0%, rgba(26,107,255,0.08) 100%);
+      border: 1px solid var(--navy-border);
+      border-radius: 28px;
+      padding: 80px 40px;
+      text-align: center;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .cta-band::before {
+      content: '';
+      position: absolute;
+      top: -100px; left: 50%;
+      transform: translateX(-50%);
+      width: 600px; height: 300px;
+      background: radial-gradient(ellipse, rgba(26,107,255,0.15) 0%, transparent 70%);
+      pointer-events: none;
+    }
+
+    .cta-band h2 {
+      font-family: var(--font-display);
+      font-size: clamp(28px, 4vw, 48px);
+      font-weight: 800;
+      letter-spacing: -1px;
+      margin-bottom: 16px;
+      position: relative;
+    }
+
+    .cta-band p {
+      color: var(--muted);
+      font-size: 16px;
+      margin-bottom: 36px;
+      font-weight: 300;
+      position: relative;
+    }
+
+    /* ── FOOTER ── */
+    footer {
+      border-top: 1px solid var(--navy-border);
+      padding: 60px 48px 30px;
+      background: var(--navy-mid);
+    }
+
+    .footer-content {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 40px;
+      margin-bottom: 40px;
+      max-width: 1100px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+
+    .footer-section h4 {
+      font-family: var(--font-display);
+      font-size: 16px;
+      font-weight: 700;
+      margin-bottom: 16px;
+      color: var(--white);
+    }
+
+    .footer-section ul {
+      list-style: none;
+    }
+
+    .footer-section ul li {
+      margin-bottom: 12px;
+    }
+
+    .footer-section a {
+      color: var(--muted);
+      text-decoration: none;
+      font-size: 14px;
+      transition: color 0.3s;
+    }
+
+    .footer-section a:hover {
+      color: var(--blue-bright);
+    }
+
+    .footer-bottom {
+      text-align: center;
+      padding-top: 30px;
+      border-top: 1px solid var(--navy-border);
+      max-width: 1100px;
+      margin: 0 auto;
+    }
+
+    .footer-bottom p {
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    /* ── ANIMATIONS ── */
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(24px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    .reveal {
+      opacity: 0;
+      transform: translateY(30px);
+      transition: opacity 0.6s ease, transform 0.6s ease;
+    }
+
+    .reveal.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    /* ── NAV TOGGLE (hamburger) ── */
+    .nav-toggle {
+      display: none;
+      background: transparent;
+      border: 1px solid var(--navy-border);
+      border-radius: 8px;
+      width: 40px;
+      height: 40px;
+      cursor: pointer;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 4px;
+      padding: 0;
+      transition: background 0.2s, border-color 0.2s;
+    }
+    .nav-toggle:hover {
+      background: rgba(26,107,255,0.07);
+      border-color: rgba(26,107,255,0.4);
+    }
+    .nav-toggle span {
+      display: block;
+      width: 18px;
+      height: 2px;
+      background: var(--white);
+      border-radius: 2px;
+      transition: transform 0.25s ease, opacity 0.2s ease;
+    }
+    .nav-toggle.open span:nth-child(1) { transform: translateY(6px) rotate(45deg); }
+    .nav-toggle.open span:nth-child(2) { opacity: 0; }
+    .nav-toggle.open span:nth-child(3) { transform: translateY(-6px) rotate(-45deg); }
+
+    /* ── RESPONSIVE ── */
+    @media (max-width: 900px) {
+      nav { padding: 16px 20px; }
+      .nav-logo-text { display: none; }
+      .nav-toggle { display: flex; }
+      .nav-links {
+        position: absolute;
+        top: 100%;
+        left: 0; right: 0;
+        flex-direction: column;
+        align-items: stretch;
+        background: rgba(4,13,31,0.97);
+        backdrop-filter: blur(20px);
+        border-bottom: 1px solid var(--navy-border);
+        padding: 0 24px;
+        gap: 0;
+        max-height: 0;
+        overflow: hidden;
+        opacity: 0;
+        pointer-events: none;
+        transition: max-height 0.3s ease, opacity 0.25s ease, padding 0.3s ease;
+      }
+      .nav-links.open {
+        max-height: 500px;
+        opacity: 1;
+        padding: 18px 24px 22px;
+        pointer-events: auto;
+      }
+      .nav-links li { list-style: none; }
+      .nav-links a {
+        display: block;
+        padding: 12px 0;
+        font-size: 16px;
+        border-bottom: 1px solid rgba(26,107,255,0.08);
+      }
+      .nav-links li:last-child a { border-bottom: none; }
+      .nav-links .nav-cta {
+        background: transparent !important;
+        color: var(--muted) !important;
+        padding: 12px 0 !important;
+        border-radius: 0;
+        font-weight: 500 !important;
+        display: block;
+        box-shadow: none;
+        transform: none !important;
+      }
+      .nav-links .nav-cta:hover {
+        background: transparent !important;
+        color: var(--white) !important;
+      }
+    }
+
+    @media (max-width: 768px) {
+      .phone { display: none; }
+      .phone.center { display: block; }
+      .steps::before { display: none; }
+      footer { flex-direction: column; text-align: center; }
+      .cta-band { margin: 0 16px 60px; padding: 50px 24px; }
+    }
+  </style>
+  <!-- Google tag (gtag.js) -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-081YYS6HV7"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'G-081YYS6HV7');
+  </script>
+
+  <!-- Structured Data -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "MobileApplication",
+    "name": "ClassMinds",
+    "description": "ClassMinds helps college students manage classes, chat with classmates, and get help from an AI tutor that knows your actual notes.",
+    "url": "https://classminds.app",
+    "applicationCategory": "EducationApplication",
+    "operatingSystem": "iOS",
+    "offers": {
+      "@type": "Offer",
+      "price": "0",
+      "priceCurrency": "USD"
+    },
+    "aggregateRating": {
+      "@type": "AggregateRating",
+      "ratingValue": "5",
+      "ratingCount": "1"
+    },
+    "publisher": {
+      "@type": "Organization",
+      "name": "ClassMinds",
+      "url": "https://classminds.app",
+      "contactPoint": {
+        "@type": "ContactPoint",
+        "email": "support@classminds.app",
+        "contactType": "customer support"
+      }
+    },
+    "featureList": [
+      "AI Tutor powered by your class notes",
+      "Real-time class group chat",
+      "Assignment and deadline tracking",
+      "Schedule import",
+      "Push notifications for deadlines"
+    ]
+  }
+  </script>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <a href="index.html" class="nav-logo"><img src="/WebsiteLogo.png" alt="ClassMinds logo" class="nav-logo-img"/><span class="nav-logo-text">Class<span>Minds</span></span></a>
+  <ul class="nav-links" id="nav-links">
+    <li><a href="features.html">Features</a></li>
+    <li><a href="pricing.html">Pricing</a></li>
+    <li><a href="about.html">About</a></li>
+    <li><a href="support.html">Support</a></li>
+    <li><a href="beta.html" class="nav-cta">Download Beta</a></li>
+    <li><a href="login.html" style="color:#4d8fff;font-weight:600">Sign In</a></li>
+  </ul>
+  <button class="nav-toggle" aria-label="Toggle menu" aria-expanded="false" aria-controls="nav-links">
+    <span></span><span></span><span></span>
+  </button>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-glow"></div>
+  <div class="hero-glow-2"></div>
+
+  <div class="badge">
+    <span class="badge-dot"></span>
+    Now in Beta · iOS
+  </div>
+
+  <h1>Study smarter.<br/><span class="accent">Not harder.</span></h1>
+
+  <p class="hero-sub">
+    ClassMinds brings your classes, classmates, and an AI tutor into one place — built for students who want to actually keep up.
+  </p>
+
+  <div class="hero-actions">
+    <a href="beta.html" class="btn-primary">Join Beta →</a>
+    <a href="#features" class="btn-ghost">See Features</a>
+  </div>
+
+  <div class="hero-visual">
+    <div class="phone-wrap">
+
+      <!-- Left phone: Classes Hub -->
+      <div class="phone">
+        <div class="phone-notch"></div>
+        <div class="phone-screen">
+          <div class="screen-header" style="font-size:17px">My classes</div>
+          <div class="screen-search">Search classes…</div>
+          <div class="class-card">
+            <div class="class-bar" style="background:#1a6bff"></div>
+            <div class="class-body">
+              <div class="class-head">
+                <div class="class-code">ECON 201</div>
+                <div class="class-badge">Next: 2h</div>
+              </div>
+              <div class="class-name">Principles of Economics</div>
+              <div class="class-meta">M W F · 10:00 AM · Hinman 204</div>
+            </div>
+          </div>
+          <div class="class-card">
+            <div class="class-bar" style="background:#22c55e"></div>
+            <div class="class-body">
+              <div class="class-head">
+                <div class="class-code">CS 310</div>
+              </div>
+              <div class="class-name">Data Structures</div>
+              <div class="class-meta">T Th · 1:30 PM · Engineering 115</div>
+            </div>
+          </div>
+          <div class="class-card">
+            <div class="class-bar" style="background:#a855f7"></div>
+            <div class="class-body">
+              <div class="class-head">
+                <div class="class-code">MATH 215</div>
+                <div class="class-badge" style="background:rgba(239,68,68,0.2);color:#ef4444">Exam Fri</div>
+              </div>
+              <div class="class-name">Calculus III</div>
+              <div class="class-meta">M W F · 2:00 PM · Science 302</div>
+            </div>
+          </div>
+          <div class="class-card">
+            <div class="class-bar" style="background:#f59e0b"></div>
+            <div class="class-body">
+              <div class="class-head">
+                <div class="class-code">ENGL 112</div>
+              </div>
+              <div class="class-name">Rhetoric &amp; Writing</div>
+              <div class="class-meta">T Th · 9:00 AM · Humanities 18</div>
+            </div>
+          </div>
+        </div>
+        <div class="phone-tabs">
+          <div class="tab-item"><div class="tab-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 10.5 12 3l9 7.5V20a1 1 0 0 1-1 1h-5v-7h-6v7H4a1 1 0 0 1-1-1z"/></svg></div><div class="tab-label">Home</div></div>
+          <div class="tab-item"><div class="tab-icon active"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 5.5A2.5 2.5 0 0 1 6.5 3H20v16H6.5A2.5 2.5 0 0 0 4 21.5z"/><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/></svg></div><div class="tab-label active">Classes</div></div>
+          <div class="tab-item"><div class="tab-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a8 8 0 0 1-11.3 7.3L3 21l1.7-6.7A8 8 0 1 1 21 12z"/></svg></div><div class="tab-label">Chat</div></div>
+          <div class="tab-item"><div class="tab-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 21v-1a6 6 0 0 1 6-6h4a6 6 0 0 1 6 6v1"/></svg></div><div class="tab-label">Profile</div></div>
+        </div>
+      </div>
+
+      <!-- Center phone: Home / Dashboard -->
+      <div class="phone center">
+        <div class="phone-notch"></div>
+        <div class="phone-screen">
+          <div class="screen-header" style="font-size:19px">Good morning, <span style="color:var(--blue-bright)">Students</span><span class="subtle">Tue, Apr 21 · 2 classes today</span></div>
+          <div class="day-strip">
+            <div class="day-pill"><div class="d">S</div><div class="n">19</div></div>
+            <div class="day-pill"><div class="d">M</div><div class="n">20</div><div class="dot"></div></div>
+            <div class="day-pill active"><div class="d">T</div><div class="n">21</div><div class="dot"></div></div>
+            <div class="day-pill"><div class="d">W</div><div class="n">22</div><div class="dot"></div></div>
+            <div class="day-pill"><div class="d">T</div><div class="n">23</div><div class="dot"></div></div>
+            <div class="day-pill"><div class="d">F</div><div class="n">24</div><div class="dot"></div></div>
+            <div class="day-pill"><div class="d">S</div><div class="n">25</div></div>
+          </div>
+          <div class="sect-label">Today's Schedule</div>
+          <div class="sched-row">
+            <div class="sched-bar" style="background:#22c55e"></div>
+            <div class="sched-time">9:00<span>10:15</span></div>
+            <div class="sched-body">
+              <div class="sched-code">CS 310</div>
+              <div class="sched-loc">Engineering 115</div>
+            </div>
+          </div>
+          <div class="sched-row">
+            <div class="sched-bar" style="background:#f59e0b"></div>
+            <div class="sched-time">1:30<span>2:45</span></div>
+            <div class="sched-body">
+              <div class="sched-code">ENGL 112</div>
+              <div class="sched-loc">Humanities 18</div>
+            </div>
+          </div>
+          <div class="sect-label">Due in 7 days</div>
+          <div class="due-row">
+            <div class="due-date"><div class="dow">THU</div><div class="day">23</div></div>
+            <div class="due-body">
+              <div class="due-title">Midterm Essay</div>
+              <div class="due-meta"><span class="cdot" style="background:#1a6bff"></span>ECON 201 · in 2 days</div>
+            </div>
+            <div class="due-status prog">In prog</div>
+          </div>
+          <div class="due-row">
+            <div class="due-date"><div class="dow">FRI</div><div class="day">24</div></div>
+            <div class="due-body">
+              <div class="due-title">Lab 4 · Heaps</div>
+              <div class="due-meta"><span class="cdot" style="background:#22c55e"></span>CS 310 · in 3 days</div>
+            </div>
+            <div class="due-status todo">To do</div>
+          </div>
+        </div>
+        <div class="phone-tabs">
+          <div class="tab-item"><div class="tab-icon active"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 10.5 12 3l9 7.5V20a1 1 0 0 1-1 1h-5v-7h-6v7H4a1 1 0 0 1-1-1z"/></svg></div><div class="tab-label active">Home</div></div>
+          <div class="tab-item"><div class="tab-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 5.5A2.5 2.5 0 0 1 6.5 3H20v16H6.5A2.5 2.5 0 0 0 4 21.5z"/><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/></svg></div><div class="tab-label">Classes</div></div>
+          <div class="tab-item"><div class="tab-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a8 8 0 0 1-11.3 7.3L3 21l1.7-6.7A8 8 0 1 1 21 12z"/></svg></div><div class="tab-label">Chat</div></div>
+          <div class="tab-item"><div class="tab-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 21v-1a6 6 0 0 1 6-6h4a6 6 0 0 1 6 6v1"/></svg></div><div class="tab-label">Profile</div></div>
+        </div>
+      </div>
+
+      <!-- Right phone: AI Tutor -->
+      <div class="phone">
+        <div class="phone-notch"></div>
+        <div class="phone-screen">
+          <div class="ai-header">
+            <div class="ai-avatar">🎓</div>
+            <div class="ai-title-wrap">
+              <div class="ai-title-name">AI Tutor</div>
+              <div class="ai-title-sub">Ask about your classes, Riley</div>
+            </div>
+          </div>
+          <div class="chat-msgs">
+            <div class="date-pill">Today</div>
+            <div class="me-msg">Explain linked lists from my CS 310 notes</div>
+            <div class="ai-msg">
+              <div class="ai-avatar">🎓</div>
+              <div class="ai-bubble">From your CS 310 notes — a linked list is a chain of nodes where each node stores data plus a pointer to the next. Insertion at the head is O(1).</div>
+            </div>
+            <div class="note-ref">
+              <div class="t">📄 Lecture 8 — Linked Lists</div>
+              <div class="p">…each node contains data + pointer to next; head reference marks the start…</div>
+            </div>
+            <div class="me-msg">What's due this week?</div>
+          </div>
+          <div class="chat-input">
+            <div class="field">Ask about your notes…</div>
+            <div class="send">↑</div>
+          </div>
+        </div>
+        <div class="phone-tabs">
+          <div class="tab-item"><div class="tab-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 10.5 12 3l9 7.5V20a1 1 0 0 1-1 1h-5v-7h-6v7H4a1 1 0 0 1-1-1z"/></svg></div><div class="tab-label">Home</div></div>
+          <div class="tab-item"><div class="tab-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 5.5A2.5 2.5 0 0 1 6.5 3H20v16H6.5A2.5 2.5 0 0 0 4 21.5z"/><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/></svg></div><div class="tab-label">Classes</div></div>
+          <div class="tab-item"><div class="tab-icon active"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a8 8 0 0 1-11.3 7.3L3 21l1.7-6.7A8 8 0 1 1 21 12z"/></svg></div><div class="tab-label active">Chat</div></div>
+          <div class="tab-item"><div class="tab-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 21v-1a6 6 0 0 1 6-6h4a6 6 0 0 1 6 6v1"/></svg></div><div class="tab-label">Profile</div></div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- STATS -->
+<div class="stats">
+  <div class="stat reveal">
+    <div class="stat-num">4<span>+</span></div>
+    <div class="stat-label">Core features</div>
+  </div>
+  <div class="stat reveal">
+    <div class="stat-num">1<span>:</span>1</div>
+    <div class="stat-label">AI Tutor per student</div>
+  </div>
+  <div class="stat reveal">
+    <div class="stat-num">0<span>$</span></div>
+    <div class="stat-label">Free during beta</div>
+  </div>
+  <div class="stat reveal">
+    <div class="stat-num">iOS</div>
+    <div class="stat-label">Native app</div>
+  </div>
+</div>
+
+<!-- FEATURES -->
+<section class="section" id="features">
+  <div class="section-tag">Features</div>
+  <h2 class="section-title reveal">Everything you need.<br/>Nothing you don't.</h2>
+  <p class="section-sub reveal">Built specifically for college students juggling too many classes and not enough time.</p>
+
+  <div class="features-grid">
+    <div class="feature-card reveal">
+      <div class="feature-icon">🎓</div>
+      <div class="feature-title">AI Tutor</div>
+      <div class="feature-desc">Your personal tutor that actually knows your notes and assignments. Ask it anything — it'll pull context from your real class materials.</div>
+    </div>
+    <div class="feature-card reveal">
+      <div class="feature-icon">💬</div>
+      <div class="feature-title">Class Chat</div>
+      <div class="feature-desc">Real-time group chats for each of your courses. Coordinate with classmates, share notes, and never miss a group project update.</div>
+    </div>
+    <div class="feature-card reveal">
+      <div class="feature-icon">📚</div>
+      <div class="feature-title">Class Hub</div>
+      <div class="feature-desc">All your classes in one place. Track assignments, store notes, and see everything due at a glance — no more juggling tabs.</div>
+    </div>
+    <div class="feature-card reveal">
+      <div class="feature-icon">📅</div>
+      <div class="feature-title">Schedule Import</div>
+      <div class="feature-desc">Import your class schedule and ClassMinds will set up your courses automatically. Get started in seconds, not minutes.</div>
+    </div>
+    <div class="feature-card reveal">
+      <div class="feature-icon">🔔</div>
+      <div class="feature-title">Smart Notifications</div>
+      <div class="feature-desc">Get reminded about upcoming deadlines and new messages from classmates — at the right time, not every five minutes.</div>
+    </div>
+    <div class="feature-card reveal">
+      <div class="feature-icon">🔐</div>
+      <div class="feature-title">Secure & Private</div>
+      <div class="feature-desc">Your notes and chats are stored securely. Your account, your data — protected with industry-standard authentication.</div>
+    </div>
+  </div>
+</section>
+
+<!-- HOW IT WORKS -->
+<section class="section" id="how" style="padding-top: 0;">
+  <div class="section-tag">How It Works</div>
+  <h2 class="section-title reveal">Up and running<br/>in 3 steps.</h2>
+
+  <div class="steps">
+    <div class="step reveal">
+      <div class="step-num">1</div>
+      <div class="step-title">Create your account</div>
+      <div class="step-desc">Sign up with your email and set up your student profile in under a minute.</div>
+    </div>
+    <div class="step reveal">
+      <div class="step-num">2</div>
+      <div class="step-title">Add your classes</div>
+      <div class="step-desc">Import your schedule or manually add your courses. ClassMinds organizes everything for you.</div>
+    </div>
+    <div class="step reveal">
+      <div class="step-num">3</div>
+      <div class="step-title">Study smarter</div>
+      <div class="step-desc">Chat with classmates, ask your AI tutor, and never lose track of what's due again.</div>
+    </div>
+  </div>
+</section>
+
+<!-- CTA -->
+<div class="cta-band reveal">
+  <h2>Ready to try ClassMinds?</h2>
+  <p>Join the beta — free while it lasts. Spots are limited.</p>
+  <a href="beta.html" class="btn-primary">Get Early Access →</a>
+</div>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-content">
+    <div class="footer-section">
+      <h4>Product</h4>
+      <ul>
+        <li><a href="features.html">Features</a></li>
+        <li><a href="how.html">How It Works</a></li>
+        <li><a href="pricing.html">Pricing</a></li>
+        <li><a href="faq.html">FAQ</a></li>
+        <li><a href="beta.html">Download Beta</a></li>
+      </ul>
+    </div>
+    <div class="footer-section">
+      <h4>Company</h4>
+      <ul>
+        <li><a href="about.html">About Us</a></li>
+        <li><a href="support.html">Support</a></li>
+      </ul>
+    </div>
+    <div class="footer-section">
+      <h4>Trust &amp; Legal</h4>
+      <ul>
+        <li><a href="security.html">Security</a></li>
+        <li><a href="privacy.html">Privacy Policy</a></li>
+        <li><a href="terms.html">Terms of Service</a></li>
+      </ul>
+    </div>
+    <div class="footer-section">
+      <h4>Connect</h4>
+      <ul>
+        <li><a href="https://twitter.com/classminds.app">Twitter</a></li>
+        <li><a href="https://instagram.com/classmindsapp">Instagram</a></li>
+        <li><a href="mailto:support@classminds.app">Email Us</a></li>
+      </ul>
+    </div>
+  </div>
+  <div class="footer-bottom">
+    <p>© 2026 ClassMinds. Beta software. iOS only.</p>
+  </div>
+</footer>
+
+<script>
+  // Scroll reveal
+  const els = document.querySelectorAll('.reveal');
+  const obs = new IntersectionObserver((entries) => {
+    entries.forEach((e, i) => {
+      if (e.isIntersecting) {
+        setTimeout(() => e.target.classList.add('visible'), i * 80);
+        obs.unobserve(e.target);
+      }
+    });
+  }, { threshold: 0.1 });
+  els.forEach(el => obs.observe(el));
+
+  // Mobile nav toggle
+  const navToggle = document.querySelector('.nav-toggle');
+  const navLinks = document.querySelector('.nav-links');
+  if (navToggle && navLinks) {
+    const closeMenu = () => {
+      navLinks.classList.remove('open');
+      navToggle.classList.remove('open');
+      navToggle.setAttribute('aria-expanded', 'false');
+    };
+    navToggle.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const open = navLinks.classList.toggle('open');
+      navToggle.classList.toggle('open', open);
+      navToggle.setAttribute('aria-expanded', open);
+    });
+    navLinks.querySelectorAll('a').forEach(a => a.addEventListener('click', closeMenu));
+    document.addEventListener('click', (e) => {
+      if (!navLinks.contains(e.target) && !navToggle.contains(e.target)) closeMenu();
+    });
+  }
+</script>
+</body>
+</html>

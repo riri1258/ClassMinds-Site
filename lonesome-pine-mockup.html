@@ -10,23 +10,24 @@
 <link href="https://fonts.googleapis.com/css2?family=Yeseva+One&family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&family=Allura&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet" />
 <style>
   :root {
-    --pine-900: #0d1c17;
-    --pine-800: #14271f;
-    --pine-700: #1c372c;
-    --pine-600: #2a5044;
-    --pine-500: #3d6f5d;
-    --moss:    #6a8b6b;
-    --cedar:   #a16a2c;
-    --amber:   #d9a25a;
-    --wine:    #7a2a26;
-    --rust:    #b04a2a;
-    --birch:   #efe4cc;
-    --cream:   #f3e9d2;
-    --paper:   #ebdfc2;
-    --ink:     #2a201a;
-    --muted:   #6a5c47;
-    --line:    rgba(42,32,26,.18);
-    --shadow:  0 30px 60px -25px rgba(13,28,23,.45);
+    --pine-900: #1a2e1a;
+    --pine-800: #243f24;
+    --pine-700: #2d4f2d;
+    --pine-600: #3a6238;
+    --pine-500: #4a7846;
+    --olive:    #556b2f;
+    --moss:     #6a8b56;
+    --sage:     #aab98a;
+    --cedar:    #8a7a4a;
+    --birch:    #f5efe0;
+    --cream:    #fbf8ed;
+    --paper:    #f0e8d2;
+    --white:    #ffffff;
+    --offwhite: #fdfaf0;
+    --ink:      #1a2e1a;
+    --muted:    #5e6b50;
+    --line:     rgba(26,46,26,.18);
+    --shadow:   0 30px 60px -25px rgba(26,46,26,.45);
   }
   * { box-sizing: border-box; }
   html, body { margin: 0; padding: 0; }
@@ -67,7 +68,7 @@
     text-transform: uppercase;
     letter-spacing: .28em;
     font-size: .72rem;
-    color: var(--cedar);
+    color: var(--pine-600);
     font-weight: 500;
     display: inline-flex; align-items: center; gap: .8rem;
   }
@@ -108,7 +109,7 @@
   .btn {
     display: inline-flex; align-items: center; gap: .5rem;
     padding: .85rem 1.6rem;
-    background: var(--amber);
+    background: var(--white);
     color: var(--pine-900);
     border-radius: 2px;
     font-family: "DM Mono", monospace;
@@ -120,41 +121,50 @@
     box-shadow: 3px 3px 0 var(--pine-900);
     transition: transform .15s ease, box-shadow .15s ease, background .2s ease;
   }
-  .btn:hover { transform: translate(-1px,-1px); box-shadow: 4px 4px 0 var(--pine-900); background: #e9b269; }
+  .btn:hover { transform: translate(-1px,-1px); box-shadow: 4px 4px 0 var(--pine-900); background: var(--cream); }
   .btn:active { transform: translate(2px,2px); box-shadow: 1px 1px 0 var(--pine-900); }
   .btn--ghost {
-    background: transparent; color: var(--cream);
-    border: 1px solid rgba(244,236,220,.55);
-    box-shadow: 3px 3px 0 rgba(244,236,220,.35);
+    background: transparent; color: var(--white);
+    border: 1px solid rgba(255,255,255,.65);
+    box-shadow: 3px 3px 0 rgba(255,255,255,.4);
   }
-  .btn--ghost:hover { background: rgba(244,236,220,.08); box-shadow: 4px 4px 0 rgba(244,236,220,.5); }
+  .btn--ghost:hover { background: rgba(255,255,255,.08); box-shadow: 4px 4px 0 rgba(255,255,255,.55); }
 
   /* ───────────── HERO ───────────── */
   .hero {
     position: relative;
     min-height: 92vh;
-    color: var(--cream);
+    color: var(--white);
     overflow: hidden;
     isolation: isolate;
+    background: var(--pine-800);
   }
+  /* layered pine silhouettes — back row (faint) */
   .hero::before {
     content: "";
     position: absolute; inset: 0;
     background:
-      radial-gradient(ellipse at 70% 30%, rgba(217,162,90,.22), transparent 55%),
-      linear-gradient(180deg, rgba(13,28,23,.6) 0%, rgba(122,42,38,.25) 45%, rgba(13,28,23,.92) 100%),
-      url("https://images.unsplash.com/photo-1500382017468-9049fed747ef?w=1800&q=80&auto=format&fit=crop") center/cover;
-    filter: sepia(.55) saturate(.9) contrast(1.05);
-    z-index: -1;
+      radial-gradient(ellipse at 50% 110%, rgba(255,255,255,.06), transparent 60%),
+      radial-gradient(ellipse at 50% -20%, rgba(255,255,255,.04), transparent 50%);
+    z-index: -2;
   }
+  .pines {
+    position: absolute;
+    inset: auto 0 0 0;
+    height: 55%;
+    z-index: -1;
+    pointer-events: none;
+    display: block;
+  }
+  .pines svg { width: 100%; height: 100%; display: block; }
   /* hand-stamped Est. seal */
   .seal {
     position: absolute;
     top: 6rem; right: 4%;
-    width: 130px; height: 130px;
+    width: 140px; height: 140px;
     transform: rotate(-12deg);
-    color: var(--amber);
-    opacity: .9;
+    color: var(--white);
+    opacity: .92;
     z-index: 5;
   }
   .seal svg { width: 100%; height: 100%; }
@@ -176,7 +186,7 @@
   .hero h1 .script {
     font-family: "Allura", cursive;
     font-size: 1.15em;
-    color: var(--amber);
+    color: var(--sage);
     font-weight: 400;
     display: inline-block;
     transform: translateY(.08em);
@@ -235,7 +245,7 @@
   .stats div .n {
     font-family: "Yeseva One", serif;
     font-size: 2.6rem;
-    color: var(--wine);
+    color: var(--pine-700);
     line-height: 1;
   }
   .stats div .l {
@@ -244,7 +254,7 @@
     color: var(--muted);
     margin-top: .4rem;
   }
-  .photo-stack img { filter: sepia(.35) saturate(.85); border: 6px solid var(--paper); }
+  .photo-stack img { filter: grayscale(.25) saturate(.75) contrast(1.02); border: 6px solid var(--white); box-shadow: var(--shadow); }
   .photo-stack {
     position: relative;
     aspect-ratio: 4 / 5;
@@ -261,8 +271,8 @@
 
   /* ───────────── DISHES ───────────── */
   .dishes {
-    background: var(--pine-900);
-    color: var(--cream);
+    background: var(--pine-800);
+    color: var(--white);
     padding: 7rem 0;
     position: relative;
   }
@@ -271,15 +281,15 @@
     gap: 2rem; margin-bottom: 3.5rem; flex-wrap: wrap;
   }
   .dishes h2 { max-width: 16ch; }
-  .dishes .heading p { color: rgba(244,236,220,.7); max-width: 38ch; }
+  .dishes .heading p { color: rgba(255,255,255,.7); max-width: 38ch; font-style: italic; font-size: 1.1rem; }
   .dish-grid {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
     gap: 1.5rem;
   }
   .dish {
-    background: var(--pine-800);
-    border: 1px solid rgba(244,236,220,.1);
+    background: var(--pine-700);
+    border: 1px solid rgba(255,255,255,.12);
     border-radius: 2px;
     overflow: hidden;
     transition: transform .25s ease, border-color .25s ease;
@@ -288,32 +298,32 @@
   .dish::after {
     content: "";
     position: absolute; inset: 6px;
-    border: 1px solid rgba(216,162,90,.25);
+    border: 1px solid rgba(255,255,255,.18);
     pointer-events: none;
     border-radius: 1px;
   }
-  .dish:hover { transform: translateY(-4px); border-color: var(--amber); }
+  .dish:hover { transform: translateY(-4px); border-color: var(--white); }
   .dish .img {
     aspect-ratio: 4 / 3;
     background-size: cover; background-position: center;
-    filter: sepia(.5) saturate(.8) contrast(1.05);
+    filter: grayscale(.4) sepia(.15) saturate(.6) contrast(1.05);
   }
   .dish-body { padding: 1.6rem 1.8rem 1.8rem; }
   .dish-body .tag {
     font-family: "DM Mono", monospace;
     font-size: .68rem; letter-spacing: .26em; text-transform: uppercase;
-    color: var(--amber); margin-bottom: .8rem;
+    color: var(--sage); margin-bottom: .8rem;
   }
   .dish-body h3 {
     font-family: "Yeseva One", serif;
-    color: var(--cream);
+    color: var(--white);
     margin-bottom: .5rem;
     font-size: 1.55rem;
   }
-  .dish-body p { color: rgba(243,233,210,.7); font-size: 1.02rem; margin: 0; font-style: italic; }
+  .dish-body p { color: rgba(255,255,255,.72); font-size: 1.02rem; margin: 0; font-style: italic; }
   .dish-body .price {
     font-family: "Yeseva One", serif;
-    color: var(--amber);
+    color: var(--white);
     margin-top: 1.1rem;
     display: inline-block;
     font-size: 1.3rem;
@@ -331,18 +341,18 @@
   }
   .menu-col h3 {
     padding-bottom: .8rem;
-    border-bottom: 2px solid var(--ink);
+    border-bottom: 2px solid var(--pine-700);
     margin-bottom: 1.4rem;
     display: flex; align-items: baseline; justify-content: space-between;
     font-size: 1.7rem;
-    color: var(--wine);
+    color: var(--pine-700);
   }
   .menu-col h3 span {
     font-family: "DM Mono", monospace;
     font-size: .7rem;
     letter-spacing: .26em;
     text-transform: uppercase;
-    color: var(--cedar);
+    color: var(--pine-500);
   }
   .menu-item {
     display: grid;
@@ -368,7 +378,7 @@
   }
   .menu-item .price {
     font-family: "Yeseva One", serif;
-    color: var(--wine);
+    color: var(--pine-700);
     font-size: 1.25rem;
     white-space: nowrap;
   }
@@ -377,7 +387,7 @@
   .visit {
     padding: 7rem 0;
     background: var(--pine-700);
-    color: var(--cream);
+    color: var(--white);
     position: relative;
     overflow: hidden;
   }
@@ -386,7 +396,7 @@
     position: absolute;
     inset: auto -10% -20% auto;
     width: 60%; aspect-ratio: 1;
-    background: radial-gradient(circle, rgba(216,162,90,.18), transparent 70%);
+    background: radial-gradient(circle, rgba(255,255,255,.06), transparent 70%);
     pointer-events: none;
   }
   .visit-grid {
@@ -395,26 +405,34 @@
   }
   .hours-card {
     background: var(--pine-800);
-    border: 1px solid rgba(244,236,220,.1);
-    border-radius: 8px;
+    border: 1px solid rgba(255,255,255,.15);
+    border-radius: 2px;
     padding: 2.5rem;
+    position: relative;
+  }
+  .hours-card::before {
+    content: "";
+    position: absolute; inset: 8px;
+    border: 1px solid rgba(255,255,255,.12);
+    pointer-events: none;
   }
   .hours-row {
     display: flex; justify-content: space-between;
     padding: .8rem 0;
-    border-bottom: 1px dotted rgba(244,236,220,.15);
-    font-size: .98rem;
+    border-bottom: 1px dotted rgba(255,255,255,.18);
+    font-size: 1.05rem;
   }
   .hours-row:last-child { border-bottom: 0; }
-  .hours-row .day { font-weight: 500; }
-  .hours-row.closed { color: rgba(244,236,220,.45); }
+  .hours-row .day { font-family: "Yeseva One", serif; }
+  .hours-row.closed { color: rgba(255,255,255,.45); }
   .hours-row.closed .time { font-style: italic; }
   .contact-line {
     display: flex; gap: 1rem; align-items: center;
     padding: 1rem 0;
-    color: rgba(244,236,220,.85);
+    color: rgba(255,255,255,.88);
+    font-size: 1.05rem;
   }
-  .contact-line svg { width: 20px; height: 20px; flex: none; color: var(--amber); }
+  .contact-line svg { width: 20px; height: 20px; flex: none; color: var(--sage); }
 
   /* ───────────── CTA ───────────── */
   .reserve-cta {
@@ -429,7 +447,7 @@
   }
   .reserve-cta h2 .script {
     font-family: "Allura", cursive;
-    color: var(--wine);
+    color: var(--pine-600);
     font-size: 1.2em;
     display: inline-block;
     transform: translateY(.08em);
@@ -445,7 +463,7 @@
     display: flex; align-items: center; justify-content: center;
     gap: 1rem;
     margin: 1.5rem 0 .5rem;
-    color: var(--cedar);
+    color: var(--pine-500);
   }
   .ornament::before, .ornament::after {
     content: ""; height: 1px; background: currentColor; width: 60px; opacity: .5;
@@ -454,9 +472,9 @@
   /* ───────────── FOOTER ───────────── */
   footer {
     background: var(--pine-900);
-    color: rgba(244,236,220,.7);
+    color: rgba(255,255,255,.72);
     padding: 4rem 0 2rem;
-    font-size: .9rem;
+    font-size: .95rem;
   }
   .foot-grid {
     display: grid;
@@ -476,10 +494,10 @@
   .foot-brand p { font-style: italic; }
   footer ul { list-style: none; padding: 0; margin: 0; }
   footer ul li { padding: .35rem 0; }
-  footer ul a:hover { color: var(--amber); }
+  footer ul a:hover { color: var(--white); }
   .foot-brand p { max-width: 36ch; margin-top: .8rem; }
   .foot-bot {
-    border-top: 1px solid rgba(244,236,220,.1);
+    border-top: 1px solid rgba(255,255,255,.12);
     padding-top: 1.5rem;
     display: flex; justify-content: space-between; flex-wrap: wrap;
     font-size: .82rem; opacity: .7;
@@ -500,10 +518,10 @@
 <!-- NAV -->
 <header class="nav">
   <div class="container">
-    <a href="#" class="brand">
+    <a href="#" class="brand" style="color: var(--white);">
       <svg viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-        <path d="M32 4 L20 24 H26 L16 40 H24 L12 58 H52 L40 40 H48 L38 24 H44 Z" fill="#d8a25a"/>
-        <rect x="29" y="52" width="6" height="10" fill="#b07a3b"/>
+        <path d="M32 4 L20 24 H26 L16 40 H24 L12 58 H52 L40 40 H48 L38 24 H44 Z" fill="currentColor"/>
+        <rect x="29" y="52" width="6" height="10" fill="currentColor" opacity=".7"/>
       </svg>
       <span>The&nbsp;Lonesome&nbsp;Pine</span>
     </a>
@@ -521,6 +539,28 @@
 
 <!-- HERO -->
 <section class="hero">
+  <div class="pines" aria-hidden="true">
+    <svg viewBox="0 0 1600 500" preserveAspectRatio="xMidYEnd slice" xmlns="http://www.w3.org/2000/svg">
+      <!-- back row, faint -->
+      <g fill="#1a2e1a" opacity=".55">
+        <path d="M0 500 L80 380 L100 410 L140 320 L170 380 L200 340 L230 410 L260 380 L300 500 Z"/>
+        <path d="M260 500 L340 360 L370 400 L420 290 L450 360 L480 320 L520 400 L560 360 L600 500 Z"/>
+        <path d="M580 500 L660 370 L690 410 L740 310 L770 380 L800 340 L840 410 L880 380 L920 500 Z"/>
+        <path d="M900 500 L980 350 L1010 400 L1060 280 L1090 350 L1120 320 L1160 400 L1200 350 L1240 500 Z"/>
+        <path d="M1220 500 L1300 380 L1330 410 L1380 310 L1410 380 L1440 340 L1480 410 L1520 380 L1600 500 Z"/>
+      </g>
+      <!-- front row, solid silhouettes -->
+      <g fill="#0d1c0d">
+        <path d="M-20 500 L120 280 L150 330 L210 200 L240 280 L280 230 L320 320 L370 280 L420 500 Z"/>
+        <path d="M340 500 L470 300 L500 360 L560 220 L600 310 L640 250 L680 340 L730 290 L780 500 Z"/>
+        <path d="M700 500 L830 260 L870 320 L930 180 L970 270 L1010 220 L1060 310 L1110 270 L1170 500 Z"/>
+        <path d="M1080 500 L1210 300 L1250 360 L1320 200 L1360 290 L1400 240 L1450 330 L1500 290 L1560 500 Z"/>
+        <path d="M1440 500 L1570 310 L1610 370 L1700 240 L1700 500 Z"/>
+      </g>
+      <!-- ground line -->
+      <rect x="0" y="495" width="1600" height="5" fill="#0d1c0d"/>
+    </svg>
+  </div>
   <div class="seal" aria-hidden="true">
     <svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
       <defs>
@@ -536,7 +576,7 @@
     </svg>
   </div>
   <div class="container hero-inner">
-    <span class="eyebrow" style="color: var(--amber)">A Bay Lake Tradition · Since 1972</span>
+    <span class="eyebrow" style="color: var(--sage)">A Bay Lake Tradition · Since 1972</span>
     <h1>Cedar tables, lake breezes &amp; <span class="script">a perfect</span> cut of prime rib.</h1>
     <p class="lede">Casual lakeside dining in Deerwood, Minnesota. Hand-cut steaks, fresh walleye, and a full bar — served in the warm glow of a cabin you'll never want to leave.</p>
     <div class="hero-actions">
@@ -569,7 +609,7 @@
   <div class="container intro-grid">
     <div>
       <span class="eyebrow">Our Story</span>
-      <h2>A Bay Lake supper club, <em style="font-family:'Allura',cursive;font-style:normal;color:var(--wine);font-size:1.25em;">kept</em> the way it should be.</h2>
+      <h2>A Bay Lake supper club, <em style="font-family:'Allura',cursive;font-style:normal;color:var(--pine-600);font-size:1.25em;">kept</em> the way it should be.</h2>
       <p class="lede">For decades the Pine has been the place locals bring family, where weekenders end a long day on the lake, and where the smell of the grill drifts out through the screen door. Polished cedar tables, generous portions, neighbors at the bar.</p>
       <p class="lede">We don't reinvent. We just keep it honest — fresh fish from up north, hand-cut steaks, pasta the way grandma made it, and a kids' playground out back so dinner runs a little longer.</p>
       <div class="stats">
@@ -591,7 +631,7 @@
     <div class="heading">
       <div>
         <span class="eyebrow">House Favorites</span>
-        <h2>The dishes folks <em style="font-family:'Allura',cursive;font-style:normal;color:var(--amber);font-size:1.25em;">drive</em> an hour for.</h2>
+        <h2>The dishes folks <em style="font-family:'Allura',cursive;font-style:normal;color:var(--sage);font-size:1.25em;">drive</em> an hour for.</h2>
       </div>
       <p>Three signatures that have been on the chalkboard longer than most of our staff — and we wouldn't dare take them off.</p>
     </div>
@@ -669,7 +709,7 @@
     </div>
 
     <div style="margin-top: 3rem; text-align:center;">
-      <a href="#" class="btn" style="background: var(--pine-700); color: var(--cream);">Download Full Menu (PDF)</a>
+      <a href="#" class="btn" style="background: var(--pine-700); color: var(--white); border-color: var(--pine-900);">Download Full Menu (PDF)</a>
     </div>
   </div>
 </section>
@@ -678,7 +718,7 @@
 <section class="visit" id="visit">
   <div class="container visit-grid">
     <div>
-      <span class="eyebrow" style="color: var(--amber)">Plan Your Visit</span>
+      <span class="eyebrow" style="color: var(--sage)">Plan Your Visit</span>
       <h2>Find us through the pines, off Katrine Drive.</h2>
       <p style="opacity:.85; max-width:42ch;">We're tucked along Bay Lake — 10 minutes from Crosby, a short cruise from Ruttger's. Reservations recommended on weekends; walk-ins always welcome at the bar.</p>
 

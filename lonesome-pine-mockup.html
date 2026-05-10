@@ -1,0 +1,646 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>The Lonesome Pine · Bay Lake · Deerwood, MN</title>
+<meta name="description" content="Casual lakeside dining on Bay Lake. Hand-cut steaks, fresh walleye, and Northwoods hospitality in Deerwood, Minnesota." />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+<style>
+  :root {
+    --pine-900: #0e1f1a;
+    --pine-800: #142c25;
+    --pine-700: #1c3a31;
+    --pine-600: #2a5345;
+    --pine-500: #3d6f5d;
+    --moss:    #6a8b6b;
+    --cedar:   #b07a3b;
+    --amber:   #d8a25a;
+    --birch:   #f4ecdc;
+    --cream:   #faf6ec;
+    --ink:     #1a1714;
+    --muted:   #6b6358;
+    --line:    rgba(26,23,20,.12);
+    --shadow:  0 30px 60px -25px rgba(14,31,26,.35);
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; }
+  body {
+    font-family: "Inter", system-ui, sans-serif;
+    color: var(--ink);
+    background: var(--cream);
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+    line-height: 1.6;
+  }
+  h1, h2, h3, h4 {
+    font-family: "Fraunces", "Cormorant Garamond", Georgia, serif;
+    font-weight: 500;
+    letter-spacing: -0.01em;
+    margin: 0 0 .4em;
+    line-height: 1.1;
+  }
+  h2 { font-size: clamp(2rem, 4vw, 3rem); }
+  h3 { font-size: 1.5rem; }
+  a { color: inherit; text-decoration: none; }
+  img { max-width: 100%; display: block; }
+  .container { width: min(1180px, 92%); margin-inline: auto; }
+  .eyebrow {
+    text-transform: uppercase;
+    letter-spacing: .22em;
+    font-size: .75rem;
+    color: var(--cedar);
+    font-weight: 600;
+  }
+
+  /* ───────────── NAV ───────────── */
+  .nav {
+    position: absolute; inset: 0 0 auto 0; z-index: 10;
+    padding: 1.4rem 0;
+    color: var(--cream);
+  }
+  .nav .container {
+    display: flex; align-items: center; justify-content: space-between; gap: 2rem;
+  }
+  .brand {
+    display: flex; align-items: center; gap: .75rem;
+    font-family: "Fraunces", serif;
+    font-size: 1.15rem; letter-spacing: .04em;
+  }
+  .brand svg { width: 34px; height: 34px; }
+  .nav ul {
+    display: flex; gap: 2rem; list-style: none; margin: 0; padding: 0;
+    font-size: .92rem; font-weight: 500;
+  }
+  .nav ul a { opacity: .85; transition: opacity .2s; }
+  .nav ul a:hover { opacity: 1; }
+  .btn {
+    display: inline-flex; align-items: center; gap: .5rem;
+    padding: .8rem 1.4rem;
+    background: var(--amber);
+    color: var(--pine-900);
+    border-radius: 999px;
+    font-weight: 600; font-size: .9rem;
+    border: 1px solid rgba(0,0,0,.08);
+    transition: transform .15s ease, background .2s ease;
+  }
+  .btn:hover { transform: translateY(-1px); background: #e9b269; }
+  .btn--ghost {
+    background: transparent; color: var(--cream);
+    border: 1px solid rgba(244,236,220,.4);
+  }
+  .btn--ghost:hover { background: rgba(244,236,220,.1); }
+
+  /* ───────────── HERO ───────────── */
+  .hero {
+    position: relative;
+    min-height: 92vh;
+    color: var(--cream);
+    overflow: hidden;
+    isolation: isolate;
+  }
+  .hero::before {
+    content: "";
+    position: absolute; inset: 0;
+    background:
+      radial-gradient(ellipse at 70% 30%, rgba(216,162,90,.18), transparent 55%),
+      linear-gradient(180deg, rgba(14,31,26,.55) 0%, rgba(14,31,26,.35) 40%, rgba(14,31,26,.85) 100%),
+      url("https://images.unsplash.com/photo-1500382017468-9049fed747ef?w=1800&q=80&auto=format&fit=crop") center/cover;
+    z-index: -1;
+  }
+  .hero-inner {
+    min-height: 92vh;
+    display: grid; align-content: end;
+    padding: 8rem 0 5rem;
+  }
+  .hero h1 {
+    font-size: clamp(2.8rem, 7vw, 5.5rem);
+    max-width: 14ch;
+    margin-bottom: .3em;
+  }
+  .hero p.lede {
+    font-size: clamp(1.05rem, 1.4vw, 1.2rem);
+    max-width: 48ch;
+    opacity: .9;
+    margin-bottom: 2rem;
+  }
+  .hero-actions { display: flex; gap: .8rem; flex-wrap: wrap; }
+  .hero-meta {
+    margin-top: 3.5rem;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 2rem;
+    padding-top: 2rem;
+    border-top: 1px solid rgba(244,236,220,.18);
+    max-width: 820px;
+  }
+  .hero-meta div .label {
+    font-size: .7rem;
+    letter-spacing: .22em;
+    text-transform: uppercase;
+    opacity: .65;
+    margin-bottom: .35rem;
+  }
+  .hero-meta div .val {
+    font-family: "Fraunces", serif;
+    font-size: 1.05rem;
+  }
+
+  /* ───────────── INTRO ───────────── */
+  .intro {
+    padding: 7rem 0;
+    background: var(--cream);
+    position: relative;
+  }
+  .intro-grid {
+    display: grid;
+    grid-template-columns: 1fr 1.1fr;
+    gap: 5rem;
+    align-items: center;
+  }
+  .intro h2 { font-size: clamp(2.2rem, 3.6vw, 3.2rem); }
+  .intro .lede {
+    font-size: 1.1rem; color: var(--muted);
+    max-width: 50ch; margin-top: 1rem;
+  }
+  .stats { display: flex; gap: 2.5rem; margin-top: 2.5rem; }
+  .stats div .n {
+    font-family: "Fraunces", serif;
+    font-size: 2.4rem;
+    color: var(--pine-700);
+    line-height: 1;
+  }
+  .stats div .l {
+    font-size: .8rem; text-transform: uppercase; letter-spacing: .15em;
+    color: var(--muted);
+  }
+  .photo-stack {
+    position: relative;
+    aspect-ratio: 4 / 5;
+  }
+  .photo-stack img {
+    position: absolute;
+    width: 75%; height: 75%;
+    object-fit: cover;
+    border-radius: 4px;
+    box-shadow: var(--shadow);
+  }
+  .photo-stack img:nth-child(1) { top: 0; right: 0; }
+  .photo-stack img:nth-child(2) { bottom: 0; left: 0; width: 55%; height: 55%; }
+
+  /* ───────────── DISHES ───────────── */
+  .dishes {
+    background: var(--pine-900);
+    color: var(--cream);
+    padding: 7rem 0;
+    position: relative;
+  }
+  .dishes .heading {
+    display: flex; align-items: end; justify-content: space-between;
+    gap: 2rem; margin-bottom: 3.5rem; flex-wrap: wrap;
+  }
+  .dishes h2 { max-width: 16ch; }
+  .dishes .heading p { color: rgba(244,236,220,.7); max-width: 38ch; }
+  .dish-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1.5rem;
+  }
+  .dish {
+    background: var(--pine-800);
+    border: 1px solid rgba(244,236,220,.08);
+    border-radius: 6px;
+    overflow: hidden;
+    transition: transform .25s ease, border-color .25s ease;
+  }
+  .dish:hover { transform: translateY(-4px); border-color: var(--amber); }
+  .dish .img {
+    aspect-ratio: 4 / 3;
+    background-size: cover; background-position: center;
+  }
+  .dish-body { padding: 1.6rem 1.6rem 1.8rem; }
+  .dish-body .tag {
+    font-size: .7rem; letter-spacing: .18em; text-transform: uppercase;
+    color: var(--amber); margin-bottom: .8rem;
+  }
+  .dish-body h3 { color: var(--cream); margin-bottom: .4rem; }
+  .dish-body p { color: rgba(244,236,220,.7); font-size: .95rem; margin: 0; }
+  .dish-body .price {
+    font-family: "Fraunces", serif;
+    color: var(--amber);
+    margin-top: 1rem;
+    display: inline-block;
+    font-size: 1.1rem;
+  }
+
+  /* ───────────── MENU PEEK ───────────── */
+  .menu {
+    padding: 7rem 0;
+    background: var(--cream);
+  }
+  .menu-grid {
+    display: grid; grid-template-columns: 1fr 1fr;
+    gap: 4rem;
+    margin-top: 3rem;
+  }
+  .menu-col h3 {
+    padding-bottom: .8rem;
+    border-bottom: 1px solid var(--line);
+    margin-bottom: 1.4rem;
+    display: flex; align-items: baseline; justify-content: space-between;
+  }
+  .menu-col h3 span { font-family: "Inter", sans-serif; font-size: .7rem; letter-spacing: .2em; text-transform: uppercase; color: var(--cedar); }
+  .menu-item {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: 1rem;
+    padding: 1rem 0;
+    border-bottom: 1px dotted var(--line);
+  }
+  .menu-item:last-child { border-bottom: 0; }
+  .menu-item h4 {
+    font-family: "Fraunces", serif;
+    font-size: 1.1rem;
+    font-weight: 500;
+    margin: 0 0 .25rem;
+  }
+  .menu-item p { margin: 0; color: var(--muted); font-size: .92rem; }
+  .menu-item .price {
+    font-family: "Fraunces", serif;
+    color: var(--pine-700);
+    font-size: 1.05rem;
+    white-space: nowrap;
+  }
+
+  /* ───────────── VISIT ───────────── */
+  .visit {
+    padding: 7rem 0;
+    background: var(--pine-700);
+    color: var(--cream);
+    position: relative;
+    overflow: hidden;
+  }
+  .visit::after {
+    content: "";
+    position: absolute;
+    inset: auto -10% -20% auto;
+    width: 60%; aspect-ratio: 1;
+    background: radial-gradient(circle, rgba(216,162,90,.18), transparent 70%);
+    pointer-events: none;
+  }
+  .visit-grid {
+    display: grid; grid-template-columns: 1.1fr 1fr;
+    gap: 5rem; align-items: center;
+  }
+  .hours-card {
+    background: var(--pine-800);
+    border: 1px solid rgba(244,236,220,.1);
+    border-radius: 8px;
+    padding: 2.5rem;
+  }
+  .hours-row {
+    display: flex; justify-content: space-between;
+    padding: .8rem 0;
+    border-bottom: 1px dotted rgba(244,236,220,.15);
+    font-size: .98rem;
+  }
+  .hours-row:last-child { border-bottom: 0; }
+  .hours-row .day { font-weight: 500; }
+  .hours-row.closed { color: rgba(244,236,220,.45); }
+  .hours-row.closed .time { font-style: italic; }
+  .contact-line {
+    display: flex; gap: 1rem; align-items: center;
+    padding: 1rem 0;
+    color: rgba(244,236,220,.85);
+  }
+  .contact-line svg { width: 20px; height: 20px; flex: none; color: var(--amber); }
+
+  /* ───────────── CTA ───────────── */
+  .reserve-cta {
+    padding: 6rem 0;
+    background: var(--cream);
+    text-align: center;
+  }
+  .reserve-cta h2 {
+    font-size: clamp(2.4rem, 4.5vw, 3.6rem);
+    max-width: 18ch;
+    margin: 0 auto .6rem;
+  }
+  .reserve-cta p { color: var(--muted); max-width: 50ch; margin: 0 auto 2rem; }
+
+  /* ───────────── FOOTER ───────────── */
+  footer {
+    background: var(--pine-900);
+    color: rgba(244,236,220,.7);
+    padding: 4rem 0 2rem;
+    font-size: .9rem;
+  }
+  .foot-grid {
+    display: grid;
+    grid-template-columns: 2fr 1fr 1fr 1fr;
+    gap: 3rem;
+    margin-bottom: 3rem;
+  }
+  footer h4 {
+    color: var(--cream);
+    font-family: "Inter", sans-serif;
+    font-size: .8rem;
+    text-transform: uppercase;
+    letter-spacing: .2em;
+    margin-bottom: 1.2rem;
+  }
+  footer ul { list-style: none; padding: 0; margin: 0; }
+  footer ul li { padding: .35rem 0; }
+  footer ul a:hover { color: var(--amber); }
+  .foot-brand p { max-width: 36ch; margin-top: .8rem; }
+  .foot-bot {
+    border-top: 1px solid rgba(244,236,220,.1);
+    padding-top: 1.5rem;
+    display: flex; justify-content: space-between; flex-wrap: wrap;
+    font-size: .82rem; opacity: .7;
+  }
+
+  /* ───────────── RESPONSIVE ───────────── */
+  @media (max-width: 900px) {
+    .nav ul { display: none; }
+    .intro-grid, .visit-grid, .menu-grid { grid-template-columns: 1fr; gap: 3rem; }
+    .dish-grid { grid-template-columns: 1fr; }
+    .foot-grid { grid-template-columns: 1fr 1fr; }
+    .photo-stack { aspect-ratio: 5/4; max-width: 480px; }
+  }
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<header class="nav">
+  <div class="container">
+    <a href="#" class="brand">
+      <svg viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+        <path d="M32 4 L20 24 H26 L16 40 H24 L12 58 H52 L40 40 H48 L38 24 H44 Z" fill="#d8a25a"/>
+        <rect x="29" y="52" width="6" height="10" fill="#b07a3b"/>
+      </svg>
+      <span>The Lonesome Pine</span>
+    </a>
+    <nav>
+      <ul>
+        <li><a href="#about">About</a></li>
+        <li><a href="#dishes">Signatures</a></li>
+        <li><a href="#menu">Menu</a></li>
+        <li><a href="#visit">Visit</a></li>
+        <li><a href="#" class="btn btn--ghost">Reserve</a></li>
+      </ul>
+    </nav>
+  </div>
+</header>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="container hero-inner">
+    <span class="eyebrow" style="color: var(--amber)">On Bay Lake · Est. Northwoods Tradition</span>
+    <h1>Cedar tables, lake breezes, and a perfect cut of prime rib.</h1>
+    <p class="lede">Casual lakeside dining in Deerwood, Minnesota. Hand-cut steaks, fresh walleye, and a full bar — served in the warm glow of a cabin you'll never want to leave.</p>
+    <div class="hero-actions">
+      <a href="#" class="btn">Reserve a Table →</a>
+      <a href="#menu" class="btn btn--ghost">View the Menu</a>
+    </div>
+    <div class="hero-meta">
+      <div>
+        <div class="label">Find Us</div>
+        <div class="val">13726 Katrine Dr<br/>Deerwood, MN 56444</div>
+      </div>
+      <div>
+        <div class="label">Call</div>
+        <div class="val">(218) 678-2874</div>
+      </div>
+      <div>
+        <div class="label">Tonight</div>
+        <div class="val">Open · 4:00 – 10:00 pm</div>
+      </div>
+      <div>
+        <div class="label">Weekend Special</div>
+        <div class="val">Prime Rib · Fri &amp; Sat</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- INTRO -->
+<section class="intro" id="about">
+  <div class="container intro-grid">
+    <div>
+      <span class="eyebrow">Our Story</span>
+      <h2>A Bay Lake supper club, kept the way it should be.</h2>
+      <p class="lede">For decades the Pine has been the place locals bring family, where weekenders end a long day on the lake, and where the smell of the grill drifts out through the screen door. Polished cedar tables, generous portions, neighbors at the bar.</p>
+      <p class="lede">We don't reinvent. We just keep it honest — fresh fish from up north, hand-cut steaks, pasta the way grandma made it, and a kids' playground out back so dinner runs a little longer.</p>
+      <div class="stats">
+        <div><div class="n">30+</div><div class="l">Years on the Lake</div></div>
+        <div><div class="n">4.6★</div><div class="l">Diner Rating</div></div>
+        <div><div class="n">7 nights</div><div class="l">Prime Rib Weekend</div></div>
+      </div>
+    </div>
+    <div class="photo-stack">
+      <img src="https://images.unsplash.com/photo-1544025162-d76694265947?w=900&q=80&auto=format&fit=crop" alt="Hand-cut ribeye on a wooden board" />
+      <img src="https://images.unsplash.com/photo-1514516345957-556ca7d90a29?w=700&q=80&auto=format&fit=crop" alt="Warm cabin dining interior" />
+    </div>
+  </div>
+</section>
+
+<!-- DISHES -->
+<section class="dishes" id="dishes">
+  <div class="container">
+    <div class="heading">
+      <div>
+        <span class="eyebrow">House Favorites</span>
+        <h2>The dishes folks drive an hour for.</h2>
+      </div>
+      <p>Three signatures that have been on the chalkboard longer than most of our staff — and we wouldn't dare take them off.</p>
+    </div>
+    <div class="dish-grid">
+      <article class="dish">
+        <div class="img" style="background-image:url('https://images.unsplash.com/photo-1565299624946-b28f40a0ae38?w=900&q=80&auto=format&fit=crop')"></div>
+        <div class="dish-body">
+          <div class="tag">Signature</div>
+          <h3>Pan-Fried Walleye</h3>
+          <p>Lightly breaded or broiled, drawn butter, lemon, wild rice pilaf. The Minnesota classic, done right.</p>
+          <span class="price">$28</span>
+        </div>
+      </article>
+      <article class="dish">
+        <div class="img" style="background-image:url('https://images.unsplash.com/photo-1546964124-0cce460f38ef?w=900&q=80&auto=format&fit=crop')"></div>
+        <div class="dish-body">
+          <div class="tag">Weekend Only</div>
+          <h3>Slow-Roasted Prime Rib</h3>
+          <p>Friday &amp; Saturday. Hand-cut, au jus, horseradish cream, baked potato. Gone by 9 — come early.</p>
+          <span class="price">$36</span>
+        </div>
+      </article>
+      <article class="dish">
+        <div class="img" style="background-image:url('https://images.unsplash.com/photo-1473093295043-cdd812d0e601?w=900&q=80&auto=format&fit=crop')"></div>
+        <div class="dish-body">
+          <div class="tag">Pine Original</div>
+          <h3>Langostino Lobster Linguini</h3>
+          <p>Sweet langostino, garlic-cream sauce, fresh herbs, shaved parmesan. Rich, simple, ours.</p>
+          <span class="price">$24</span>
+        </div>
+      </article>
+    </div>
+  </div>
+</section>
+
+<!-- MENU PEEK -->
+<section class="menu" id="menu">
+  <div class="container">
+    <span class="eyebrow">A Look at the Menu</span>
+    <h2>Steaks, seafood, pasta &amp; sandwiches.</h2>
+    <p style="color: var(--muted); max-width: 50ch;">Served Thursday through Sunday. Full bar, local beer on tap, and a kids' menu for the cabin crowd.</p>
+
+    <div class="menu-grid">
+      <div class="menu-col">
+        <h3>From the Grill <span>Steaks</span></h3>
+        <div class="menu-item">
+          <div><h4>Center-Cut Ribeye</h4><p>14 oz, seasoned simply, char-grilled.</p></div>
+          <div class="price">$34</div>
+        </div>
+        <div class="menu-item">
+          <div><h4>Sirloin Tip</h4><p>House marinade, garlic butter finish.</p></div>
+          <div class="price">$26</div>
+        </div>
+        <div class="menu-item">
+          <div><h4>Prime Rib Grilled Cheese</h4><p>The signature. Sharp cheddar, sourdough, au jus.</p></div>
+          <div class="price">$19</div>
+        </div>
+      </div>
+
+      <div class="menu-col">
+        <h3>From the Pasta Pot <span>House Made</span></h3>
+        <div class="menu-item">
+          <div><h4>Bourbon Street Pasta</h4><p>Blackened chicken, Cajun cream, andouille.</p></div>
+          <div class="price">$22</div>
+        </div>
+        <div class="menu-item">
+          <div><h4>Manicotti</h4><p>Ricotta, marinara, fresh basil, parmesan.</p></div>
+          <div class="price">$19</div>
+        </div>
+        <div class="menu-item">
+          <div><h4>Shrimp Linguini</h4><p>Garlic, white wine, lemon, capers.</p></div>
+          <div class="price">$23</div>
+        </div>
+      </div>
+    </div>
+
+    <div style="margin-top: 3rem; text-align:center;">
+      <a href="#" class="btn" style="background: var(--pine-700); color: var(--cream);">Download Full Menu (PDF)</a>
+    </div>
+  </div>
+</section>
+
+<!-- VISIT -->
+<section class="visit" id="visit">
+  <div class="container visit-grid">
+    <div>
+      <span class="eyebrow" style="color: var(--amber)">Plan Your Visit</span>
+      <h2>Find us through the pines, off Katrine Drive.</h2>
+      <p style="opacity:.85; max-width:42ch;">We're tucked along Bay Lake — 10 minutes from Crosby, a short cruise from Ruttger's. Reservations recommended on weekends; walk-ins always welcome at the bar.</p>
+
+      <div style="margin-top: 2rem;">
+        <div class="contact-line">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 1118 0z"/><circle cx="12" cy="10" r="3"/></svg>
+          13726 Katrine Drive, Deerwood, MN 56444
+        </div>
+        <div class="contact-line">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07 19.5 19.5 0 01-6-6 19.79 19.79 0 01-3.07-8.67A2 2 0 014.11 2h3a2 2 0 012 1.72c.13.96.36 1.9.7 2.81a2 2 0 01-.45 2.11L8.09 9.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45c.91.34 1.85.57 2.81.7A2 2 0 0122 16.92z"/></svg>
+          (218) 678-2874
+        </div>
+        <div class="contact-line">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
+          Thursday – Sunday, dinner only
+        </div>
+      </div>
+
+      <div style="margin-top: 2rem; display:flex; gap:.8rem; flex-wrap:wrap;">
+        <a href="#" class="btn">Reserve a Table</a>
+        <a href="#" class="btn btn--ghost">Get Directions</a>
+      </div>
+    </div>
+
+    <div class="hours-card">
+      <h3 style="color: var(--cream); margin-bottom:1.4rem;">Hours</h3>
+      <div class="hours-row closed"><span class="day">Monday</span><span class="time">Closed</span></div>
+      <div class="hours-row closed"><span class="day">Tuesday</span><span class="time">Closed</span></div>
+      <div class="hours-row closed"><span class="day">Wednesday</span><span class="time">Closed</span></div>
+      <div class="hours-row"><span class="day">Thursday</span><span class="time">4:00 – 9:00 pm</span></div>
+      <div class="hours-row"><span class="day">Friday</span><span class="time">4:00 – 10:00 pm</span></div>
+      <div class="hours-row"><span class="day">Saturday</span><span class="time">4:00 – 10:00 pm</span></div>
+      <div class="hours-row"><span class="day">Sunday</span><span class="time">4:00 – 9:00 pm</span></div>
+      <div style="margin-top:1.4rem; padding-top:1.4rem; border-top: 1px dotted rgba(244,236,220,.15); font-size:.85rem; opacity:.7;">
+        Kitchen closes 30 min before the bar. Summer hours expanded through Labor Day.
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- RESERVE CTA -->
+<section class="reserve-cta">
+  <div class="container">
+    <span class="eyebrow">Hold a Table</span>
+    <h2>The fire's lit. The walleye's fresh. Pull up a chair.</h2>
+    <p>Reservations open two weeks out. For parties of six or more, give us a ring and we'll set the long table by the window.</p>
+    <a href="#" class="btn">Reserve Online →</a>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div class="container">
+    <div class="foot-grid">
+      <div class="foot-brand">
+        <div class="brand" style="color: var(--cream);">
+          <svg viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+            <path d="M32 4 L20 24 H26 L16 40 H24 L12 58 H52 L40 40 H48 L38 24 H44 Z" fill="#d8a25a"/>
+            <rect x="29" y="52" width="6" height="10" fill="#b07a3b"/>
+          </svg>
+          <span>The Lonesome Pine</span>
+        </div>
+        <p>Casual lakeside dining on Bay Lake. A Deerwood, Minnesota tradition since the cedar tables were new.</p>
+      </div>
+      <div>
+        <h4>Visit</h4>
+        <ul>
+          <li>13726 Katrine Dr</li>
+          <li>Deerwood, MN 56444</li>
+          <li>(218) 678-2874</li>
+        </ul>
+      </div>
+      <div>
+        <h4>Explore</h4>
+        <ul>
+          <li><a href="#about">Our Story</a></li>
+          <li><a href="#menu">Menu</a></li>
+          <li><a href="#dishes">Signatures</a></li>
+          <li><a href="#visit">Hours</a></li>
+        </ul>
+      </div>
+      <div>
+        <h4>Follow</h4>
+        <ul>
+          <li><a href="#">Facebook</a></li>
+          <li><a href="#">Instagram</a></li>
+          <li><a href="#">TripAdvisor</a></li>
+          <li><a href="#">Yelp</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="foot-bot">
+      <div>© <span id="yr">2026</span> The Lonesome Pine Restaurant &amp; Bar</div>
+      <div>Built with cedar, butter, and a little smoke.</div>
+    </div>
+  </div>
+</footer>
+
+<script>document.getElementById('yr').textContent = new Date().getFullYear();</script>
+
+</body>
+</html>

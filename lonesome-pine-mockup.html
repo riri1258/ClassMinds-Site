@@ -7,40 +7,55 @@
 <meta name="description" content="Casual lakeside dining on Bay Lake. Hand-cut steaks, fresh walleye, and Northwoods hospitality in Deerwood, Minnesota." />
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+<link href="https://fonts.googleapis.com/css2?family=Yeseva+One&family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&family=Allura&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet" />
 <style>
   :root {
-    --pine-900: #0e1f1a;
-    --pine-800: #142c25;
-    --pine-700: #1c3a31;
-    --pine-600: #2a5345;
+    --pine-900: #0d1c17;
+    --pine-800: #14271f;
+    --pine-700: #1c372c;
+    --pine-600: #2a5044;
     --pine-500: #3d6f5d;
     --moss:    #6a8b6b;
-    --cedar:   #b07a3b;
-    --amber:   #d8a25a;
-    --birch:   #f4ecdc;
-    --cream:   #faf6ec;
-    --ink:     #1a1714;
-    --muted:   #6b6358;
-    --line:    rgba(26,23,20,.12);
-    --shadow:  0 30px 60px -25px rgba(14,31,26,.35);
+    --cedar:   #a16a2c;
+    --amber:   #d9a25a;
+    --wine:    #7a2a26;
+    --rust:    #b04a2a;
+    --birch:   #efe4cc;
+    --cream:   #f3e9d2;
+    --paper:   #ebdfc2;
+    --ink:     #2a201a;
+    --muted:   #6a5c47;
+    --line:    rgba(42,32,26,.18);
+    --shadow:  0 30px 60px -25px rgba(13,28,23,.45);
   }
   * { box-sizing: border-box; }
   html, body { margin: 0; padding: 0; }
   body {
-    font-family: "Inter", system-ui, sans-serif;
+    font-family: "Cormorant Garamond", "Times New Roman", Georgia, serif;
+    font-size: 1.075rem;
     color: var(--ink);
     background: var(--cream);
     -webkit-font-smoothing: antialiased;
     text-rendering: optimizeLegibility;
-    line-height: 1.6;
+    line-height: 1.65;
+    position: relative;
+  }
+  /* paper grain overlay */
+  body::before {
+    content: "";
+    position: fixed; inset: 0;
+    pointer-events: none;
+    z-index: 1000;
+    opacity: .18;
+    mix-blend-mode: multiply;
+    background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='240' height='240'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 0.16  0 0 0 0 0.12  0 0 0 0 0.1  0 0 0 0.7 0'/></filter><rect width='100%25' height='100%25' filter='url(%23n)'/></svg>");
   }
   h1, h2, h3, h4 {
-    font-family: "Fraunces", "Cormorant Garamond", Georgia, serif;
-    font-weight: 500;
-    letter-spacing: -0.01em;
+    font-family: "Yeseva One", "Cormorant Garamond", Georgia, serif;
+    font-weight: 400;
+    letter-spacing: 0;
     margin: 0 0 .4em;
-    line-height: 1.1;
+    line-height: 1.05;
   }
   h2 { font-size: clamp(2rem, 4vw, 3rem); }
   h3 { font-size: 1.5rem; }
@@ -48,12 +63,21 @@
   img { max-width: 100%; display: block; }
   .container { width: min(1180px, 92%); margin-inline: auto; }
   .eyebrow {
+    font-family: "DM Mono", "Courier New", monospace;
     text-transform: uppercase;
-    letter-spacing: .22em;
-    font-size: .75rem;
+    letter-spacing: .28em;
+    font-size: .72rem;
     color: var(--cedar);
-    font-weight: 600;
+    font-weight: 500;
+    display: inline-flex; align-items: center; gap: .8rem;
   }
+  .eyebrow::before, .eyebrow::after {
+    content: "✦";
+    font-size: .65rem;
+    opacity: .7;
+  }
+  .eyebrow::before { margin-right: .2rem; }
+  .eyebrow::after  { margin-left: .2rem; }
 
   /* ───────────── NAV ───────────── */
   .nav {
@@ -66,32 +90,44 @@
   }
   .brand {
     display: flex; align-items: center; gap: .75rem;
-    font-family: "Fraunces", serif;
-    font-size: 1.15rem; letter-spacing: .04em;
+    font-family: "Allura", "Pinyon Script", cursive;
+    font-size: 2.1rem;
+    line-height: 1;
+    letter-spacing: 0;
   }
-  .brand svg { width: 34px; height: 34px; }
+  .brand svg { width: 38px; height: 38px; }
   .nav ul {
-    display: flex; gap: 2rem; list-style: none; margin: 0; padding: 0;
-    font-size: .92rem; font-weight: 500;
+    display: flex; gap: 2.2rem; list-style: none; margin: 0; padding: 0;
+    font-family: "DM Mono", monospace;
+    font-size: .78rem;
+    letter-spacing: .22em;
+    text-transform: uppercase;
   }
   .nav ul a { opacity: .85; transition: opacity .2s; }
   .nav ul a:hover { opacity: 1; }
   .btn {
     display: inline-flex; align-items: center; gap: .5rem;
-    padding: .8rem 1.4rem;
+    padding: .85rem 1.6rem;
     background: var(--amber);
     color: var(--pine-900);
-    border-radius: 999px;
-    font-weight: 600; font-size: .9rem;
-    border: 1px solid rgba(0,0,0,.08);
-    transition: transform .15s ease, background .2s ease;
+    border-radius: 2px;
+    font-family: "DM Mono", monospace;
+    font-weight: 500;
+    font-size: .78rem;
+    letter-spacing: .22em;
+    text-transform: uppercase;
+    border: 1px solid var(--pine-900);
+    box-shadow: 3px 3px 0 var(--pine-900);
+    transition: transform .15s ease, box-shadow .15s ease, background .2s ease;
   }
-  .btn:hover { transform: translateY(-1px); background: #e9b269; }
+  .btn:hover { transform: translate(-1px,-1px); box-shadow: 4px 4px 0 var(--pine-900); background: #e9b269; }
+  .btn:active { transform: translate(2px,2px); box-shadow: 1px 1px 0 var(--pine-900); }
   .btn--ghost {
     background: transparent; color: var(--cream);
-    border: 1px solid rgba(244,236,220,.4);
+    border: 1px solid rgba(244,236,220,.55);
+    box-shadow: 3px 3px 0 rgba(244,236,220,.35);
   }
-  .btn--ghost:hover { background: rgba(244,236,220,.1); }
+  .btn--ghost:hover { background: rgba(244,236,220,.08); box-shadow: 4px 4px 0 rgba(244,236,220,.5); }
 
   /* ───────────── HERO ───────────── */
   .hero {
@@ -105,10 +141,25 @@
     content: "";
     position: absolute; inset: 0;
     background:
-      radial-gradient(ellipse at 70% 30%, rgba(216,162,90,.18), transparent 55%),
-      linear-gradient(180deg, rgba(14,31,26,.55) 0%, rgba(14,31,26,.35) 40%, rgba(14,31,26,.85) 100%),
+      radial-gradient(ellipse at 70% 30%, rgba(217,162,90,.22), transparent 55%),
+      linear-gradient(180deg, rgba(13,28,23,.6) 0%, rgba(122,42,38,.25) 45%, rgba(13,28,23,.92) 100%),
       url("https://images.unsplash.com/photo-1500382017468-9049fed747ef?w=1800&q=80&auto=format&fit=crop") center/cover;
+    filter: sepia(.55) saturate(.9) contrast(1.05);
     z-index: -1;
+  }
+  /* hand-stamped Est. seal */
+  .seal {
+    position: absolute;
+    top: 6rem; right: 4%;
+    width: 130px; height: 130px;
+    transform: rotate(-12deg);
+    color: var(--amber);
+    opacity: .9;
+    z-index: 5;
+  }
+  .seal svg { width: 100%; height: 100%; }
+  @media (max-width: 700px) {
+    .seal { width: 90px; height: 90px; top: 5rem; right: 5%; }
   }
   .hero-inner {
     min-height: 92vh;
@@ -116,14 +167,26 @@
     padding: 8rem 0 5rem;
   }
   .hero h1 {
-    font-size: clamp(2.8rem, 7vw, 5.5rem);
+    font-family: "Yeseva One", serif;
+    font-size: clamp(2.8rem, 7.2vw, 5.8rem);
     max-width: 14ch;
     margin-bottom: .3em;
+    text-shadow: 0 2px 0 rgba(0,0,0,.25);
+  }
+  .hero h1 .script {
+    font-family: "Allura", cursive;
+    font-size: 1.15em;
+    color: var(--amber);
+    font-weight: 400;
+    display: inline-block;
+    transform: translateY(.08em);
   }
   .hero p.lede {
-    font-size: clamp(1.05rem, 1.4vw, 1.2rem);
+    font-family: "Cormorant Garamond", serif;
+    font-style: italic;
+    font-size: clamp(1.1rem, 1.5vw, 1.35rem);
     max-width: 48ch;
-    opacity: .9;
+    opacity: .92;
     margin-bottom: 2rem;
   }
   .hero-actions { display: flex; gap: .8rem; flex-wrap: wrap; }
@@ -137,15 +200,17 @@
     max-width: 820px;
   }
   .hero-meta div .label {
-    font-size: .7rem;
-    letter-spacing: .22em;
+    font-family: "DM Mono", monospace;
+    font-size: .68rem;
+    letter-spacing: .26em;
     text-transform: uppercase;
     opacity: .65;
     margin-bottom: .35rem;
   }
   .hero-meta div .val {
-    font-family: "Fraunces", serif;
+    font-family: "Yeseva One", serif;
     font-size: 1.05rem;
+    line-height: 1.3;
   }
 
   /* ───────────── INTRO ───────────── */
@@ -160,22 +225,26 @@
     gap: 5rem;
     align-items: center;
   }
-  .intro h2 { font-size: clamp(2.2rem, 3.6vw, 3.2rem); }
+  .intro h2 { font-size: clamp(2.2rem, 3.8vw, 3.4rem); }
   .intro .lede {
-    font-size: 1.1rem; color: var(--muted);
-    max-width: 50ch; margin-top: 1rem;
+    font-size: 1.18rem; color: var(--ink);
+    max-width: 52ch; margin-top: 1rem;
+    font-style: italic;
   }
   .stats { display: flex; gap: 2.5rem; margin-top: 2.5rem; }
   .stats div .n {
-    font-family: "Fraunces", serif;
-    font-size: 2.4rem;
-    color: var(--pine-700);
+    font-family: "Yeseva One", serif;
+    font-size: 2.6rem;
+    color: var(--wine);
     line-height: 1;
   }
   .stats div .l {
-    font-size: .8rem; text-transform: uppercase; letter-spacing: .15em;
+    font-family: "DM Mono", monospace;
+    font-size: .72rem; text-transform: uppercase; letter-spacing: .2em;
     color: var(--muted);
+    margin-top: .4rem;
   }
+  .photo-stack img { filter: sepia(.35) saturate(.85); border: 6px solid var(--paper); }
   .photo-stack {
     position: relative;
     aspect-ratio: 4 / 5;
@@ -210,29 +279,44 @@
   }
   .dish {
     background: var(--pine-800);
-    border: 1px solid rgba(244,236,220,.08);
-    border-radius: 6px;
+    border: 1px solid rgba(244,236,220,.1);
+    border-radius: 2px;
     overflow: hidden;
     transition: transform .25s ease, border-color .25s ease;
+    position: relative;
+  }
+  .dish::after {
+    content: "";
+    position: absolute; inset: 6px;
+    border: 1px solid rgba(216,162,90,.25);
+    pointer-events: none;
+    border-radius: 1px;
   }
   .dish:hover { transform: translateY(-4px); border-color: var(--amber); }
   .dish .img {
     aspect-ratio: 4 / 3;
     background-size: cover; background-position: center;
+    filter: sepia(.5) saturate(.8) contrast(1.05);
   }
-  .dish-body { padding: 1.6rem 1.6rem 1.8rem; }
+  .dish-body { padding: 1.6rem 1.8rem 1.8rem; }
   .dish-body .tag {
-    font-size: .7rem; letter-spacing: .18em; text-transform: uppercase;
+    font-family: "DM Mono", monospace;
+    font-size: .68rem; letter-spacing: .26em; text-transform: uppercase;
     color: var(--amber); margin-bottom: .8rem;
   }
-  .dish-body h3 { color: var(--cream); margin-bottom: .4rem; }
-  .dish-body p { color: rgba(244,236,220,.7); font-size: .95rem; margin: 0; }
+  .dish-body h3 {
+    font-family: "Yeseva One", serif;
+    color: var(--cream);
+    margin-bottom: .5rem;
+    font-size: 1.55rem;
+  }
+  .dish-body p { color: rgba(243,233,210,.7); font-size: 1.02rem; margin: 0; font-style: italic; }
   .dish-body .price {
-    font-family: "Fraunces", serif;
+    font-family: "Yeseva One", serif;
     color: var(--amber);
-    margin-top: 1rem;
+    margin-top: 1.1rem;
     display: inline-block;
-    font-size: 1.1rem;
+    font-size: 1.3rem;
   }
 
   /* ───────────── MENU PEEK ───────────── */
@@ -247,30 +331,45 @@
   }
   .menu-col h3 {
     padding-bottom: .8rem;
-    border-bottom: 1px solid var(--line);
+    border-bottom: 2px solid var(--ink);
     margin-bottom: 1.4rem;
     display: flex; align-items: baseline; justify-content: space-between;
+    font-size: 1.7rem;
+    color: var(--wine);
   }
-  .menu-col h3 span { font-family: "Inter", sans-serif; font-size: .7rem; letter-spacing: .2em; text-transform: uppercase; color: var(--cedar); }
+  .menu-col h3 span {
+    font-family: "DM Mono", monospace;
+    font-size: .7rem;
+    letter-spacing: .26em;
+    text-transform: uppercase;
+    color: var(--cedar);
+  }
   .menu-item {
     display: grid;
     grid-template-columns: 1fr auto;
     gap: 1rem;
     padding: 1rem 0;
     border-bottom: 1px dotted var(--line);
+    align-items: baseline;
   }
   .menu-item:last-child { border-bottom: 0; }
   .menu-item h4 {
-    font-family: "Fraunces", serif;
-    font-size: 1.1rem;
-    font-weight: 500;
+    font-family: "Yeseva One", serif;
+    font-size: 1.2rem;
+    font-weight: 400;
     margin: 0 0 .25rem;
+    color: var(--ink);
   }
-  .menu-item p { margin: 0; color: var(--muted); font-size: .92rem; }
+  .menu-item p {
+    margin: 0;
+    color: var(--muted);
+    font-size: 1rem;
+    font-style: italic;
+  }
   .menu-item .price {
-    font-family: "Fraunces", serif;
-    color: var(--pine-700);
-    font-size: 1.05rem;
+    font-family: "Yeseva One", serif;
+    color: var(--wine);
+    font-size: 1.25rem;
     white-space: nowrap;
   }
 
@@ -324,11 +423,33 @@
     text-align: center;
   }
   .reserve-cta h2 {
-    font-size: clamp(2.4rem, 4.5vw, 3.6rem);
+    font-size: clamp(2.4rem, 4.8vw, 3.8rem);
     max-width: 18ch;
     margin: 0 auto .6rem;
   }
-  .reserve-cta p { color: var(--muted); max-width: 50ch; margin: 0 auto 2rem; }
+  .reserve-cta h2 .script {
+    font-family: "Allura", cursive;
+    color: var(--wine);
+    font-size: 1.2em;
+    display: inline-block;
+    transform: translateY(.08em);
+  }
+  .reserve-cta p {
+    color: var(--muted);
+    max-width: 50ch;
+    margin: 0 auto 2rem;
+    font-style: italic;
+    font-size: 1.1rem;
+  }
+  .ornament {
+    display: flex; align-items: center; justify-content: center;
+    gap: 1rem;
+    margin: 1.5rem 0 .5rem;
+    color: var(--cedar);
+  }
+  .ornament::before, .ornament::after {
+    content: ""; height: 1px; background: currentColor; width: 60px; opacity: .5;
+  }
 
   /* ───────────── FOOTER ───────────── */
   footer {
@@ -345,12 +466,14 @@
   }
   footer h4 {
     color: var(--cream);
-    font-family: "Inter", sans-serif;
-    font-size: .8rem;
+    font-family: "DM Mono", monospace;
+    font-size: .76rem;
     text-transform: uppercase;
-    letter-spacing: .2em;
+    letter-spacing: .26em;
     margin-bottom: 1.2rem;
   }
+  .foot-brand .brand { color: var(--cream); }
+  .foot-brand p { font-style: italic; }
   footer ul { list-style: none; padding: 0; margin: 0; }
   footer ul li { padding: .35rem 0; }
   footer ul a:hover { color: var(--amber); }
@@ -382,7 +505,7 @@
         <path d="M32 4 L20 24 H26 L16 40 H24 L12 58 H52 L40 40 H48 L38 24 H44 Z" fill="#d8a25a"/>
         <rect x="29" y="52" width="6" height="10" fill="#b07a3b"/>
       </svg>
-      <span>The Lonesome Pine</span>
+      <span>The&nbsp;Lonesome&nbsp;Pine</span>
     </a>
     <nav>
       <ul>
@@ -398,9 +521,23 @@
 
 <!-- HERO -->
 <section class="hero">
+  <div class="seal" aria-hidden="true">
+    <svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <path id="sealcurve" d="M 100,100 m -78,0 a 78,78 0 1,1 156,0 a 78,78 0 1,1 -156,0"/>
+      </defs>
+      <circle cx="100" cy="100" r="92" fill="none" stroke="currentColor" stroke-width="1.5"/>
+      <circle cx="100" cy="100" r="82" fill="none" stroke="currentColor" stroke-width="1"/>
+      <text font-family="DM Mono, monospace" font-size="13" letter-spacing="4" fill="currentColor">
+        <textPath href="#sealcurve" startOffset="0">★  ESTABLISHED ON BAY LAKE  ★  DEERWOOD MINN.  </textPath>
+      </text>
+      <text x="100" y="92" text-anchor="middle" font-family="Allura, cursive" font-size="34" fill="currentColor">Est.</text>
+      <text x="100" y="125" text-anchor="middle" font-family="Yeseva One, serif" font-size="26" fill="currentColor" letter-spacing="2">1972</text>
+    </svg>
+  </div>
   <div class="container hero-inner">
-    <span class="eyebrow" style="color: var(--amber)">On Bay Lake · Est. Northwoods Tradition</span>
-    <h1>Cedar tables, lake breezes, and a perfect cut of prime rib.</h1>
+    <span class="eyebrow" style="color: var(--amber)">A Bay Lake Tradition · Since 1972</span>
+    <h1>Cedar tables, lake breezes &amp; <span class="script">a perfect</span> cut of prime rib.</h1>
     <p class="lede">Casual lakeside dining in Deerwood, Minnesota. Hand-cut steaks, fresh walleye, and a full bar — served in the warm glow of a cabin you'll never want to leave.</p>
     <div class="hero-actions">
       <a href="#" class="btn">Reserve a Table →</a>
@@ -432,7 +569,7 @@
   <div class="container intro-grid">
     <div>
       <span class="eyebrow">Our Story</span>
-      <h2>A Bay Lake supper club, kept the way it should be.</h2>
+      <h2>A Bay Lake supper club, <em style="font-family:'Allura',cursive;font-style:normal;color:var(--wine);font-size:1.25em;">kept</em> the way it should be.</h2>
       <p class="lede">For decades the Pine has been the place locals bring family, where weekenders end a long day on the lake, and where the smell of the grill drifts out through the screen door. Polished cedar tables, generous portions, neighbors at the bar.</p>
       <p class="lede">We don't reinvent. We just keep it honest — fresh fish from up north, hand-cut steaks, pasta the way grandma made it, and a kids' playground out back so dinner runs a little longer.</p>
       <div class="stats">
@@ -454,7 +591,7 @@
     <div class="heading">
       <div>
         <span class="eyebrow">House Favorites</span>
-        <h2>The dishes folks drive an hour for.</h2>
+        <h2>The dishes folks <em style="font-family:'Allura',cursive;font-style:normal;color:var(--amber);font-size:1.25em;">drive</em> an hour for.</h2>
       </div>
       <p>Three signatures that have been on the chalkboard longer than most of our staff — and we wouldn't dare take them off.</p>
     </div>
@@ -586,9 +723,10 @@
 <section class="reserve-cta">
   <div class="container">
     <span class="eyebrow">Hold a Table</span>
-    <h2>The fire's lit. The walleye's fresh. Pull up a chair.</h2>
+    <h2>The fire's lit, the walleye's fresh — <span class="script">pull up</span> a chair.</h2>
+    <div class="ornament" aria-hidden="true">✦</div>
     <p>Reservations open two weeks out. For parties of six or more, give us a ring and we'll set the long table by the window.</p>
-    <a href="#" class="btn">Reserve Online →</a>
+    <a href="#" class="btn">Reserve a Table →</a>
   </div>
 </section>
 
@@ -602,7 +740,7 @@
             <path d="M32 4 L20 24 H26 L16 40 H24 L12 58 H52 L40 40 H48 L38 24 H44 Z" fill="#d8a25a"/>
             <rect x="29" y="52" width="6" height="10" fill="#b07a3b"/>
           </svg>
-          <span>The Lonesome Pine</span>
+          <span>The&nbsp;Lonesome&nbsp;Pine</span>
         </div>
         <p>Casual lakeside dining on Bay Lake. A Deerwood, Minnesota tradition since the cedar tables were new.</p>
       </div>

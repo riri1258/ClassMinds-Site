@@ -5,7 +5,7 @@
 
 🌐 **Website**: https://classminds.app
 📱 **Beta**: TestFlight (free during beta)
-💰 **Price**: $8.99/month after launch
+💰 **Price**: $9.99/month after launch
 
 ## What it does
 
